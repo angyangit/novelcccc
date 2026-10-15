@@ -126,16 +126,18 @@ class Promise:
         if not self.description or not self.description.strip():
             raise ValueError("description cannot be empty")
 
-        # Enforce deep immutability: reject mutable provenance
-        # Check if provenance is a plain mutable dict (not MappingProxyType)
+        # Enforce deep immutability via defensive copying
         from types import MappingProxyType
 
-        if isinstance(self.provenance, dict) and not isinstance(
-            self.provenance, MappingProxyType
-        ):
-            raise TypeError(
-                "Promise provenance must be immutable (MappingProxyType), "
-                "not mutable dict. Use create_promise() or freeze manually."
+        # Convert target_entities to tuple if not already (defensive copy)
+        if not isinstance(self.target_entities, tuple):
+            object.__setattr__(self, "target_entities", tuple(self.target_entities))
+
+        # Convert provenance to MappingProxyType with defensive dict copy
+        if not isinstance(self.provenance, MappingProxyType):
+            # Defensive copy: create new dict to avoid aliasing caller's mutable dict
+            object.__setattr__(
+                self, "provenance", MappingProxyType(dict(self.provenance))
             )
 
 

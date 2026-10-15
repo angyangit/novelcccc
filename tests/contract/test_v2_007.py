@@ -865,14 +865,9 @@ def test_domain_composition_character_to_promise():
     )
 
     # Register Character's actual entity_id for validation
-    # Must use character.entity_id, not a separate random identity
-    character_identity = create_identity(
-        project_id=project_id,
-        canonical_name="Hero",
-        entity_type="CHARACTER",
-    )
-    # Replace the auto-generated entity_id with character's actual entity_id
+    # Directly construct EntityIdentity with character's entity_id
     from anovel.domain.identity import EntityIdentity
+
     character_identity = EntityIdentity(
         entity_id=character.entity_id,
         project_id=project_id,
@@ -1058,6 +1053,54 @@ def test_uncomparable_interval_endpoints_return_unknown():
 
     # Cannot reliably order intervals with uncomparable endpoints
     relation = compare_story_time(interval_a, interval_b)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+def test_same_precision_year_comparable():
+    """
+    R2: Same precision (year) values are comparable.
+    """
+    time_a = PreciseTime(timestamp="2022", precision="year")
+    time_b = PreciseTime(timestamp="2023", precision="year")
+
+    relation = compare_story_time(time_a, time_b)
+    assert relation == TemporalRelation.BEFORE
+
+
+def test_same_precision_month_comparable():
+    """
+    R2: Same precision (month) values are comparable.
+    """
+    time_a = PreciseTime(timestamp="2023-01", precision="month")
+    time_b = PreciseTime(timestamp="2023-02", precision="month")
+
+    relation = compare_story_time(time_a, time_b)
+    assert relation == TemporalRelation.BEFORE
+
+
+def test_different_precision_year_vs_month_unknown():
+    """
+    R2: Different precision (year vs month) returns UNKNOWN.
+
+    "2023" (year) vs "2023-06" (month) cannot be strictly ordered.
+    """
+    time_a = PreciseTime(timestamp="2023", precision="year")
+    time_b = PreciseTime(timestamp="2023-06", precision="month")
+
+    relation = compare_story_time(time_a, time_b)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+def test_different_precision_month_vs_day_unknown():
+    """
+    R2: Different precision (month vs day) returns UNKNOWN.
+
+    "2023-06" (month) vs "2023-06-15" (day) cannot be strictly ordered.
+    """
+    time_a = PreciseTime(timestamp="2023-06", precision="month")
+    time_b = PreciseTime(timestamp="2023-06-15", precision="day")
+
+    relation = compare_story_time(time_a, time_b)
     assert relation == TemporalRelation.UNKNOWN
 
 
@@ -1284,54 +1327,199 @@ def test_link_validation_rejects_wrong_event():
 # --- R6: Deep immutability ---
 
 
-def test_event_rejects_mutable_provenance():
+def test_event_participants_defensive_copy():
     """
-    R6: Event construction must reject mutable dict provenance.
+    R6: Event construction must defensively copy participants list.
 
-    Deep immutability: public constructor must enforce frozen provenance.
+    Caller cannot mutate Event internals by modifying original list.
     """
     project_id = ProjectId("test_project_r6a")
+    entity_a = EntityId("123e4567-e89b-42d3-a456-426614174001")
+    entity_b = EntityId("123e4567-e89b-42d3-a456-426614174002")
 
-    mutable_provenance = {"source": "test"}
+    # Construct with mutable list
+    participants_list = [entity_a]
 
-    # Direct construction with mutable dict must be rejected
-    with pytest.raises(TypeError, match="provenance must be immutable"):
-        Event(
-            event_id=EventId("123e4567-e89b-42d3-a456-426614174003"),
-            project_id=project_id,
-            event_type="test",
-            story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
-            participants=(),
-            occurrence_chapter=None,
-            description="Test event",
-            created_at=datetime.utcnow(),
-            authority="test",
-            provenance=mutable_provenance,
-        )
+    event = Event(
+        event_id=EventId("123e4567-e89b-42d3-a456-426614174003"),
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=participants_list,
+        occurrence_chapter=None,
+        description="Test event",
+        created_at=datetime.utcnow(),
+        authority="test",
+        provenance={},
+    )
+
+    # Modify original list after construction
+    participants_list.append(entity_b)
+
+    # Event must not be affected by mutation
+    assert len(event.participants) == 1
+    assert event.participants[0] == entity_a
 
 
-def test_promise_rejects_mutable_provenance():
+def test_event_provenance_defensive_copy():
     """
-    R6: Promise construction must reject mutable dict provenance.
+    R6: Event construction must defensively copy provenance dict.
 
-    Deep immutability: public constructor must enforce frozen provenance.
+    Caller cannot mutate Event internals by modifying original dict.
     """
     project_id = ProjectId("test_project_r6b")
 
-    mutable_provenance = {"source": "test"}
+    # Construct with mutable dict
+    provenance_dict = {"source": "test"}
 
-    # Direct construction with mutable dict must be rejected
-    with pytest.raises(TypeError, match="provenance must be immutable"):
-        Promise(
-            promise_id=PromiseId("123e4567-e89b-42d3-a456-426614174004"),
-            project_id=project_id,
-            promise_type="test",
-            opened_at_chapter="chapter_01",
-            target_entities=(),
-            target_window=None,
-            terminal_disposition=None,
-            description="Test promise",
-            created_at=datetime.utcnow(),
-            authority="test",
-            provenance=mutable_provenance,
-        )
+    event = Event(
+        event_id=EventId("123e4567-e89b-42d3-a456-426614174004"),
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        occurrence_chapter=None,
+        description="Test event",
+        created_at=datetime.utcnow(),
+        authority="test",
+        provenance=provenance_dict,
+    )
+
+    # Modify original dict after construction
+    provenance_dict["new_key"] = "new_value"
+
+    # Event must not be affected by mutation
+    assert "new_key" not in event.provenance
+    assert len(event.provenance) == 1
+
+
+def test_promise_target_entities_defensive_copy():
+    """
+    R6: Promise construction must defensively copy target_entities list.
+
+    Caller cannot mutate Promise internals by modifying original list.
+    """
+    project_id = ProjectId("test_project_r6c")
+    entity_a = EntityId("123e4567-e89b-42d3-a456-426614174005")
+    entity_b = EntityId("123e4567-e89b-42d3-a456-426614174006")
+
+    # Construct with mutable list
+    targets_list = [entity_a]
+
+    promise = Promise(
+        promise_id=PromiseId("123e4567-e89b-42d3-a456-426614174007"),
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        target_entities=targets_list,
+        target_window=None,
+        terminal_disposition=None,
+        description="Test promise",
+        created_at=datetime.utcnow(),
+        authority="test",
+        provenance={},
+    )
+
+    # Modify original list after construction
+    targets_list.append(entity_b)
+
+    # Promise must not be affected by mutation
+    assert len(promise.target_entities) == 1
+    assert promise.target_entities[0] == entity_a
+
+
+def test_promise_provenance_defensive_copy():
+    """
+    R6: Promise construction must defensively copy provenance dict.
+
+    Caller cannot mutate Promise internals by modifying original dict.
+    """
+    project_id = ProjectId("test_project_r6d")
+
+    # Construct with mutable dict
+    provenance_dict = {"source": "test"}
+
+    promise = Promise(
+        promise_id=PromiseId("123e4567-e89b-42d3-a456-426614174008"),
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        target_entities=(),
+        target_window=None,
+        terminal_disposition=None,
+        description="Test promise",
+        created_at=datetime.utcnow(),
+        authority="test",
+        provenance=provenance_dict,
+    )
+
+    # Modify original dict after construction
+    provenance_dict["new_key"] = "new_value"
+
+    # Promise must not be affected by mutation
+    assert "new_key" not in promise.provenance
+    assert len(promise.provenance) == 1
+
+
+def test_timeline_events_defensive_copy():
+    """
+    R6: Timeline construction must defensively copy events list.
+
+    Caller cannot mutate Timeline internals by modifying original list.
+    """
+    project_id = ProjectId("test_project_r6e")
+    event_a = EventId("123e4567-e89b-42d3-a456-426614174009")
+    event_b = EventId("123e4567-e89b-42d3-a456-42661417400a")
+
+    # Construct with mutable list
+    events_list = [event_a]
+
+    timeline = Timeline(
+        timeline_id="123e4567-e89b-42d3-a456-42661417400b",
+        project_id=project_id,
+        name="Test timeline",
+        events=events_list,
+        narrative_sequence=None,
+        created_at=datetime.utcnow(),
+        authority="test",
+    )
+
+    # Modify original list after construction
+    events_list.append(event_b)
+
+    # Timeline must not be affected by mutation
+    assert len(timeline.events) == 1
+    assert timeline.events[0] == event_a
+
+
+def test_timeline_narrative_sequence_defensive_copy():
+    """
+    R6: Timeline construction must defensively copy narrative_sequence list.
+
+    Caller cannot mutate Timeline internals by modifying original list.
+    """
+    project_id = ProjectId("test_project_r6f")
+    event_a = EventId("123e4567-e89b-42d3-a456-42661417400c")
+    event_b = EventId("123e4567-e89b-42d3-a456-42661417400d")
+
+    # Construct with mutable list
+    sequence_list = [event_a]
+
+    timeline = Timeline(
+        timeline_id="123e4567-e89b-42d3-a456-42661417400e",
+        project_id=project_id,
+        name="Test timeline",
+        events=(event_a,),
+        narrative_sequence=sequence_list,
+        created_at=datetime.utcnow(),
+        authority="test",
+    )
+
+    # Modify original list after construction
+    sequence_list.append(event_b)
+
+    # Timeline must not be affected by mutation
+    assert timeline.narrative_sequence is not None
+    assert len(timeline.narrative_sequence) == 1
+    assert timeline.narrative_sequence[0] == event_a
+

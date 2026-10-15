@@ -155,16 +155,20 @@ class Event:
         if not self.description or not self.description.strip():
             raise ValueError("description cannot be empty")
 
-        # Enforce deep immutability: reject mutable provenance
-        # Check if provenance is a plain mutable dict (not MappingProxyType)
+        # Enforce deep immutability via defensive copying
+        # Frozen dataclass prevents reassignment, but we must ensure
+        # no mutable references escape to caller
         from types import MappingProxyType
 
-        if isinstance(self.provenance, dict) and not isinstance(
-            self.provenance, MappingProxyType
-        ):
-            raise TypeError(
-                "Event provenance must be immutable (MappingProxyType), "
-                "not mutable dict. Use create_event() or freeze manually."
+        # Convert participants to tuple if not already (defensive copy)
+        if not isinstance(self.participants, tuple):
+            object.__setattr__(self, "participants", tuple(self.participants))
+
+        # Convert provenance to MappingProxyType with defensive dict copy
+        if not isinstance(self.provenance, MappingProxyType):
+            # Defensive copy: create new dict to avoid aliasing caller's mutable dict
+            object.__setattr__(
+                self, "provenance", MappingProxyType(dict(self.provenance))
             )
 
 
@@ -203,11 +207,24 @@ class Timeline:
     authority: str
 
     def __post_init__(self) -> None:
-        """Validate Timeline invariants."""
+        """Validate Timeline invariants and enforce deep immutability."""
         _validate_uuid_v4(self.timeline_id, "timeline_id")
 
         if not self.name or not self.name.strip():
             raise ValueError("name cannot be empty")
+
+        # Enforce deep immutability via defensive copying
+        # Convert events to tuple if not already (defensive copy)
+        if not isinstance(self.events, tuple):
+            object.__setattr__(self, "events", tuple(self.events))
+
+        # Convert narrative_sequence to tuple if not already and not None
+        if self.narrative_sequence is not None and not isinstance(
+            self.narrative_sequence, tuple
+        ):
+            object.__setattr__(
+                self, "narrative_sequence", tuple(self.narrative_sequence)
+            )
 
 
 # --- Temporal Comparison ---
@@ -246,47 +263,62 @@ def compare_story_time(a: StoryTime, b: StoryTime) -> TemporalRelation:
 
 def _compare_precise_time(a: PreciseTime, b: PreciseTime) -> TemporalRelation:
     """
-    Compare two PreciseTime values.
+    Compare two PreciseTime values with precision-aware semantics.
 
-    Only compares timestamps when both can be safely parsed as ISO 8601.
-    Returns UNKNOWN for arbitrary story-world strings that cannot be reliably ordered.
+    Only compares when both timestamps have compatible precision and format.
+    Returns UNKNOWN for:
+    - Different precisions (year vs month, month vs day, etc.)
+    - Arbitrary story-world strings
+    - ISO 8601 strings that don't match their declared precision
+
+    Conservative rule: only establish strict order when both values are
+    at the same precision level and format is consistent with that precision.
     """
-    # Attempt to parse both as ISO 8601 timestamps
+    # Check if both precisions match
+    if a.precision != b.precision:
+        # Different precisions cannot be strictly ordered
+        # (e.g., "2023" year vs "2023-06" month)
+        return TemporalRelation.UNKNOWN
+
+    # Define expected formats for each precision level
+    # Note: minute precision allows seconds for backwards compatibility
+    precision_formats = {
+        "year": ["%Y"],
+        "month": ["%Y-%m"],
+        "day": ["%Y-%m-%d"],
+        "hour": ["%Y-%m-%dT%H"],
+        "minute": ["%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M"],
+    }
+
+    expected_formats = precision_formats.get(a.precision)
+    if expected_formats is None:
+        return TemporalRelation.UNKNOWN
+
+    # Try to parse both with the expected format(s)
     from datetime import datetime as dt
 
-    def try_parse_iso8601(timestamp: str) -> dt | None:
-        """Try to parse timestamp as ISO 8601, return None if not parsable."""
+    parsed_a = None
+    parsed_b = None
+
+    for fmt in expected_formats:
         try:
-            # Try ISO 8601 with various precisions
-            for fmt in [
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M",
-                "%Y-%m-%d",
-                "%Y-%m",
-                "%Y",
-            ]:
-                try:
-                    return dt.strptime(timestamp, fmt)
-                except ValueError:
-                    continue
-            return None
+            parsed_a = dt.strptime(a.timestamp, fmt)
+            parsed_b = dt.strptime(b.timestamp, fmt)
+            break
         except (ValueError, TypeError):
-            return None
+            continue
 
-    parsed_a = try_parse_iso8601(a.timestamp)
-    parsed_b = try_parse_iso8601(b.timestamp)
+    if parsed_a is None or parsed_b is None:
+        # Parse failed - not valid ISO 8601 or arbitrary story-world string
+        return TemporalRelation.UNKNOWN
 
-    # Only compare if both successfully parsed as ISO 8601
-    if parsed_a is not None and parsed_b is not None:
-        if parsed_a < parsed_b:
-            return TemporalRelation.BEFORE
-        elif parsed_a > parsed_b:
-            return TemporalRelation.AFTER
-        else:
-            return TemporalRelation.EQUAL
-
-    # Cannot reliably compare arbitrary story-world strings
-    return TemporalRelation.UNKNOWN
+    # Both parsed successfully at same precision - safe to compare
+    if parsed_a < parsed_b:
+        return TemporalRelation.BEFORE
+    elif parsed_a > parsed_b:
+        return TemporalRelation.AFTER
+    else:
+        return TemporalRelation.EQUAL
 
 
 def _compare_interval_time(a: IntervalTime, b: IntervalTime) -> TemporalRelation:
@@ -297,12 +329,12 @@ def _compare_interval_time(a: IntervalTime, b: IntervalTime) -> TemporalRelation
     A AFTER B iff A.earliest > B.latest
     Otherwise OVERLAP or UNKNOWN
 
-    Only compares when endpoints are safely comparable (ISO 8601).
-    Returns UNKNOWN for uncomparable story-world interval endpoints.
+    Conservative: only compares when endpoints are valid ISO 8601 at consistent
+    precision. Returns UNKNOWN for uncomparable story-world interval endpoints.
     """
     from datetime import datetime as dt
 
-    def try_parse_iso8601(timestamp: str) -> dt | None:
+    def try_parse_iso8601_lenient(timestamp: str) -> dt | None:
         """Try to parse timestamp as ISO 8601, return None if not parsable."""
         try:
             for fmt in [
@@ -321,10 +353,10 @@ def _compare_interval_time(a: IntervalTime, b: IntervalTime) -> TemporalRelation
             return None
 
     # Parse all four endpoints
-    a_earliest = try_parse_iso8601(a.earliest)
-    a_latest = try_parse_iso8601(a.latest)
-    b_earliest = try_parse_iso8601(b.earliest)
-    b_latest = try_parse_iso8601(b.latest)
+    a_earliest = try_parse_iso8601_lenient(a.earliest)
+    a_latest = try_parse_iso8601_lenient(a.latest)
+    b_earliest = try_parse_iso8601_lenient(b.earliest)
+    b_latest = try_parse_iso8601_lenient(b.latest)
 
     # All endpoints must be parsable for safe comparison
     if a_earliest is None or a_latest is None or b_earliest is None or b_latest is None:
@@ -350,12 +382,12 @@ def _compare_precise_vs_interval(
     """
     Compare PreciseTime against IntervalTime.
 
-    Only compares when all timestamps are safely parsable (ISO 8601).
-    Returns UNKNOWN for uncomparable story-world strings.
+    Conservative: only compares when all timestamps are safely parsable (ISO 8601).
+    Returns UNKNOWN for uncomparable story-world strings or mixed precisions.
     """
     from datetime import datetime as dt
 
-    def try_parse_iso8601(timestamp: str) -> dt | None:
+    def try_parse_iso8601_lenient(timestamp: str) -> dt | None:
         """Try to parse timestamp as ISO 8601, return None if not parsable."""
         try:
             for fmt in [
@@ -373,9 +405,9 @@ def _compare_precise_vs_interval(
         except (ValueError, TypeError):
             return None
 
-    parsed_precise = try_parse_iso8601(precise.timestamp)
-    parsed_earliest = try_parse_iso8601(interval.earliest)
-    parsed_latest = try_parse_iso8601(interval.latest)
+    parsed_precise = try_parse_iso8601_lenient(precise.timestamp)
+    parsed_earliest = try_parse_iso8601_lenient(interval.earliest)
+    parsed_latest = try_parse_iso8601_lenient(interval.latest)
 
     # All must be parsable for safe comparison
     if parsed_precise is None or parsed_earliest is None or parsed_latest is None:

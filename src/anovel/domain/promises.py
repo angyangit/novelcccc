@@ -114,7 +114,7 @@ class Promise:
     provenance: Mapping[str, str]
 
     def __post_init__(self) -> None:
-        """Validate Promise invariants."""
+        """Validate Promise invariants and enforce deep immutability."""
         _validate_uuid_v4(self.promise_id, "promise_id")
 
         if not self.promise_type or not self.promise_type.strip():
@@ -125,6 +125,18 @@ class Promise:
 
         if not self.description or not self.description.strip():
             raise ValueError("description cannot be empty")
+
+        # Enforce deep immutability: reject mutable provenance
+        # Check if provenance is a plain mutable dict (not MappingProxyType)
+        from types import MappingProxyType
+
+        if isinstance(self.provenance, dict) and not isinstance(
+            self.provenance, MappingProxyType
+        ):
+            raise TypeError(
+                "Promise provenance must be immutable (MappingProxyType), "
+                "not mutable dict. Use create_promise() or freeze manually."
+            )
 
 
 # --- Fulfillment Link Model ---
@@ -177,11 +189,13 @@ def derive_promise_status(
     - No external store/repository/database queries
     - Caller provides all relevant Links explicitly
     - Deterministic derivation, no side effects
+    - Rejects invalid state (terminal + completion evidence)
 
     Derivation rules:
-    1. terminal_disposition = FAILED → PromiseStatus.FAILED
-    2. terminal_disposition = ABANDONED → PromiseStatus.ABANDONED
-    3. terminal_disposition = None:
+    1. Validate terminal exclusivity (FAILED/ABANDONED ⊕ PRIMARY/COMPLETE)
+    2. terminal_disposition = FAILED → PromiseStatus.FAILED
+    3. terminal_disposition = ABANDONED → PromiseStatus.ABANDONED
+    4. terminal_disposition = None:
        - Has PRIMARY or COMPLETE Link → PromiseStatus.FULFILLED
        - Otherwise → PromiseStatus.OPEN
 
@@ -192,8 +206,14 @@ def derive_promise_status(
     Returns:
         PromiseStatus (OPEN/FULFILLED/FAILED/ABANDONED)
 
-    Contract: ADR-003 M1 - Promise.status pure derivation
+    Raises:
+        ValueError: If terminal disposition conflicts with completion Links
+
+    Contract: ADR-003 M1 - Promise.status pure derivation with exclusivity
     """
+    # Enforce terminal exclusivity - reject invalid states
+    validate_terminal_exclusivity(promise, fulfillment_links)
+
     # Terminal disposition takes precedence
     if promise.terminal_disposition == "FAILED":
         return PromiseStatus.FAILED
@@ -239,7 +259,8 @@ def validate_terminal_exclusivity(
             link
             for link in fulfillment_links
             if link.promise_id == promise.promise_id
-            and link.contribution_role in [ContributionRole.PRIMARY, ContributionRole.COMPLETE]
+            and link.contribution_role
+            in [ContributionRole.PRIMARY, ContributionRole.COMPLETE]
         ]
 
         if completion_links:
@@ -288,14 +309,19 @@ def validate_promise_project_isolation(
 
     Requires explicit EntityRegistry context - no database queries.
 
+    Fail-closed semantics:
+    - Referenced entity missing from supplied context → reject (unresolved)
+    - Referenced entity found but wrong project → reject
+    - Referenced entity found and same project → pass
+
     Args:
         promise: Promise to validate
         entity_registry: In-memory EntityRegistry for validation
 
     Raises:
-        ValueError: If target_entities cross project boundary
+        ValueError: If target_entities cross project boundary or are unresolved
 
-    Contract: ADR-003 project isolation with explicit context
+    Contract: ADR-003 project isolation with explicit context and fail-closed
     """
     from .identity import EntityRegistry
 
@@ -304,7 +330,16 @@ def validate_promise_project_isolation(
 
     for target_id in promise.target_entities:
         identity = entity_registry.get_entity(target_id)
-        if identity is not None and identity.project_id != promise.project_id:
+
+        # Fail closed: unknown entity in validation context is rejected
+        if identity is None:
+            raise ValueError(
+                f"Promise {promise.promise_id} target {target_id} "
+                f"not found in supplied EntityRegistry. "
+                f"Cannot validate project isolation without entity context."
+            )
+
+        if identity.project_id != promise.project_id:
             raise ValueError(
                 f"Promise {promise.promise_id} target {target_id} "
                 f"belongs to project {identity.project_id}, but promise "
@@ -318,9 +353,10 @@ def validate_fulfillment_link_project_isolation(
     event: object,  # Event from events module
 ) -> None:
     """
-    Validate PromiseFulfillmentLink respects project isolation.
+    Validate PromiseFulfillmentLink respects project isolation and identity binding.
 
     Link connects Promise and Event - both must belong to same project.
+    Link IDs must match the provided Promise and Event objects.
 
     Args:
         link: PromiseFulfillmentLink to validate
@@ -328,15 +364,32 @@ def validate_fulfillment_link_project_isolation(
         event: Event fulfilling the Promise
 
     Raises:
-        ValueError: If Promise and Event have different project_id
+        ValueError: If Promise and Event have different project_id, or if
+                   link IDs don't match the provided objects
 
-    Contract: ADR-003 cross-domain project isolation
+    Contract: ADR-003 cross-domain project isolation with identity binding
     """
     from .events import Event
 
     if not isinstance(event, Event):
         raise TypeError("event must be Event instance")
 
+    # Validate identity binding: link must reference the provided objects
+    if link.promise_id != promise.promise_id:
+        raise ValueError(
+            f"PromiseFulfillmentLink {link.link_id} references promise_id={link.promise_id} "
+            f"but was validated against Promise {promise.promise_id}. "
+            f"Link identity binding violated."
+        )
+
+    if link.event_id != event.event_id:
+        raise ValueError(
+            f"PromiseFulfillmentLink {link.link_id} references event_id={link.event_id} "
+            f"but was validated against Event {event.event_id}. "
+            f"Link identity binding violated."
+        )
+
+    # Validate project isolation
     if promise.project_id != event.project_id:
         raise ValueError(
             f"PromiseFulfillmentLink {link.link_id} connects Promise {promise.promise_id} "
@@ -457,6 +510,4 @@ def _validate_uuid_v4(value: str, field_name: str) -> None:
     )
 
     if not uuid_v4_pattern.match(value):
-        raise ValueError(
-            f"{field_name} must be valid UUID v4 format. Got: {value}"
-        )
+        raise ValueError(f"{field_name} must be valid UUID v4 format. Got: {value}")

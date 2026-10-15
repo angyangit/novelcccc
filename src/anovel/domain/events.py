@@ -25,6 +25,7 @@ Contract: V2-007 Implementation per ADR-003
 from __future__ import annotations
 
 import uuid
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -145,7 +146,7 @@ class Event:
     provenance: Mapping[str, str]
 
     def __post_init__(self) -> None:
-        """Validate Event invariants."""
+        """Validate Event invariants and enforce deep immutability."""
         _validate_uuid_v4(self.event_id, "event_id")
 
         if not self.event_type or not self.event_type.strip():
@@ -153,6 +154,18 @@ class Event:
 
         if not self.description or not self.description.strip():
             raise ValueError("description cannot be empty")
+
+        # Enforce deep immutability: reject mutable provenance
+        # Check if provenance is a plain mutable dict (not MappingProxyType)
+        from types import MappingProxyType
+
+        if isinstance(self.provenance, dict) and not isinstance(
+            self.provenance, MappingProxyType
+        ):
+            raise TypeError(
+                "Event provenance must be immutable (MappingProxyType), "
+                "not mutable dict. Use create_event() or freeze manually."
+            )
 
 
 # --- Timeline Model ---
@@ -232,18 +245,48 @@ def compare_story_time(a: StoryTime, b: StoryTime) -> TemporalRelation:
 
 
 def _compare_precise_time(a: PreciseTime, b: PreciseTime) -> TemporalRelation:
-    """Compare two PreciseTime values."""
-    # Only compare if timestamps are comparable (same system)
-    # Simple lexicographic comparison for ISO 8601 compatible strings
-    try:
-        if a.timestamp < b.timestamp:
+    """
+    Compare two PreciseTime values.
+
+    Only compares timestamps when both can be safely parsed as ISO 8601.
+    Returns UNKNOWN for arbitrary story-world strings that cannot be reliably ordered.
+    """
+    # Attempt to parse both as ISO 8601 timestamps
+    from datetime import datetime as dt
+
+    def try_parse_iso8601(timestamp: str) -> dt | None:
+        """Try to parse timestamp as ISO 8601, return None if not parsable."""
+        try:
+            # Try ISO 8601 with various precisions
+            for fmt in [
+                "%Y-%m-%dT%H:%M:%S",
+                "%Y-%m-%dT%H:%M",
+                "%Y-%m-%d",
+                "%Y-%m",
+                "%Y",
+            ]:
+                try:
+                    return dt.strptime(timestamp, fmt)
+                except ValueError:
+                    continue
+            return None
+        except (ValueError, TypeError):
+            return None
+
+    parsed_a = try_parse_iso8601(a.timestamp)
+    parsed_b = try_parse_iso8601(b.timestamp)
+
+    # Only compare if both successfully parsed as ISO 8601
+    if parsed_a is not None and parsed_b is not None:
+        if parsed_a < parsed_b:
             return TemporalRelation.BEFORE
-        elif a.timestamp > b.timestamp:
+        elif parsed_a > parsed_b:
             return TemporalRelation.AFTER
         else:
             return TemporalRelation.EQUAL
-    except (TypeError, ValueError):
-        return TemporalRelation.UNKNOWN
+
+    # Cannot reliably compare arbitrary story-world strings
+    return TemporalRelation.UNKNOWN
 
 
 def _compare_interval_time(a: IntervalTime, b: IntervalTime) -> TemporalRelation:
@@ -253,38 +296,98 @@ def _compare_interval_time(a: IntervalTime, b: IntervalTime) -> TemporalRelation
     A BEFORE B iff A.latest < B.earliest
     A AFTER B iff A.earliest > B.latest
     Otherwise OVERLAP or UNKNOWN
+
+    Only compares when endpoints are safely comparable (ISO 8601).
+    Returns UNKNOWN for uncomparable story-world interval endpoints.
     """
-    try:
-        # A completely before B: A's end is before B's start
-        if a.latest < b.earliest:
-            return TemporalRelation.BEFORE
-        # A completely after B: A's start is after B's end
-        elif a.earliest > b.latest:
-            return TemporalRelation.AFTER
-        # Intervals overlap or are equal
-        elif a.earliest == b.earliest and a.latest == b.latest:
-            return TemporalRelation.EQUAL
-        else:
-            return TemporalRelation.OVERLAP
-    except (TypeError, ValueError):
+    from datetime import datetime as dt
+
+    def try_parse_iso8601(timestamp: str) -> dt | None:
+        """Try to parse timestamp as ISO 8601, return None if not parsable."""
+        try:
+            for fmt in [
+                "%Y-%m-%dT%H:%M:%S",
+                "%Y-%m-%dT%H:%M",
+                "%Y-%m-%d",
+                "%Y-%m",
+                "%Y",
+            ]:
+                try:
+                    return dt.strptime(timestamp, fmt)
+                except ValueError:
+                    continue
+            return None
+        except (ValueError, TypeError):
+            return None
+
+    # Parse all four endpoints
+    a_earliest = try_parse_iso8601(a.earliest)
+    a_latest = try_parse_iso8601(a.latest)
+    b_earliest = try_parse_iso8601(b.earliest)
+    b_latest = try_parse_iso8601(b.latest)
+
+    # All endpoints must be parsable for safe comparison
+    if a_earliest is None or a_latest is None or b_earliest is None or b_latest is None:
         return TemporalRelation.UNKNOWN
+
+    # A completely before B: A's end is before B's start
+    if a_latest < b_earliest:
+        return TemporalRelation.BEFORE
+    # A completely after B: A's start is after B's end
+    elif a_earliest > b_latest:
+        return TemporalRelation.AFTER
+    # Intervals overlap or are equal
+    elif a_earliest == b_earliest and a_latest == b_latest:
+        return TemporalRelation.EQUAL
+    else:
+        return TemporalRelation.OVERLAP
 
 
 def _compare_precise_vs_interval(
     precise: PreciseTime,
     interval: IntervalTime,
 ) -> TemporalRelation:
-    """Compare PreciseTime against IntervalTime."""
-    try:
-        if precise.timestamp < interval.earliest:
-            return TemporalRelation.BEFORE
-        elif precise.timestamp > interval.latest:
-            return TemporalRelation.AFTER
-        elif interval.earliest <= precise.timestamp <= interval.latest:
-            return TemporalRelation.OVERLAP
-        else:
-            return TemporalRelation.UNKNOWN
-    except (TypeError, ValueError):
+    """
+    Compare PreciseTime against IntervalTime.
+
+    Only compares when all timestamps are safely parsable (ISO 8601).
+    Returns UNKNOWN for uncomparable story-world strings.
+    """
+    from datetime import datetime as dt
+
+    def try_parse_iso8601(timestamp: str) -> dt | None:
+        """Try to parse timestamp as ISO 8601, return None if not parsable."""
+        try:
+            for fmt in [
+                "%Y-%m-%dT%H:%M:%S",
+                "%Y-%m-%dT%H:%M",
+                "%Y-%m-%d",
+                "%Y-%m",
+                "%Y",
+            ]:
+                try:
+                    return dt.strptime(timestamp, fmt)
+                except ValueError:
+                    continue
+            return None
+        except (ValueError, TypeError):
+            return None
+
+    parsed_precise = try_parse_iso8601(precise.timestamp)
+    parsed_earliest = try_parse_iso8601(interval.earliest)
+    parsed_latest = try_parse_iso8601(interval.latest)
+
+    # All must be parsable for safe comparison
+    if parsed_precise is None or parsed_earliest is None or parsed_latest is None:
+        return TemporalRelation.UNKNOWN
+
+    if parsed_precise < parsed_earliest:
+        return TemporalRelation.BEFORE
+    elif parsed_precise > parsed_latest:
+        return TemporalRelation.AFTER
+    elif parsed_earliest <= parsed_precise <= parsed_latest:
+        return TemporalRelation.OVERLAP
+    else:
         return TemporalRelation.UNKNOWN
 
 
@@ -296,6 +399,43 @@ def _invert_relation(rel: TemporalRelation) -> TemporalRelation:
         return TemporalRelation.BEFORE
     else:
         return rel
+
+
+# --- Validation Helpers ---
+
+
+def resolve_event_occurrence(
+    event_ref: EventId | None,
+    events: Sequence[Event],
+) -> Event | None:
+    """
+    Resolve event occurrence from reference using explicit Event evidence.
+
+    Critical semantics:
+    - event_ref is None → UNKNOWN (no occurrence evidence)
+    - event_ref not found in supplied events → UNKNOWN (unresolved reference)
+    - event_ref resolves to Event → occurrence proven by that Event
+
+    Important: UNKNOWN ≠ definitely NOT_OCCURRED. Unknown means cannot prove
+    occurrence from available evidence, not that it definitely did not occur.
+
+    Args:
+        event_ref: Optional EventId reference to resolve
+        events: Explicit collection of Event domain evidence
+
+    Returns:
+        Event if reference resolves to evidence, None if unresolved/unknown
+
+    Contract: V2-007 pure domain occurrence resolution with explicit context
+    """
+    if event_ref is None:
+        return None
+
+    for event in events:
+        if event.event_id == event_ref:
+            return event
+
+    return None
 
 
 # --- Validation Helpers ---
@@ -319,9 +459,7 @@ def _validate_uuid_v4(value: str, field_name: str) -> None:
     )
 
     if not uuid_v4_pattern.match(value):
-        raise ValueError(
-            f"{field_name} must be valid UUID v4 format. Got: {value}"
-        )
+        raise ValueError(f"{field_name} must be valid UUID v4 format. Got: {value}")
 
 
 def validate_event_project_isolation(
@@ -333,14 +471,19 @@ def validate_event_project_isolation(
 
     Requires explicit EntityRegistry context - no database queries.
 
+    Fail-closed semantics:
+    - Referenced entity missing from supplied context → reject (unresolved)
+    - Referenced entity found but wrong project → reject
+    - Referenced entity found and same project → pass
+
     Args:
         event: Event to validate
         entity_registry: In-memory EntityRegistry for validation
 
     Raises:
-        ValueError: If participants cross project boundary
+        ValueError: If participants cross project boundary or are unresolved
 
-    Contract: ADR-003 project isolation with explicit context
+    Contract: ADR-003 project isolation with explicit context and fail-closed
     """
     from .identity import EntityRegistry
 
@@ -349,7 +492,16 @@ def validate_event_project_isolation(
 
     for participant_id in event.participants:
         identity = entity_registry.get_entity(participant_id)
-        if identity is not None and identity.project_id != event.project_id:
+
+        # Fail closed: unknown entity in validation context is rejected
+        if identity is None:
+            raise ValueError(
+                f"Event {event.event_id} participant {participant_id} "
+                f"not found in supplied EntityRegistry. "
+                f"Cannot validate project isolation without entity context."
+            )
+
+        if identity.project_id != event.project_id:
             raise ValueError(
                 f"Event {event.event_id} participant {participant_id} "
                 f"belongs to project {identity.project_id}, but event "

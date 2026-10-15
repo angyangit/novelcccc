@@ -864,13 +864,23 @@ def test_domain_composition_character_to_promise():
         authority="test",
     )
 
-    # Register identity for validation
-    identity = create_identity(
+    # Register Character's actual entity_id for validation
+    # Must use character.entity_id, not a separate random identity
+    character_identity = create_identity(
         project_id=project_id,
         canonical_name="Hero",
         entity_type="CHARACTER",
     )
-    registry.add_entity(identity)
+    # Replace the auto-generated entity_id with character's actual entity_id
+    from anovel.domain.identity import EntityIdentity
+    character_identity = EntityIdentity(
+        entity_id=character.entity_id,
+        project_id=project_id,
+        canonical_name="Hero",
+        aliases=frozenset(),
+        entity_type="CHARACTER",
+    )
+    registry.add_entity(character_identity)
 
     # V2-061: PlannedAction
     planned_action = PlannedAction(
@@ -931,3 +941,397 @@ def test_domain_composition_character_to_promise():
     validate_event_project_isolation(event, registry)
     validate_promise_project_isolation(promise, registry)
     validate_fulfillment_link_project_isolation(link, promise, event)
+
+
+# --- R1: derive_promise_status rejects terminal + completion evidence ---
+
+
+def test_derive_promise_status_rejects_failed_plus_primary():
+    """
+    R1: derive_promise_status must reject FAILED + PRIMARY Link.
+
+    Terminal exclusivity enforcement in status derivation path.
+    """
+    project_id = ProjectId("test_project_r1a")
+
+    promise = create_promise(
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        description="Test promise",
+        authority="test",
+        terminal_disposition="FAILED",
+    )
+
+    event = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        description="Test event",
+        authority="test",
+    )
+
+    link = create_fulfillment_link(
+        promise_id=promise.promise_id,
+        event_id=event.event_id,
+        contribution_role=ContributionRole.PRIMARY,
+        authority="test",
+    )
+
+    # derive_promise_status must reject this invalid state
+    with pytest.raises(ValueError, match="terminal_disposition=FAILED.*PRIMARY"):
+        derive_promise_status(promise, [link])
+
+
+def test_derive_promise_status_rejects_abandoned_plus_complete():
+    """
+    R1: derive_promise_status must reject ABANDONED + COMPLETE Link.
+
+    Terminal exclusivity enforcement in status derivation path.
+    """
+    project_id = ProjectId("test_project_r1b")
+
+    promise = create_promise(
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        description="Test promise",
+        authority="test",
+        terminal_disposition="ABANDONED",
+    )
+
+    event = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        description="Test event",
+        authority="test",
+    )
+
+    link = create_fulfillment_link(
+        promise_id=promise.promise_id,
+        event_id=event.event_id,
+        contribution_role=ContributionRole.COMPLETE,
+        authority="test",
+    )
+
+    # derive_promise_status must reject this invalid state
+    with pytest.raises(ValueError, match="terminal_disposition=ABANDONED.*COMPLETE"):
+        derive_promise_status(promise, [link])
+
+
+# --- R2: Temporal comparison must not guess arbitrary strings ---
+
+
+def test_arbitrary_story_world_strings_return_unknown():
+    """
+    R2: Arbitrary story-world strings must return UNKNOWN, not guessed order.
+
+    V2-007 does not implement full calendar engine for all story-world systems.
+    """
+    time_a = PreciseTime(timestamp="天启三年春", precision="year")
+    time_b = PreciseTime(timestamp="赤曜二年冬", precision="year")
+
+    # Cannot reliably order arbitrary story-world calendar strings
+    relation = compare_story_time(time_a, time_b)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+def test_uncomparable_interval_endpoints_return_unknown():
+    """
+    R2: IntervalTime with uncomparable endpoints must return UNKNOWN.
+
+    Only safely comparable (ISO 8601) endpoints allow partial order comparison.
+    """
+    interval_a = IntervalTime(
+        earliest="故事开始前",
+        latest="第一次相遇",
+        description="背景时期",
+    )
+    interval_b = IntervalTime(
+        earliest="第二次相遇",
+        latest="故事结束",
+        description="后续时期",
+    )
+
+    # Cannot reliably order intervals with uncomparable endpoints
+    relation = compare_story_time(interval_a, interval_b)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+# --- R3: Unknown occurrence resolution ---
+
+
+def test_resolve_event_occurrence_none_ref_returns_none():
+    """
+    R3: resolve_event_occurrence with None ref returns None (UNKNOWN).
+    """
+    from anovel.domain.events import resolve_event_occurrence
+
+    project_id = ProjectId("test_project_r3a")
+
+    event = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        description="Test event",
+        authority="test",
+    )
+
+    # None reference → UNKNOWN occurrence
+    result = resolve_event_occurrence(None, [event])
+    assert result is None
+
+
+def test_resolve_event_occurrence_unresolved_ref_returns_none():
+    """
+    R3: resolve_event_occurrence with unresolved ref returns None (UNKNOWN).
+    """
+    from anovel.domain.events import resolve_event_occurrence
+
+    project_id = ProjectId("test_project_r3b")
+
+    event = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        description="Test event",
+        authority="test",
+    )
+
+    # Reference to non-existent event → UNKNOWN occurrence
+    missing_ref = EventId("123e4567-e89b-42d3-a456-426614174099")
+    result = resolve_event_occurrence(missing_ref, [event])
+    assert result is None
+
+
+def test_resolve_event_occurrence_found_returns_event():
+    """
+    R3: resolve_event_occurrence with valid ref returns Event (occurrence proven).
+    """
+    from anovel.domain.events import resolve_event_occurrence
+
+    project_id = ProjectId("test_project_r3c")
+
+    event = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        description="Test event",
+        authority="test",
+    )
+
+    # Valid reference → occurrence proven by Event evidence
+    result = resolve_event_occurrence(event.event_id, [event])
+    assert result is not None
+    assert result.event_id == event.event_id
+
+
+# --- R4: Project isolation fail-closed ---
+
+
+def test_event_project_isolation_rejects_unknown_participant():
+    """
+    R4: validate_event_project_isolation must reject unknown participants.
+
+    Fail-closed: unknown entity in validation context is rejected.
+    """
+    project_id = ProjectId("test_project_r4a")
+    registry = EntityRegistry()
+
+    unknown_entity = EntityId("123e4567-e89b-42d3-a456-426614174001")
+
+    event = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(unknown_entity,),
+        description="Test event",
+        authority="test",
+    )
+
+    # Unknown participant must be rejected (fail-closed)
+    with pytest.raises(ValueError, match="not found in supplied EntityRegistry"):
+        validate_event_project_isolation(event, registry)
+
+
+def test_promise_project_isolation_rejects_unknown_target():
+    """
+    R4: validate_promise_project_isolation must reject unknown targets.
+
+    Fail-closed: unknown entity in validation context is rejected.
+    """
+    project_id = ProjectId("test_project_r4b")
+    registry = EntityRegistry()
+
+    unknown_entity = EntityId("123e4567-e89b-42d3-a456-426614174002")
+
+    promise = create_promise(
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        description="Test promise",
+        authority="test",
+        target_entities=(unknown_entity,),
+    )
+
+    # Unknown target must be rejected (fail-closed)
+    with pytest.raises(ValueError, match="not found in supplied EntityRegistry"):
+        validate_promise_project_isolation(promise, registry)
+
+
+# --- R5: Fulfillment link identity binding ---
+
+
+def test_link_validation_rejects_wrong_promise():
+    """
+    R5: validate_fulfillment_link_project_isolation must reject wrong Promise.
+
+    Link identity binding: link.promise_id must match promise.promise_id.
+    """
+    project_id = ProjectId("test_project_r5a")
+
+    promise_a = create_promise(
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        description="Promise A",
+        authority="test",
+    )
+
+    promise_b = create_promise(
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        description="Promise B",
+        authority="test",
+    )
+
+    event = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        description="Test event",
+        authority="test",
+    )
+
+    # Link references promise_a
+    link = create_fulfillment_link(
+        promise_id=promise_a.promise_id,
+        event_id=event.event_id,
+        contribution_role=ContributionRole.PRIMARY,
+        authority="test",
+    )
+
+    # Validating with wrong promise_b must be rejected
+    with pytest.raises(ValueError, match="Link identity binding violated"):
+        validate_fulfillment_link_project_isolation(link, promise_b, event)
+
+
+def test_link_validation_rejects_wrong_event():
+    """
+    R5: validate_fulfillment_link_project_isolation must reject wrong Event.
+
+    Link identity binding: link.event_id must match event.event_id.
+    """
+    project_id = ProjectId("test_project_r5b")
+
+    promise = create_promise(
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        description="Test promise",
+        authority="test",
+    )
+
+    event_a = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        description="Event A",
+        authority="test",
+    )
+
+    event_b = create_event(
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-02", precision="day"),
+        participants=(),
+        description="Event B",
+        authority="test",
+    )
+
+    # Link references event_a
+    link = create_fulfillment_link(
+        promise_id=promise.promise_id,
+        event_id=event_a.event_id,
+        contribution_role=ContributionRole.PRIMARY,
+        authority="test",
+    )
+
+    # Validating with wrong event_b must be rejected
+    with pytest.raises(ValueError, match="Link identity binding violated"):
+        validate_fulfillment_link_project_isolation(link, promise, event_b)
+
+
+# --- R6: Deep immutability ---
+
+
+def test_event_rejects_mutable_provenance():
+    """
+    R6: Event construction must reject mutable dict provenance.
+
+    Deep immutability: public constructor must enforce frozen provenance.
+    """
+    project_id = ProjectId("test_project_r6a")
+
+    mutable_provenance = {"source": "test"}
+
+    # Direct construction with mutable dict must be rejected
+    with pytest.raises(TypeError, match="provenance must be immutable"):
+        Event(
+            event_id=EventId("123e4567-e89b-42d3-a456-426614174003"),
+            project_id=project_id,
+            event_type="test",
+            story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+            participants=(),
+            occurrence_chapter=None,
+            description="Test event",
+            created_at=datetime.utcnow(),
+            authority="test",
+            provenance=mutable_provenance,
+        )
+
+
+def test_promise_rejects_mutable_provenance():
+    """
+    R6: Promise construction must reject mutable dict provenance.
+
+    Deep immutability: public constructor must enforce frozen provenance.
+    """
+    project_id = ProjectId("test_project_r6b")
+
+    mutable_provenance = {"source": "test"}
+
+    # Direct construction with mutable dict must be rejected
+    with pytest.raises(TypeError, match="provenance must be immutable"):
+        Promise(
+            promise_id=PromiseId("123e4567-e89b-42d3-a456-426614174004"),
+            project_id=project_id,
+            promise_type="test",
+            opened_at_chapter="chapter_01",
+            target_entities=(),
+            target_window=None,
+            terminal_disposition=None,
+            description="Test promise",
+            created_at=datetime.utcnow(),
+            authority="test",
+            provenance=mutable_provenance,
+        )

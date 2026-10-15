@@ -27,6 +27,22 @@ from .character import (
     PlannedActionId,
     create_character,
 )
+
+# V2-007 Event Timeline
+from .events import (
+    Event,
+    EventId,
+    IntervalTime,
+    PreciseTime,
+    RelativeTime,
+    StoryTime,
+    TemporalRelation,
+    Timeline,
+    compare_story_time,
+    create_event,
+    resolve_event_occurrence,
+    validate_event_project_isolation,
+)
 from .identity import (
     EntityId,
     EntityIdentity,
@@ -51,21 +67,6 @@ from .knowledge import (
     PropositionId,
     create_proposition,
     freeze_context,
-)
-
-# V2-007 Event Timeline
-from .events import (
-    Event,
-    EventId,
-    IntervalTime,
-    PreciseTime,
-    RelativeTime,
-    StoryTime,
-    TemporalRelation,
-    Timeline,
-    compare_story_time,
-    create_event,
-    validate_event_project_isolation,
 )
 
 # V2-007 Promise
@@ -129,6 +130,7 @@ __all__ = [
     "Timeline",
     "compare_story_time",
     "create_event",
+    "resolve_event_occurrence",
     "validate_event_project_isolation",
     # V2-007 Promises
     "PromiseId",

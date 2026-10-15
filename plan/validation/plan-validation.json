@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-15T09:01:32.235876+00:00",
+  "generated_at_utc": "2026-10-15T09:50:26.840549+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "fba763901b7a4e69a0f1b757519c55e367243430",
+  "validated_repository_revision": "01b4f9aae6a6211099b98b68c0615d4b816a7a11",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "6e106e5ed1de91d775b1e16b912f404ebda13ea227122c77b02b21c11173d3d4",
+  "manifest_sha256": "d7b621e12093af09517c4b560ec8b4b323a1ff62d41fb8b62cc61ac25e558b92",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -51,9 +51,20 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_VERSION V2-007: manifest changed; reconcile context before continuation",
+    "EXEC_INPUT V2-007: live source changed/missing: machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-007: OPEN may prepare only; implementation requires task start gates",
+    "EXEC_CLAIM V2-007: unresolved action-blocking input: CLAIM-V2-007-011-DEEP-IMMUTABILITY",
+    "EXEC_CLAIM V2-007: unresolved action-blocking input: CLAIM-V2-007-012-PROJECT-ISOLATION"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "EXEC_VERSION V2-007: manifest changed; reconcile context before continuation",
+    "EXEC_INPUT V2-007: live source changed/missing: machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-007: OPEN may prepare only; implementation requires task start gates",
+    "EXEC_CLAIM V2-007: unresolved action-blocking input: CLAIM-V2-007-011-DEEP-IMMUTABILITY",
+    "EXEC_CLAIM V2-007: unresolved action-blocking input: CLAIM-V2-007-012-PROJECT-ISOLATION"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

@@ -1,6 +1,6 @@
 {
   "scope": "Local declared execution packet checks only; no actual action interception, diff review or remote CI",
-  "generated_at_utc": "2026-10-15T08:16:39.657943+00:00",
+  "generated_at_utc": "2026-10-15T09:42:22.983963+00:00",
   "manifest_sha256": "6e106e5ed1de91d775b1e16b912f404ebda13ea227122c77b02b21c11173d3d4",
   "status": "PASS",
   "test_count": 36,

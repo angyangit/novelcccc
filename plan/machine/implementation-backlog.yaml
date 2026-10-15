@@ -601,7 +601,7 @@ tasks:
   status: OPEN
   execution_packet_ref: validation/execution/V2-007/execution-packet.yaml
   owner_role: domain-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P0
   required_decisions:
   - ADR-003

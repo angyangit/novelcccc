@@ -134,11 +134,8 @@ class Promise:
             object.__setattr__(self, "target_entities", tuple(self.target_entities))
 
         # Convert provenance to MappingProxyType with defensive dict copy
-        if not isinstance(self.provenance, MappingProxyType):
-            # Defensive copy: create new dict to avoid aliasing caller's mutable dict
-            object.__setattr__(
-                self, "provenance", MappingProxyType(dict(self.provenance))
-            )
+        # ALWAYS copy to prevent backing dict aliasing, even if already MappingProxyType
+        object.__setattr__(self, "provenance", MappingProxyType(dict(self.provenance)))
 
 
 # --- Fulfillment Link Model ---

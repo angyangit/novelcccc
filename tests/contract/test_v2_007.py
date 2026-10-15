@@ -21,16 +21,17 @@ Additional Requirements:
 Contract: V2-007 Machine Acceptance
 """
 
-import pytest
 from collections.abc import Mapping
 from datetime import datetime
 from types import MappingProxyType
 
+import pytest
+
 from anovel.domain.events import (
     Event,
     EventId,
-    PreciseTime,
     IntervalTime,
+    PreciseTime,
     RelativeTime,
     TemporalRelation,
     Timeline,
@@ -38,27 +39,25 @@ from anovel.domain.events import (
     create_event,
     validate_event_project_isolation,
 )
+from anovel.domain.identity import (
+    EntityId,
+    EntityRegistry,
+    ProjectId,
+    create_identity,
+)
 from anovel.domain.promises import (
+    ContributionRole,
     Promise,
     PromiseId,
     PromiseStatus,
-    PromiseFulfillmentLink,
-    ContributionRole,
-    derive_promise_status,
-    create_promise,
     create_fulfillment_link,
-    validate_terminal_exclusivity,
+    create_promise,
+    derive_promise_status,
+    validate_fulfillment_link_project_isolation,
     validate_link_uniqueness,
     validate_promise_project_isolation,
-    validate_fulfillment_link_project_isolation,
+    validate_terminal_exclusivity,
 )
-from anovel.domain.identity import (
-    ProjectId,
-    EntityId,
-    EntityRegistry,
-    create_identity,
-)
-
 
 # --- AC-1: Same Chapter Multiple Events ---
 
@@ -344,11 +343,13 @@ def test_promise_distinct_from_character_goal():
         canonical_name="Protagonist",
         authority="test",
     )
-    registry.add_entity(create_identity(
-        project_id=project_id,
-        canonical_name="Protagonist",
-        entity_type="CHARACTER",
-    ))
+    registry.add_entity(
+        create_identity(
+            project_id=project_id,
+            canonical_name="Protagonist",
+            entity_type="CHARACTER",
+        )
+    )
 
     # Character Goal: revenge (character planning state)
     goal = Goal(
@@ -395,9 +396,9 @@ def test_unknown_occurrence_not_equal_to_occurred():
     Critical acceptance criterion: absence of evidence ≠ evidence of occurrence.
     PlannedAction.occurred_event_ref alone is not occurrence authority.
     """
-    from anovel.domain.character import PlannedAction, PlannedActionId, ActionStatus
+    from anovel.domain.character import ActionStatus, PlannedAction, PlannedActionId
 
-    project_id = ProjectId("test_project_08")
+    ProjectId("test_project_08")
 
     # PlannedAction with event reference
     planned_action = PlannedAction(
@@ -425,7 +426,7 @@ def test_missing_event_ref_does_not_imply_occurred():
     """
     Verify None event_ref explicitly means unknown/not-occurred.
     """
-    from anovel.domain.character import PlannedAction, PlannedActionId, ActionStatus
+    from anovel.domain.character import ActionStatus, PlannedAction, PlannedActionId
 
     planned_action = PlannedAction(
         action_id=PlannedActionId("323e4567-e89b-42d3-a456-426614174004"),
@@ -481,7 +482,9 @@ def test_terminal_exclusivity_rejects_failed_plus_primary():
     )
 
     # FAILED + PRIMARY is invalid
-    with pytest.raises(ValueError, match="terminal_disposition=FAILED.*PRIMARY/COMPLETE"):
+    with pytest.raises(
+        ValueError, match="terminal_disposition=FAILED.*PRIMARY/COMPLETE"
+    ):
         validate_terminal_exclusivity(promise, [link_primary])
 
 
@@ -517,7 +520,9 @@ def test_terminal_exclusivity_rejects_abandoned_plus_complete():
     )
 
     # ABANDONED + COMPLETE is invalid
-    with pytest.raises(ValueError, match="terminal_disposition=ABANDONED.*PRIMARY/COMPLETE"):
+    with pytest.raises(
+        ValueError, match="terminal_disposition=ABANDONED.*PRIMARY/COMPLETE"
+    ):
         validate_terminal_exclusivity(promise, [link_complete])
 
 
@@ -848,10 +853,10 @@ def test_domain_composition_character_to_promise():
     Character → PlannedAction → Event → Promise
     """
     from anovel.domain.character import (
-        create_character,
+        ActionStatus,
         PlannedAction,
         PlannedActionId,
-        ActionStatus,
+        create_character,
     )
 
     project_id = ProjectId("composition_test")
@@ -878,7 +883,7 @@ def test_domain_composition_character_to_promise():
     registry.add_entity(character_identity)
 
     # V2-061: PlannedAction
-    planned_action = PlannedAction(
+    PlannedAction(
         action_id=PlannedActionId("623e4567-e89b-42d3-a456-426614174008"),
         character=character.entity_id,
         action_description="Confront villain",
@@ -1097,6 +1102,112 @@ def test_different_precision_month_vs_day_unknown():
 
     "2023-06" (month) vs "2023-06-15" (day) cannot be strictly ordered.
     """
+    time_a = PreciseTime(timestamp="2023-06", precision="month")
+    time_b = PreciseTime(timestamp="2023-06-15", precision="day")
+
+    relation = compare_story_time(time_a, time_b)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+def test_precise_vs_interval_mixed_precision_unknown():
+    """
+    R2: PreciseTime vs IntervalTime with different precisions returns UNKNOWN.
+
+    PreciseTime "2023" (year) vs IntervalTime "2023-06" to "2023-07" (month)
+    cannot be reliably ordered due to precision mismatch.
+    """
+    precise = PreciseTime(timestamp="2023", precision="year")
+    interval = IntervalTime(
+        earliest="2023-06",
+        latest="2023-07",
+        description="summer months",
+    )
+
+    relation = compare_story_time(precise, interval)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+def test_interval_vs_interval_mixed_precision_unknown():
+    """
+    R2: IntervalTime vs IntervalTime with different precisions returns UNKNOWN.
+
+    IntervalTime "2023" to "2023" (year) vs IntervalTime "2023-06" to "2023-07" (month)
+    cannot be reliably ordered due to precision mismatch.
+    """
+    interval_a = IntervalTime(
+        earliest="2023",
+        latest="2023",
+        description="year 2023",
+    )
+    interval_b = IntervalTime(
+        earliest="2023-06",
+        latest="2023-07",
+        description="summer months",
+    )
+
+    relation = compare_story_time(interval_a, interval_b)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+def test_interval_internal_mixed_precision_unknown():
+    """
+    R2: IntervalTime with mixed precision endpoints returns UNKNOWN.
+
+    IntervalTime "2023" (year) to "2023-12" (month) has inconsistent precision
+    and cannot be used for reliable comparison.
+    """
+    interval_a = IntervalTime(
+        earliest="2023",
+        latest="2023-12",
+        description="year with month endpoint",
+    )
+    interval_b = IntervalTime(
+        earliest="2024-01",
+        latest="2024-02",
+        description="winter months",
+    )
+
+    relation = compare_story_time(interval_a, interval_b)
+    assert relation == TemporalRelation.UNKNOWN
+
+
+def test_same_precision_intervals_comparable():
+    """
+    R2: IntervalTime with same precision endpoints are comparable.
+
+    Both intervals use day precision consistently.
+    """
+    interval_a = IntervalTime(
+        earliest="2023-01-01",
+        latest="2023-01-31",
+        description="January",
+    )
+    interval_b = IntervalTime(
+        earliest="2023-02-01",
+        latest="2023-02-28",
+        description="February",
+    )
+
+    relation = compare_story_time(interval_a, interval_b)
+    assert relation == TemporalRelation.BEFORE
+
+
+def test_same_precision_precise_vs_interval_comparable():
+    """
+    R2: PreciseTime and IntervalTime with same precision are comparable.
+
+    All use day precision consistently.
+    """
+    precise = PreciseTime(timestamp="2023-01-15", precision="day")
+    interval = IntervalTime(
+        earliest="2023-01-01",
+        latest="2023-01-31",
+        description="January",
+    )
+
+    relation = compare_story_time(precise, interval)
+    assert relation == TemporalRelation.OVERLAP
+
     time_a = PreciseTime(timestamp="2023-06", precision="month")
     time_b = PreciseTime(timestamp="2023-06-15", precision="day")
 
@@ -1523,3 +1634,77 @@ def test_timeline_narrative_sequence_defensive_copy():
     assert len(timeline.narrative_sequence) == 1
     assert timeline.narrative_sequence[0] == event_a
 
+
+def test_event_provenance_mapping_proxy_backing_alias():
+    """
+    R6: Event must defensively copy even when provenance is already MappingProxyType.
+
+    Critical vulnerability: if input is MappingProxyType with mutable backing dict,
+    caller can mutate backing dict after construction to affect Event internals.
+    """
+
+    project_id = ProjectId("test_project_r6g")
+
+    # Construct MappingProxyType with mutable backing dict
+    backing_dict = {"source": "original"}
+    provenance_proxy = MappingProxyType(backing_dict)
+
+    event = Event(
+        event_id=EventId("123e4567-e89b-42d3-a456-42661417400f"),
+        project_id=project_id,
+        event_type="test",
+        story_time=PreciseTime(timestamp="2023-01-01", precision="day"),
+        participants=(),
+        occurrence_chapter=None,
+        description="Test event",
+        created_at=datetime.utcnow(),
+        authority="test",
+        provenance=provenance_proxy,
+    )
+
+    # Modify backing dict after construction
+    backing_dict["source"] = "modified"
+    backing_dict["new_key"] = "new_value"
+
+    # Event must not be affected by backing dict mutation
+    assert event.provenance["source"] == "original"
+    assert "new_key" not in event.provenance
+    assert len(event.provenance) == 1
+
+
+def test_promise_provenance_mapping_proxy_backing_alias():
+    """
+    R6: Promise must defensively copy even when provenance is already MappingProxyType.
+
+    Critical vulnerability: if input is MappingProxyType with mutable backing dict,
+    caller can mutate backing dict after construction to affect Promise internals.
+    """
+
+    project_id = ProjectId("test_project_r6h")
+
+    # Construct MappingProxyType with mutable backing dict
+    backing_dict = {"source": "original"}
+    provenance_proxy = MappingProxyType(backing_dict)
+
+    promise = Promise(
+        promise_id=PromiseId("123e4567-e89b-42d3-a456-426614174010"),
+        project_id=project_id,
+        promise_type="test",
+        opened_at_chapter="chapter_01",
+        target_entities=(),
+        target_window=None,
+        terminal_disposition=None,
+        description="Test promise",
+        created_at=datetime.utcnow(),
+        authority="test",
+        provenance=provenance_proxy,
+    )
+
+    # Modify backing dict after construction
+    backing_dict["source"] = "modified"
+    backing_dict["new_key"] = "new_value"
+
+    # Promise must not be affected by backing dict mutation
+    assert promise.provenance["source"] == "original"
+    assert "new_key" not in promise.provenance
+    assert len(promise.provenance) == 1

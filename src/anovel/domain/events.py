@@ -165,11 +165,8 @@ class Event:
             object.__setattr__(self, "participants", tuple(self.participants))
 
         # Convert provenance to MappingProxyType with defensive dict copy
-        if not isinstance(self.provenance, MappingProxyType):
-            # Defensive copy: create new dict to avoid aliasing caller's mutable dict
-            object.__setattr__(
-                self, "provenance", MappingProxyType(dict(self.provenance))
-            )
+        # ALWAYS copy to prevent backing dict aliasing, even if already MappingProxyType
+        object.__setattr__(self, "provenance", MappingProxyType(dict(self.provenance)))
 
 
 # --- Timeline Model ---
@@ -321,55 +318,89 @@ def _compare_precise_time(a: PreciseTime, b: PreciseTime) -> TemporalRelation:
         return TemporalRelation.EQUAL
 
 
-def _compare_interval_time(a: IntervalTime, b: IntervalTime) -> TemporalRelation:
+def _parse_iso8601_with_precision(
+    timestamp: str,
+) -> tuple[datetime, str] | None:
     """
-    Compare two IntervalTime values using correct partial order semantics.
+    Parse ISO 8601 timestamp and infer precision level.
 
-    A BEFORE B iff A.latest < B.earliest
-    A AFTER B iff A.earliest > B.latest
-    Otherwise OVERLAP or UNKNOWN
-
-    Conservative: only compares when endpoints are valid ISO 8601 at consistent
-    precision. Returns UNKNOWN for uncomparable story-world interval endpoints.
+    Returns (parsed_datetime, precision) or None if not parsable.
+    Precision levels: "year", "month", "day", "hour", "minute"
     """
     from datetime import datetime as dt
 
-    def try_parse_iso8601_lenient(timestamp: str) -> dt | None:
-        """Try to parse timestamp as ISO 8601, return None if not parsable."""
+    precision_patterns = [
+        ("%Y-%m-%dT%H:%M:%S", "minute"),
+        ("%Y-%m-%dT%H:%M", "minute"),
+        ("%Y-%m-%dT%H", "hour"),
+        ("%Y-%m-%d", "day"),
+        ("%Y-%m", "month"),
+        ("%Y", "year"),
+    ]
+
+    for fmt, precision in precision_patterns:
         try:
-            for fmt in [
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M",
-                "%Y-%m-%d",
-                "%Y-%m",
-                "%Y",
-            ]:
-                try:
-                    return dt.strptime(timestamp, fmt)
-                except ValueError:
-                    continue
-            return None
+            parsed = dt.strptime(timestamp, fmt)
+            return (parsed, precision)
         except (ValueError, TypeError):
-            return None
+            continue
 
-    # Parse all four endpoints
-    a_earliest = try_parse_iso8601_lenient(a.earliest)
-    a_latest = try_parse_iso8601_lenient(a.latest)
-    b_earliest = try_parse_iso8601_lenient(b.earliest)
-    b_latest = try_parse_iso8601_lenient(b.latest)
+    return None
 
-    # All endpoints must be parsable for safe comparison
-    if a_earliest is None or a_latest is None or b_earliest is None or b_latest is None:
+
+def _compare_interval_time(a: IntervalTime, b: IntervalTime) -> TemporalRelation:
+    """
+    Compare two IntervalTime values using precision-aware partial order semantics.
+
+    A BEFORE B iff A.latest < B.earliest (and precisions compatible)
+    A AFTER B iff A.earliest > B.latest (and precisions compatible)
+    Otherwise OVERLAP or UNKNOWN
+
+    Conservative: returns UNKNOWN when:
+    - Endpoints have mixed precision levels
+    - Any endpoint is not valid ISO 8601
+    - Arbitrary story-world strings
+    """
+    # Parse all four endpoints with precision
+    a_earliest_parsed = _parse_iso8601_with_precision(a.earliest)
+    a_latest_parsed = _parse_iso8601_with_precision(a.latest)
+    b_earliest_parsed = _parse_iso8601_with_precision(b.earliest)
+    b_latest_parsed = _parse_iso8601_with_precision(b.latest)
+
+    # All endpoints must be parsable
+    if (
+        a_earliest_parsed is None
+        or a_latest_parsed is None
+        or b_earliest_parsed is None
+        or b_latest_parsed is None
+    ):
         return TemporalRelation.UNKNOWN
 
+    a_earliest_dt, a_earliest_prec = a_earliest_parsed
+    a_latest_dt, a_latest_prec = a_latest_parsed
+    b_earliest_dt, b_earliest_prec = b_earliest_parsed
+    b_latest_dt, b_latest_prec = b_latest_parsed
+
+    # Check precision compatibility within each interval
+    if a_earliest_prec != a_latest_prec:
+        return TemporalRelation.UNKNOWN
+
+    if b_earliest_prec != b_latest_prec:
+        return TemporalRelation.UNKNOWN
+
+    # Check precision compatibility between intervals
+    if a_earliest_prec != b_earliest_prec:
+        return TemporalRelation.UNKNOWN
+
+    # All precisions match - safe to compare
     # A completely before B: A's end is before B's start
-    if a_latest < b_earliest:
+    if a_latest_dt < b_earliest_dt:
         return TemporalRelation.BEFORE
     # A completely after B: A's start is after B's end
-    elif a_earliest > b_latest:
+    elif a_earliest_dt > b_latest_dt:
         return TemporalRelation.AFTER
     # Intervals overlap or are equal
-    elif a_earliest == b_earliest and a_latest == b_latest:
+    elif a_earliest_dt == b_earliest_dt and a_latest_dt == b_latest_dt:
         return TemporalRelation.EQUAL
     else:
         return TemporalRelation.OVERLAP
@@ -380,44 +411,48 @@ def _compare_precise_vs_interval(
     interval: IntervalTime,
 ) -> TemporalRelation:
     """
-    Compare PreciseTime against IntervalTime.
+    Compare PreciseTime against IntervalTime with precision-aware semantics.
 
-    Conservative: only compares when all timestamps are safely parsable (ISO 8601).
-    Returns UNKNOWN for uncomparable story-world strings or mixed precisions.
+    Conservative: returns UNKNOWN when:
+    - PreciseTime precision differs from interval endpoint precision
+    - Any timestamp is not valid ISO 8601
+    - Arbitrary story-world strings
     """
-    from datetime import datetime as dt
-
-    def try_parse_iso8601_lenient(timestamp: str) -> dt | None:
-        """Try to parse timestamp as ISO 8601, return None if not parsable."""
-        try:
-            for fmt in [
-                "%Y-%m-%dT%H:%M:%S",
-                "%Y-%m-%dT%H:%M",
-                "%Y-%m-%d",
-                "%Y-%m",
-                "%Y",
-            ]:
-                try:
-                    return dt.strptime(timestamp, fmt)
-                except ValueError:
-                    continue
-            return None
-        except (ValueError, TypeError):
-            return None
-
-    parsed_precise = try_parse_iso8601_lenient(precise.timestamp)
-    parsed_earliest = try_parse_iso8601_lenient(interval.earliest)
-    parsed_latest = try_parse_iso8601_lenient(interval.latest)
-
-    # All must be parsable for safe comparison
-    if parsed_precise is None or parsed_earliest is None or parsed_latest is None:
+    # Parse PreciseTime with its declared precision
+    parsed_precise = _parse_iso8601_with_precision(precise.timestamp)
+    if parsed_precise is None:
         return TemporalRelation.UNKNOWN
 
-    if parsed_precise < parsed_earliest:
+    parsed_precise_dt, inferred_prec = parsed_precise
+
+    # Verify declared precision matches inferred precision
+    if precise.precision != inferred_prec:
+        return TemporalRelation.UNKNOWN
+
+    # Parse interval endpoints
+    parsed_earliest = _parse_iso8601_with_precision(interval.earliest)
+    parsed_latest = _parse_iso8601_with_precision(interval.latest)
+
+    if parsed_earliest is None or parsed_latest is None:
+        return TemporalRelation.UNKNOWN
+
+    parsed_earliest_dt, earliest_prec = parsed_earliest
+    parsed_latest_dt, latest_prec = parsed_latest
+
+    # Check interval endpoint precision consistency
+    if earliest_prec != latest_prec:
+        return TemporalRelation.UNKNOWN
+
+    # Check precision compatibility between precise and interval
+    if precise.precision != earliest_prec:
+        return TemporalRelation.UNKNOWN
+
+    # All precisions match - safe to compare
+    if parsed_precise_dt < parsed_earliest_dt:
         return TemporalRelation.BEFORE
-    elif parsed_precise > parsed_latest:
+    elif parsed_precise_dt > parsed_latest_dt:
         return TemporalRelation.AFTER
-    elif parsed_earliest <= parsed_precise <= parsed_latest:
+    elif parsed_earliest_dt <= parsed_precise_dt <= parsed_latest_dt:
         return TemporalRelation.OVERLAP
     else:
         return TemporalRelation.UNKNOWN

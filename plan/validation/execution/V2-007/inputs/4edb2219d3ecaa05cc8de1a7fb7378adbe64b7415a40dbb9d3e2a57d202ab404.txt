@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:anovelos:plan:task-execution-packet:1",
+  "title": "Task execution context; not a completion witness or proof of truth",
+  "description": "Structural checks only. Local execution checks bind task, input bytes, paths, decisions and action blockers; protected runner/CI checks are still needed. Claims and hashes do not prove truth, authorization or remote authenticity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_type", "schema_version", "task_id", "plan_version",
+    "repository_revision", "worktree_dirty", "plan_manifest_sha256",
+    "environment", "implementer", "verifier", "owner_role", "scope",
+    "action", "inputs", "expected_outputs", "allowed_paths",
+    "required_decisions", "claims", "estimate", "budget",
+    "stop_conditions", "review_notes", "handoff"
+  ],
+  "properties": {
+    "change_review": {
+      "description": "Runtime binding for local restricted actions. Historical packets may omit it; a new IMPLEMENT/LIVE_CALL/CERTIFY action fails without it. Repository-relative refs are checked against fixed Git objects by the entry.",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_revision",
+            "scope_ref"
+          ],
+          "properties": {
+            "scope_revision": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "scope_ref": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "review_revision": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"
+            },
+            "review_ref": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          },
+          "dependentRequired": {
+            "review_revision": [
+              "review_ref"
+            ],
+            "review_ref": [
+              "review_revision"
+            ]
+          }
+        }
+      ]
+    },
+    "record_type": {"const": "task_execution_packet"},
+    "schema_version": {"const": "1.0"},
+    "task_id": {"type": "string", "pattern": "^V2-[0-9]{3}$"},
+    "plan_version": {"$ref": "#/$defs/nonEmptyString"},
+    "repository_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Opening base revision shape only; does not authenticate the checkout or certify later commits."
+    },
+    "worktree_dirty": {"type": "boolean"},
+    "plan_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fingerprint", "runtime_versions", "database_image", "ci_context"],
+      "properties": {
+        "fingerprint": {"$ref": "#/$defs/nonEmptyString"},
+        "runtime_versions": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"$ref": "#/$defs/nonEmptyString"},
+          "patternProperties": {".*": {"$ref": "#/$defs/nonEmptyString"}},
+          "additionalProperties": false
+        },
+        "database_image": {"$ref": "#/$defs/nullableString"},
+        "ci_context": {"$ref": "#/$defs/nullableString"}
+      }
+    },
+    "implementer": {"$ref": "#/$defs/nonEmptyString"},
+    "verifier": {"$ref": "#/$defs/nonEmptyString"},
+    "owner_role": {"$ref": "#/$defs/nonEmptyString"},
+    "scope": {"$ref": "#/$defs/nonEmptyString"},
+    "action": {"$ref": "#/$defs/action"},
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/inputFile"}
+    },
+    "expected_outputs": {"$ref": "#/$defs/nonEmptyUniqueStrings"},
+    "allowed_paths": {
+      "$ref": "#/$defs/nonEmptyUniqueStrings",
+      "description": "Repository-relative files or bounded directories; local semantic checks reject root-wide, escaping and other unsafe scopes."
+    },
+    "required_decisions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^ADR-[0-9]{3}$"}
+    },
+    "claims": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/claim"}
+    },
+    "estimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["range", "unit", "assumptions", "confidence"],
+      "properties": {
+        "range": {"$ref": "#/$defs/nullableString"},
+        "unit": {"$ref": "#/$defs/nullableString"},
+        "assumptions": {"$ref": "#/$defs/strings"},
+        "confidence": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paid_calls_allowed", "model_cost_cap", "infrastructure_cap", "maximum_attempts", "maximum_runtime"],
+      "properties": {
+        "paid_calls_allowed": {"type": "boolean"},
+        "model_cost_cap": {"type": ["number", "null"], "minimum": 0},
+        "infrastructure_cap": {"type": ["number", "null"], "minimum": 0},
+        "maximum_attempts": {"type": "integer", "minimum": 1},
+        "maximum_runtime": {"type": "number", "exclusiveMinimum": 0, "description": "Maximum runtime in seconds."}
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/nonEmptyString"}
+    },
+    "review_notes": {"$ref": "#/$defs/strings"},
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["current_step", "completed_steps", "pending_items", "next_action", "last_check"],
+      "properties": {
+        "current_step": {"$ref": "#/$defs/nonEmptyString"},
+        "completed_steps": {"$ref": "#/$defs/strings"},
+        "pending_items": {"$ref": "#/$defs/strings"},
+        "next_action": {"$ref": "#/$defs/action"},
+        "last_check": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "artifacts", "missing_artifact_reason"],
+          "properties": {
+            "status": {"enum": ["NOT_RUN", "PASS", "FAIL", "UNKNOWN"]},
+            "artifacts": {"type": "array", "items": {"$ref": "#/$defs/fileReference"}},
+            "missing_artifact_reason": {"$ref": "#/$defs/nullableString"}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"status": {"const": "PASS"}}, "required": ["status"]},
+              "then": {"properties": {"artifacts": {"minItems": 1}}}
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {"enum": ["FAIL", "UNKNOWN"]},
+                  "artifacts": {"maxItems": 0}
+                },
+                "required": ["status", "artifacts"]
+              },
+              "then": {"properties": {"missing_artifact_reason": {"$ref": "#/$defs/nonEmptyString"}}}
+            }
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "nullableString": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/nonEmptyString"}]},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "action": {"enum": ["PREPARE", "IMPLEMENT", "LIVE_CALL", "CERTIFY"]},
+    "strings": {"type": "array", "items": {"$ref": "#/$defs/nonEmptyString"}},
+    "nonEmptyUniqueStrings": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmptyString"}},
+    "fileReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "sha256"],
+      "properties": {
+        "ref": {"$ref": "#/$defs/nonEmptyString"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "inputFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "ref", "sha256"],
+      "properties": {
+        "source_ref": {"$ref": "#/$defs/nonEmptyString"},
+        "ref": {"$ref": "#/$defs/nonEmptyString"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "statement", "sources", "blocks_actions", "verification_plan"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonEmptyString"},
+        "kind": {"enum": ["FACT", "ASSUMPTION", "UNKNOWN"]},
+        "statement": {"$ref": "#/$defs/nonEmptyString"},
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/fileReference"}},
+        "blocks_actions": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/action"}},
+        "verification_plan": {"$ref": "#/$defs/nonEmptyString"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "FACT"}}, "required": ["kind"]},
+          "then": {"properties": {"sources": {"minItems": 1}}}
+        }
+      ]
+    }
+  }
+}

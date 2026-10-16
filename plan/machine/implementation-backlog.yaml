@@ -598,10 +598,10 @@ tasks:
   - 不绕过前置阶段门禁
   - 不引入数据库/Provider 实现依赖
   - Core 不内置公司财务或修炼境界字段
-  status: OPEN
-  execution_packet_ref: null
+  status: IN_PROGRESS
+  execution_packet_ref: validation/execution/V2-007/execution-packet.yaml
   owner_role: domain-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P0
   required_decisions:
   - ADR-003

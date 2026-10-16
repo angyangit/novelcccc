@@ -8,6 +8,8 @@ Public submodules:
     identity: Entity identity and alias resolution
     knowledge: Character knowledge and propositions
     character: Character aggregate with knowledge, goals, and intents
+    events: Event occurrence and timeline semantics
+    promises: Promise lifecycle and fulfillment
 """
 
 # V2-005 Entity Identity
@@ -24,6 +26,22 @@ from .character import (
     PlannedAction,
     PlannedActionId,
     create_character,
+)
+
+# V2-007 Event Timeline
+from .events import (
+    Event,
+    EventId,
+    IntervalTime,
+    PreciseTime,
+    RelativeTime,
+    StoryTime,
+    TemporalRelation,
+    Timeline,
+    compare_story_time,
+    create_event,
+    resolve_event_occurrence,
+    validate_event_project_isolation,
 )
 from .identity import (
     EntityId,
@@ -49,6 +67,22 @@ from .knowledge import (
     PropositionId,
     create_proposition,
     freeze_context,
+)
+
+# V2-007 Promise
+from .promises import (
+    ContributionRole,
+    Promise,
+    PromiseFulfillmentLink,
+    PromiseId,
+    PromiseStatus,
+    create_fulfillment_link,
+    create_promise,
+    derive_promise_status,
+    validate_fulfillment_link_project_isolation,
+    validate_link_uniqueness,
+    validate_promise_project_isolation,
+    validate_terminal_exclusivity,
 )
 
 __all__ = [
@@ -85,4 +119,30 @@ __all__ = [
     "IntentId",
     "PlannedActionId",
     "create_character",
+    # V2-007 Events
+    "EventId",
+    "Event",
+    "PreciseTime",
+    "IntervalTime",
+    "RelativeTime",
+    "StoryTime",
+    "TemporalRelation",
+    "Timeline",
+    "compare_story_time",
+    "create_event",
+    "resolve_event_occurrence",
+    "validate_event_project_isolation",
+    # V2-007 Promises
+    "PromiseId",
+    "Promise",
+    "PromiseStatus",
+    "PromiseFulfillmentLink",
+    "ContributionRole",
+    "derive_promise_status",
+    "create_promise",
+    "create_fulfillment_link",
+    "validate_promise_project_isolation",
+    "validate_fulfillment_link_project_isolation",
+    "validate_terminal_exclusivity",
+    "validate_link_uniqueness",
 ]

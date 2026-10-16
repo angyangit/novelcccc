@@ -1,0 +1,31 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: ADR-003-20261015-architecture-decision-semantically-complete
+evidence_type: ADR_DECISION
+subject_id: ADR-003
+revision: 38edb6e8cc3a6b0c8c99b7c40e4e22e87992f69b
+status: PASS
+producer: Architecture decision under ADR-003 requirement for V2-007 (semantically
+  complete, internally consistent)
+executed_at: '2026-10-15T06:00:00.000000+00:00'
+environment_fingerprint: Architecture decision - no runtime environment required
+artifacts:
+- ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+  sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+input_evidence_refs: []
+decision: ACCEPTED
+rationale: 'ADR-003 establishes Event occurrence and Promise temporal semantics for
+  V2-007. Final consistency corrections: eliminated invalid-state test (FAILED+PRIMARY
+  changed to terminal+empty/SUPPORTING Links only, prevents silent normalization of
+  data integrity violations), corrected FULFILLED semantic layer (Active→Final/Derived,
+  consistent with terminal exclusivity), unified Timeline.events description (deterministic
+  linearization, list position≠temporal truth). Core semantics: (M1) Promise.status
+  pure derivation, (M2) terminal exclusivity, (M3) IntervalTime OVERLAP/UNKNOWN, (M4)
+  planning order as presentation hint, (M5) schema deferred, (M6) verification within
+  V2-007 boundary, (M7) decision_record unified, (S2) residual contradictions eliminated.
+  Defines Event/Promise/PromiseFulfillmentLink/Timeline domain model, hard invariants
+  vs soft policies, Canon ownership semantics (V2-009 implementation), idempotency
+  requirements, non-linear narrative support. INVALID_STATE_TESTS=0. SEMANTIC_CONSISTENCY
+  achieved. Rejects over-engineered alternatives. Preserves V2-005/V2-006/V2-061 authority
+  boundaries. Ratifies semantically complete, internally consistent architecture decision;
+  V2-007 implementation verification is separate.'

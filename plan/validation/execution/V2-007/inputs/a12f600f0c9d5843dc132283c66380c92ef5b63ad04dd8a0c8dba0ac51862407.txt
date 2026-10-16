@@ -1,0 +1,3090 @@
+document_id: ANOVELOS-PLAN-BACKLOG
+version: 1.3.1
+status: ACTIVE_PLANNING_BASELINE
+supersedes: archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/implementation-backlog.yaml
+note: 包含 61 个任务（V2-001 through V2-061），含治理调和后的 V2-006 与新增 V2-061；阶段门禁和具体执行要求；不是工程完成证据
+tasks:
+- task_id: V2-001
+  title: Repository bootstrap
+  phase: P0
+  priority: P0
+  goal: 干净环境锁定安装并导入最小包
+  normative_specs:
+  - 02_ARCHITECTURE_BASELINE.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - 09_TASK_EXECUTION_GUIDE.md
+  - PHASE_0_REPOSITORY_BOOTSTRAP_EXECUTION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies: []
+  acceptance_criteria:
+  - 干净环境锁定安装并导入最小包
+  - 隔离 PostgreSQL 启动连接清理成功
+  - 缺配置明确失败且无真实凭证
+  - 根 README 和 AGENTS 指向现行 plan；执行入口不宣称未完成能力，开工记录区分计划版本/审核编号并记录 checkout、工作区/manifest、实际环境与负责人
+  - 形成包含 .claude/convergence 等隐藏历史资料的目录与分发包清单，核对归档覆盖/hash/实际入口引用与独有资料，保留工具配置；迁移不得丢失唯一版本或让
+    archive 进入业务构建
+  tests:
+  - AT-V2-001
+  artifacts:
+  - pyproject.toml
+  - uv.lock
+  - .python-version
+  - compose.yaml
+  - src/anovel/__init__.py
+  - tests/integration/test_repository_bootstrap.py
+  - tests/integration/test_postgres_environment.py
+  - docs/archive/remediation/repository-layout-migration.md
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不实现叙事实体、Canon 业务和完整质量栈
+  - 不接入真实 Provider 或自动 Genesis
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-001/execution-packet.yaml
+  owner_role: repository-maintainer
+  readiness: READY_TO_START
+  start_gate: P0_ENTRY_READY
+  required_decisions:
+  - ADR-001
+  evidence:
+    code:
+    - ref: validation/execution/V2-001/closure/code-revalidation.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+    tests:
+    - ref: validation/execution/V2-001/closure/test-result.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+    ci:
+    - ref: validation/execution/V2-001/closure/ci/ci-postgres_env.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+    - ref: validation/execution/V2-001/closure/ci/ci-static.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+    acceptance:
+    - ref: validation/execution/V2-001/closure/acceptance.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+  related_findings:
+  - AR-06
+  - AR-17
+  - AR-18
+  - CA-17
+  - CA-19
+  - RR-04
+  - RR-09
+  design_references:
+  - changes/2026-09-21_REVIEW_ROUND3_ADOPTION.md
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Platform_Observability_Security_Spec_v1.0/PLATFORM_OBSERVABILITY_SECURITY_SPEC.md
+  - changes/2026-09-21_REVIEW_REFRESH_ADOPTION.md
+- task_id: V2-002
+  title: Normative documentation index
+  phase: P0
+  priority: P0
+  goal: 任务阶段与生成视图一致且失效引用失败
+  normative_specs:
+  - 00_GOVERNANCE_AND_SOURCE_AUTHORITY.md
+  - 08_ROADMAP_AND_GATES.md
+  - 09_TASK_EXECUTION_GUIDE.md
+  - 10_DECISIONS_AND_REMEDIATION.md
+  - PHASE_0_REPOSITORY_BOOTSTRAP_EXECUTION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies: []
+  acceptance_criteria:
+  - 任务阶段与生成视图一致且失效引用失败
+  - 无证据 CLOSED 与未满足 Gate 的任务启动被拒绝
+  - 旧档案不会被当作当前规范自动加载；显式核对工具上下文入口和实际配置引用，不能仅凭目录名称推断自动加载
+  - 外部来源/采纳项/任务/场景双向可定位；悬空来源、错误场景归属和无证据 VERIFIED 被拒绝
+  - CI 必需集合与最晚启用阶段、里程碑最低义务不可静默删减，已验证阶段聚合真实适用证据
+  - 不存在文件、目录、README 或未接受 ADR 模板冒充类型化证据均被拒绝；证据的类型归属版本与 hash 一致
+  - readiness、P0 entry 和 ADR/finding 双向关系受校验；任务 CLOSED 必须逐项处置关联 finding
+  - 治理回归包含合格完成链正例及单点负例；深层失败不能被更早的无效夹具掩盖
+  - 仅 PASS 的 plan_execution_evidence 用于放行见证，失败/UNKNOWN 原始执行记录独立保留且不得冒充完成证据
+  - 校验产物可输出到 plan 外的独立目录（如项目内 dist/validation）；该模式不回写被测计划，已提交 JSON 不视为当前提交认证
+  - 模板 Artifact 按解析后路径判定；相对路径别名与符号链接不能冒充执行结果，合法产物不被误拒绝
+  - 里程碑与其阶段决定及阶段适用 CI 绑定同一被核验 revision，同时允许保留适用的历史任务证据
+  - 任务从 OPEN 进入执行须引用具体 task_execution_packet；缺失、模板、错误任务/规范/输入 hash 或过期上下文被拒绝，合格执行包按
+    PREPARE/IMPLEMENT/LIVE_CALL/CERTIFY 动作通过对应检查；本地资料通过不代替 runner 开工拦截
+  - 动作前核对所需 ADR 与授权：PREPARE 可调查未决项但不执行受其约束的实现，IMPLEMENT/LIVE_CALL/CERTIFY 到达决定点时未接受
+    ADR 被拒绝，已接受且适用的决定允许继续；必要付费上限缺失时不得调用
+  - 执行判断显式区分 FACT/ASSUMPTION/UNKNOWN 与独立 ADR 决定 并绑定依据；阻断当前动作的未知项或无依据事实不得被猜测成已解决，已核实事项和不影响当前动作的明确假设可按范围继续
+  - 恢复执行须核对交接记录、仓库与工作区、规范/输入快照、实际测试产物和未决事项；缺失交接或失效证据不得继承完成结论，合格恢复可继续原任务，不因摘要或模型更换静默重开或越过
+    Gate
+  tests:
+  - AT-V2-002
+  artifacts:
+  - plan/machine/implementation-backlog.yaml
+  - plan/scripts/validate_plan.py
+  - README.md
+  - tests/contract/test_plan_governance.py
+  - AGENTS.md
+  - plan/machine/governance-baseline.yaml
+  - plan/schemas/evidence-record.schema.json
+  - plan/scripts/governance_checks.py
+  - plan/scripts/test_governance.py
+  - plan/AI_EXECUTION_PROTOCOL.md
+  - plan/machine/ai-execution-policy.yaml
+  - plan/schemas/execution-packet.schema.json
+  - plan/templates/EXECUTION_PACKET.yaml
+  - plan/templates/AI_HANDOFF_RECORD.yaml
+  - plan/scripts/execution_checks.py
+  - plan/scripts/test_ai_execution.py
+  - scripts/task_execution.py
+  - scripts/check_governance.py
+  - plan/scripts/task_entry.py
+  - tests/contract/test_task_execution.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不实现叙事实体、Canon 业务和完整质量栈
+  - 不接入真实 Provider 或自动 Genesis
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-002/execution-packet.yaml
+  owner_role: governance-maintainer
+  readiness: READY_TO_START
+  start_gate: P0_ENTRY_READY
+  required_decisions: []
+  evidence:
+    code:
+    - ref: validation/execution/V2-002/revalidation-fd7667ec/code-revalidation.yaml
+      revision: fd7667ec746088ab0f7820f2dceca78907f0635d
+      status: PASS
+    tests:
+    - ref: validation/execution/V2-002/revalidation-fd7667ec/test-result.yaml
+      revision: fd7667ec746088ab0f7820f2dceca78907f0635d
+      status: PASS
+    ci:
+    - ref: validation/execution/V2-002/revalidation-fd7667ec/ci/ci-schema-contract.yaml
+      revision: fd7667ec746088ab0f7820f2dceca78907f0635d
+      status: PASS
+    - ref: validation/execution/V2-002/revalidation-fd7667ec/ci/ci-unit.yaml
+      revision: fd7667ec746088ab0f7820f2dceca78907f0635d
+      status: PASS
+    acceptance:
+    - ref: validation/execution/V2-002/revalidation-fd7667ec/acceptance.yaml
+      revision: fd7667ec746088ab0f7820f2dceca78907f0635d
+      status: PASS
+  related_findings:
+  - AR-01
+  - AR-02
+  - AR-06
+  - AR-07
+  - AR-19
+  - CA-01
+  - CA-20
+  - CA-21
+  - CA-22
+  - RR-01
+  - RR-02
+  - RR-03
+  - RR-04
+  - RR-05
+  - RR-06
+  - DA-01
+  - DA-02
+  - DA-03
+  - DA-04
+  - DA-05
+  design_references:
+  - changes/2026-09-21_REVIEW_ROUND3_ADOPTION.md
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Platform_Observability_Security_Spec_v1.0/PLATFORM_OBSERVABILITY_SECURITY_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  - changes/2026-09-21_REVIEW_REFRESH_ADOPTION.md
+  external_practices:
+  - EXT-009
+- task_id: V2-003
+  title: Architecture fitness harness
+  phase: P0
+  priority: P0
+  goal: 合法依赖图通过且领域导入 Provider 的负例失败
+  normative_specs:
+  - 02_ARCHITECTURE_BASELINE.md
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - PHASE_0_REPOSITORY_BOOTSTRAP_EXECUTION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies: []
+  acceptance_criteria:
+  - 合法依赖图通过且领域导入 Provider 的负例失败
+  - 非授权模块访问 Canon 写入口的夹具失败
+  - 新增模块纳入扫描而非空扫描报成功
+  - 以任务执行包核对实际 diff 的新增/修改/删除/重命名及未跟踪文件、路径解析、依赖和跨阶段范围；越界或空扫描冒充覆盖被拒绝，合法任务改动通过，路径匹配不冒充业务语义正确性证明
+  - 比较可信基线与本次改动，联动识别验收和场景同步降标、测试删除/skip、阈值放宽、扫描排除扩大和门禁删改；任务与场景仍一致不能使未处置的降标通过，差异报告保留理由与影响
+  - 范围与防降标检查同时覆盖合法新增测试、等效重构及有适用授权和影响记录的规则修订正例，以及跨任务越界和无依据削弱负例；不能只按文件名拒绝合法改动，也不能由实施
+    AI 自写理由自动批准例外
+  tests:
+  - AT-V2-003
+  artifacts:
+  - tests/architecture
+  - src/anovel
+  - tests/architecture/test_dependency_boundaries.py
+  - scripts/check_architecture.py
+  - scripts/check_changes.py
+  - plan/scripts/architecture_checks.py
+  - plan/scripts/change_review.py
+  - plan/scripts/weakening_checks.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不实现叙事实体、Canon 业务和完整质量栈
+  - 不接入真实 Provider 或自动 Genesis
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-003/followup/execution-packet.yaml
+  owner_role: architecture-maintainer
+  readiness: READY_TO_START
+  start_gate: P0_ENTRY_READY
+  required_decisions: []
+  evidence:
+    code:
+    - ref: validation/execution/V2-003/closure/code-revalidation.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+    tests:
+    - ref: validation/execution/V2-003/closure/test-result.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+    ci:
+    - ref: validation/execution/V2-003/closure/ci/ci-arch_fitness.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+    acceptance:
+    - ref: validation/execution/V2-003/closure/acceptance.yaml
+      revision: c88377657818799ecf93918f4b98fe622a4a6037
+      status: PASS
+  related_findings:
+  - AR-06
+  - AR-17
+  - CA-17
+  - RR-03
+  - RR-04
+  - RR-09
+  - RR-10
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Platform_Observability_Security_Spec_v1.0/PLATFORM_OBSERVABILITY_SECURITY_SPEC.md
+- task_id: V2-004
+  title: Secret and dependency CI gates
+  phase: P0
+  priority: P0
+  goal: 适用硬门禁失败使 CI 失败
+  normative_specs:
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - 09_TASK_EXECUTION_GUIDE.md
+  - PHASE_0_REPOSITORY_BOOTSTRAP_EXECUTION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies: []
+  acceptance_criteria:
+  - 适用硬门禁失败使 CI 失败
+  - 无害 Secret 与违规依赖夹具被阻断
+  - PostgreSQL job 实际连接且当前提交 CI 证据可查
+  - 远程合并保护的实际状态可核验；CI 缺权限记未验证，必需门禁删除后移及失败不能制造绿色
+  - 由当前提交的真实 CI 生成运行结果和 artifact，核对项目/commit/pipeline/job/结果/hash；缺失或来源未核验不作真实 CI
+    放行证据
+  - 可信 CI 按实际受保护 runner 核对项目、被测 revision、运行命令、job 与原始 artifact；本地伪造 JSON、他项目/旧提交/未受信运行记录被拒绝，真实当前运行可通过，来源无法核验记未验证
+  - 普通实施凭证采用最小权限，不同时具备修改保护规则、绕过合并门禁和批准自身例外的能力；用安全测试验证越权操作确被拒绝且授权范围内操作可用，不具备核验权限时不得自称权限隔离生效
+  - 在真实 CI/仓库保护环境验证治理校验器、基线、测试及流水线变更不能由同次改动移除必需检查后自行放行；无害失败夹具与未授权保护变更被阻断，有适用授权的规则修订经可信重新验证后可进入，不增加固定团队人数要求
+  tests:
+  - AT-V2-004
+  artifacts:
+  - .gitlab-ci.yml
+  - security-policy.yaml
+  - tests/contract/test_delivery_gates.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不实现叙事实体、Canon 业务和完整质量栈
+  - 不接入真实 Provider 或自动 Genesis
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-004/execution-packet.yaml
+  owner_role: delivery-maintainer
+  readiness: READY_TO_START
+  start_gate: P0_ENTRY_READY
+  required_decisions: []
+  evidence:
+    code:
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/code-revalidation.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    tests:
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/test-result.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    ci:
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/ci/ci-static.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/ci/ci-schema-contract.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/ci/ci-unit.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/ci/ci-arch-fitness.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/ci/ci-postgres-env.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/ci/ci-secret-dependency.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+    acceptance:
+    - ref: validation/execution/V2-004/revalidation-c7f684b9/acceptance.yaml
+      revision: c7f684b998246a1005826c0d1c5a82819ee8c569
+      status: PASS
+  related_findings:
+  - AR-06
+  - AR-17
+  - AR-18
+  - CA-17
+  - RR-04
+  - RR-09
+  - RR-10
+  - DA-01
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Platform_Observability_Security_Spec_v1.0/PLATFORM_OBSERVABILITY_SECURITY_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  - changes/2026-09-21_REVIEW_REFRESH_ADOPTION.md
+- task_id: V2-005
+  title: Core entity IDs and alias resolution
+  phase: P1
+  priority: P0
+  goal: 同名不同项目实体不混淆
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-001
+  acceptance_criteria:
+  - 同名不同项目实体不混淆
+  - 改名保留稳定 ID
+  - 歧义别名返回明确冲突而非随机选择
+  tests:
+  - AT-V2-005
+  artifacts:
+  - src/anovel/domain/identity.py
+  - specs/schemas/entity-identity.schema.json
+  - tests/contract/test_v2_005.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不引入数据库/Provider 实现依赖
+  - Core 不内置公司财务或修炼境界字段
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-005/execution-packet-absent.yaml
+  owner_role: domain-maintainer
+  readiness: READY_TO_START
+  start_gate: G-P0
+  required_decisions: []
+  evidence:
+    code:
+    - ref: src/anovel/domain/identity.py
+      revision: bd303e64dab6475bd12b69d273afa6c64eaa38ad
+      status: PASS
+    tests:
+    - ref: tests/contract/test_v2_005.py
+      revision: bd303e64dab6475bd12b69d273afa6c64eaa38ad
+      status: PASS
+    ci:
+    - ref: docs/reports/V2-005_FINAL_CLOSURE_REPORT.md
+      revision: bd303e64dab6475bd12b69d273afa6c64eaa38ad
+      status: PASS
+    acceptance:
+    - ref: docs/reports/V2-005_FINAL_CLOSURE_REPORT.md
+      revision: bd303e64dab6475bd12b69d273afa6c64eaa38ad
+      status: PASS
+    - ref: docs/reports/V2-005_FINAL_RATIFICATION.md
+      revision: bd303e64dab6475bd12b69d273afa6c64eaa38ad
+      status: PASS
+  related_findings:
+  - AR-03
+  - AR-13
+  design_references:
+  - archive/gptdoc/ANovel_V2_Narrative_Domain_Spec_v1.0/NARRATIVE_DOMAIN_SPEC.md
+- task_id: V2-006
+  title: Entity Relationship Tracking
+  phase: P1
+  priority: P0
+  goal: Stable, directed, project-scoped entity relationship tracking without persistence coupling
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - docs/V2-006_IMPLEMENTATION_CONTRACT.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-005
+  acceptance_criteria:
+  - Stable UUID v4 relationship identity (RelationshipId)
+  - Directed relationships (no automatic inverse)
+  - Project isolation (relationships scoped to ProjectId)
+  - Semantic tuple uniqueness (different ID + same live tuple → ValueError)
+  - Same-ID same-content replay is no-op
+  - Same-ID conflicting-content raises ValueError
+  - Delete releases semantic tuple for reuse
+  - No persistence coupling (no database/ORM imports)
+  - No provider coupling (no LLM provider imports)
+  - Immutable EntityRelationship (frozen dataclass)
+  - Extensible RelationshipType (string-based, not enum)
+  - Create/delete/query operations complete
+  tests:
+  - AT-V2-006
+  artifacts:
+  - src/anovel/domain/relationship.py
+  - specs/schemas/entity-relationship.schema.json
+  - tests/contract/test_v2_006.py
+  - tests/contract/test_v2_006_step1.py
+  - tests/contract/test_v2_006_step2.py
+  - tests/contract/test_v2_006_step3.py
+  - tests/contract/test_v2_006_step4.py
+  - tests/contract/test_v2_006_step5.py
+  - tests/contract/test_v2_006_step6.py
+  - tests/contract/test_v2_006_step7.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不引入数据库/Provider 实现依赖
+  - 不实现关系元数据/时间戳
+  - 不实现图遍历算法
+  - 不实现关系推理
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-006/execution-packet-absent.yaml
+  owner_role: domain-maintainer
+  readiness: READY_TO_START
+  start_gate: G-P0
+  required_decisions: []
+  evidence:
+    code:
+    - ref: src/anovel/domain/relationship.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: specs/schemas/entity-relationship.schema.json
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    tests:
+    - ref: tests/contract/test_v2_006.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: tests/contract/test_v2_006_step1.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: tests/contract/test_v2_006_step2.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: tests/contract/test_v2_006_step3.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: tests/contract/test_v2_006_step4.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: tests/contract/test_v2_006_step5.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: tests/contract/test_v2_006_step6.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: tests/contract/test_v2_006_step7.py
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    ci:
+    - ref: docs/archive/v2-005-remediation/V2-006_FINAL_CLOSURE_CANDIDATE.md
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    acceptance:
+    - ref: docs/archive/v2-005-remediation/V2-006_FINAL_CLOSURE_CANDIDATE.md
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+    - ref: docs/reports/V2-006_IMPLEMENTATION_AUTHORIZATION.md
+      revision: bba1061ef27669ece55530bfdd846767b2fe21af
+      status: PASS
+  related_findings:
+  - AR-03
+  - CA-06
+  - RR-05
+  - RR-06
+  - SUP-03
+  design_references:
+  - docs/V2-006_IMPLEMENTATION_CONTRACT.md
+  - docs/archive/v2-005-remediation/V2-006_CONTRACT_REVIEW.md
+  foundational_references:
+  - FND-003
+- task_id: V2-061
+  title: Character Knowledge & Intent Core
+  phase: P1
+  priority: P0
+  goal: 角色知识状态、主观误信与客观事实并存，目标/意图建模，合法派生字段往返不丢失
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-005
+  - V2-006
+  acceptance_criteria:
+  - 合法派生字段和非默认值往返不丢失
+  - 错误实体类型与生命周期被拒绝
+  - 角色误信与客观事实并存且角色不能凭空知情
+  - 角色目标/意图、误信与客观事件分别建模
+  - 计划动作不被当作已发生事实
+  - 知识获取边界：角色不能无路径获知事实
+  - 角色生命周期和类型正确性验证
+  tests:
+  - AT-V2-061
+  artifacts:
+  - src/anovel/domain/character.py
+  - src/anovel/domain/knowledge.py
+  - specs/schemas/character.schema.json
+  - tests/contract/test_v2_061.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不引入数据库/Provider 实现依赖
+  - Core 不内置公司财务或修炼境界字段
+  - 不实现通用关系追踪（已由 V2-006 提供）
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-061/execution-packet.yaml
+  owner_role: domain-maintainer
+  readiness: READY_TO_START
+  start_gate: G-P0
+  required_decisions:
+  - ADR-002
+  evidence:
+    code:
+    - ref: validation/execution/V2-061/closure/code-revalidation-green-ci.yaml
+      revision: d9abdaac1968e4b1ea524a695b8d2f3ef80684ec
+      status: PASS
+    tests:
+    - ref: validation/execution/V2-061/closure/test-result-green-ci.yaml
+      revision: d9abdaac1968e4b1ea524a695b8d2f3ef80684ec
+      status: PASS
+    ci:
+    - ref: validation/execution/V2-061/closure/ci/pipeline-14-evidence.yaml
+      revision: d9abdaac1968e4b1ea524a695b8d2f3ef80684ec
+      status: PASS
+    acceptance:
+    - ref: validation/execution/V2-061/closure/acceptance-green-ci.yaml
+      revision: d9abdaac1968e4b1ea524a695b8d2f3ef80684ec
+      status: PASS
+  related_findings:
+  - CA-06
+  - RR-06
+  - SUP-03
+  design_references:
+  - archive/gptdoc/ANovel_V2_Narrative_Domain_Spec_v1.0/NARRATIVE_DOMAIN_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-10-08_V2_006_TASK_IDENTITY_RECONCILIATION.md
+  external_practices:
+  - EXT-005
+  foundational_references:
+  - FND-003
+- task_id: V2-007
+  title: Event timeline promise core
+  phase: P1
+  priority: P0
+  goal: 同章多事件与插叙的时间顺序可区分
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-005
+  acceptance_criteria:
+  - 同章多事件与插叙的时间顺序可区分
+  - Promise 有承诺兑现窗口和生命周期
+  - Event 身份与 occurrence 可追溯且未知不等于已发生
+  tests:
+  - AT-V2-007
+  artifacts:
+  - src/anovel/domain/events.py
+  - src/anovel/domain/promises.py
+  - tests/contract/test_v2_007.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不引入数据库/Provider 实现依赖
+  - Core 不内置公司财务或修炼境界字段
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: domain-maintainer
+  readiness: PLANNED
+  start_gate: G-P0
+  required_decisions:
+  - ADR-003
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-07
+  - RR-05
+  - SUP-03
+  design_references:
+  - archive/gptdoc/ANovel_V2_Narrative_Domain_Spec_v1.0/NARRATIVE_DOMAIN_SPEC.md
+- task_id: V2-008
+  title: NarrativeDelta implementation
+  phase: P1
+  priority: P0
+  goal: SET_FACT 缺必要路径值证据被拒绝
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-006
+  - V2-007
+  - V2-061
+  acceptance_criteria:
+  - SET_FACT 缺必要路径值证据被拒绝
+  - UNKNOWN 与 NO_CHANGE 及撤销明确区分
+  - 未注册操作和错类型载荷不能成为提交提议
+  tests:
+  - AT-V2-008
+  artifacts:
+  - src/anovel/domain/delta.py
+  - specs/schemas/narrative-delta.schema.json
+  - tests/contract/test_v2_008.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不引入数据库/Provider 实现依赖
+  - Core 不内置公司财务或修炼境界字段
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: domain-maintainer
+  readiness: PLANNED
+  start_gate: G-P0
+  required_decisions:
+  - ADR-004
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-04
+  - RR-06
+  design_references:
+  - archive/gptdoc/ANovel_V2_Narrative_Domain_Spec_v1.0/NARRATIVE_DOMAIN_SPEC.md
+- task_id: V2-009
+  title: Canon persistence schema and repository
+  phase: P2
+  priority: P0
+  goal: 空 PostgreSQL 库迁移成功且作用域外键正确
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-008
+  acceptance_criteria:
+  - 空 PostgreSQL 库迁移成功且作用域外键正确
+  - 跨项目关系写入被拒绝
+  - 根提交并发唯一并且测试初始化无旁路
+  - 取消与提交的原子次序、执行权限版本及早期数据恢复边界在持久化接口前明确
+  tests:
+  - AT-V2-009
+  artifacts:
+  - migrations
+  - src/anovel/canon/repository.py
+  - tests/integration/test_v2_009.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不在数据库事务内调用模型
+  - 不建设完整 Genesis 或另开初始化写路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: canon-maintainer
+  readiness: PLANNED
+  start_gate: G-P1
+  required_decisions:
+  - ADR-005
+  - ADR-006
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-08
+  - AR-09
+  - AR-10
+  - AR-13
+  - AR-18
+  - CA-05
+  - CA-06
+  - CA-18
+  - RR-07
+  - DA-06
+  - DA-11
+  design_references:
+  - archive/gptdoc/ANovel_V2_Canonical_State_Spec_v1.0/CANONICAL_STATE_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+- task_id: V2-010
+  title: CanonCommitService
+  phase: P2
+  priority: P0
+  goal: 无授权或无有效 Permit 不可提交
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-009
+  acceptance_criteria:
+  - 无授权或无有效 Permit 不可提交
+  - 事务故障无半写入且 HEAD 与事件一致
+  - 已接受提交长期证据可定位且不是只有无法解析的 hash
+  - 没有正式更正流程时对已接受正文的就地替换被拒绝且历史正文/提交证据保持可重建
+  - 取消先成功时旧执行许可不得产生新提交；提交先成功时取消不伪装回滚且可恢复原收据
+  tests:
+  - AT-V2-010
+  artifacts:
+  - src/anovel/canon/commit_service.py
+  - specs/schemas/commit-receipt.schema.json
+  - tests/integration/test_v2_010.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不在数据库事务内调用模型
+  - 不建设完整 Genesis 或另开初始化写路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: canon-maintainer
+  readiness: PLANNED
+  start_gate: G-P1
+  required_decisions:
+  - ADR-004
+  - ADR-005
+  - ADR-006
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-04
+  - AR-05
+  - AR-08
+  - AR-09
+  - AR-10
+  - AR-18
+  - CA-02
+  - RR-06
+  - RR-07
+  - RR-08
+  - RR-10
+  - DA-06
+  design_references:
+  - archive/gptdoc/ANovel_V2_Canonical_State_Spec_v1.0/CANONICAL_STATE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-006
+- task_id: V2-011
+  title: Canon idempotency and CAS
+  phase: P2
+  priority: P0
+  goal: 同键同载荷返回原收据
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-010
+  acceptance_criteria:
+  - 同键同载荷返回原收据
+  - 同键异载荷冲突且并发 CAS 仅一个成功
+  - 提交成功响应丢失后重试不产生第二提交
+  tests:
+  - AT-V2-011
+  artifacts:
+  - src/anovel/canon/idempotency.py
+  - tests/integration/test_v2_011.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不在数据库事务内调用模型
+  - 不建设完整 Genesis 或另开初始化写路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: canon-maintainer
+  readiness: PLANNED
+  start_gate: G-P1
+  required_decisions:
+  - ADR-006
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-09
+  - AR-13
+  - CA-04
+  - RR-08
+  design_references:
+  - archive/gptdoc/ANovel_V2_Canonical_State_Spec_v1.0/CANONICAL_STATE_SPEC.md
+- task_id: V2-012
+  title: Snapshot rebuild and projection
+  phase: P2
+  priority: P0
+  goal: 全事件重建与原快照摘要一致
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-010
+  acceptance_criteria:
+  - 全事件重建与原快照摘要一致
+  - 投影失败不能被报告为 Canon 回滚
+  - 按 reducer 与 Schema 版本恢复旧快照
+  tests:
+  - AT-V2-012
+  artifacts:
+  - src/anovel/canon/projection.py
+  - tests/integration/test_v2_012.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不在数据库事务内调用模型
+  - 不建设完整 Genesis 或另开初始化写路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: canon-maintainer
+  readiness: PLANNED
+  start_gate: G-P1
+  required_decisions:
+  - ADR-006
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-10
+  - CA-07
+  - CA-18
+  - CA-19
+  - SUP-08
+  - DA-11
+  design_references:
+  - archive/gptdoc/ANovel_V2_Canonical_State_Spec_v1.0/CANONICAL_STATE_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+- task_id: V2-013
+  title: GenreProfile and GenrePack loader
+  phase: P3
+  priority: P0
+  goal: ID 版本 hash 均被绑定并核验
+  normative_specs:
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-005
+  acceptance_criteria:
+  - ID 版本 hash 均被绑定并核验
+  - 未知 Pack 与扩展拒绝而非默认 fallback
+  - 全局只读目录绑定到项目后仍可追溯
+  - 显式 Pack 存在而可选策略无命中时保留原 ID/version/hash，不替换为第一条相近子流派
+  tests:
+  - AT-V2-013
+  artifacts:
+  - src/anovel/genre/registry.py
+  - specs/genres/registry.yaml
+  - tests/contract/test_v2_013.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 只实现两个冻结 Anchor，不扩展 30 个题材包
+  - 不把关键词计数当事实硬裁判
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: genre-maintainer
+  readiness: PLANNED
+  start_gate: G-P2
+  required_decisions:
+  - ADR-007
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-15
+  - CA-08
+  - CA-22
+  - RR-05
+  - RR-11
+  - SUP-08
+  design_references:
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  external_practices:
+  - EXT-001
+- task_id: V2-014
+  title: Genre hard policy engine
+  phase: P3
+  priority: P0
+  goal: 现实中实际修炼被拒绝
+  normative_specs:
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-013
+  acceptance_criteria:
+  - 现实中实际修炼被拒绝
+  - 人物讨论小说或梦境不自动成为世界事实
+  - 语义不确定返回显式待处理而不是 PASS
+  - 可选套路与冻结世界机制冲突时拒绝该策略；正常无匹配不制造世界规则
+  tests:
+  - AT-V2-014
+  artifacts:
+  - src/anovel/genre/policy.py
+  - tests/contract/test_v2_014.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 只实现两个冻结 Anchor，不扩展 30 个题材包
+  - 不把关键词计数当事实硬裁判
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: genre-maintainer
+  readiness: PLANNED
+  start_gate: G-P2
+  required_decisions:
+  - ADR-007
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-15
+  - CA-09
+  design_references:
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  external_practices:
+  - EXT-001
+- task_id: V2-015
+  title: Urban Business canon extension
+  phase: P3
+  priority: P1
+  goal: 公司股权现金类型和资源前置条件正确
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-014
+  - V2-010
+  acceptance_criteria:
+  - 公司股权现金类型和资源前置条件正确
+  - 禁止现实 Anchor 注入重生系统或修炼事实
+  - 合法商业样本通过且不会读取玄幻专属字段
+  tests:
+  - AT-V2-015
+  artifacts:
+  - specs/genres/urban.business.realistic
+  - src/anovel/genre/extensions/business.py
+  - tests/contract/test_v2_015.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 只实现两个冻结 Anchor，不扩展 30 个题材包
+  - 不把关键词计数当事实硬裁判
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: genre-maintainer
+  readiness: PLANNED
+  start_gate: G-P2
+  required_decisions:
+  - ADR-007
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-15
+  - CA-08
+  - RR-11
+  - SUP-01
+  design_references:
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+- task_id: V2-016
+  title: Eastern Fantasy canon extension
+  phase: P3
+  priority: P1
+  goal: 境界能力资源代价具有注册类型和合法前置条件
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-014
+  - V2-010
+  acceptance_criteria:
+  - 境界能力资源代价具有注册类型和合法前置条件
+  - 玄幻交易商会不因商业词汇误拒绝
+  - 未声明的现代股权制度不能污染扩展
+  tests:
+  - AT-V2-016
+  artifacts:
+  - specs/genres/fantasy.eastern.progression
+  - src/anovel/genre/extensions/progression.py
+  - tests/contract/test_v2_016.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 只实现两个冻结 Anchor，不扩展 30 个题材包
+  - 不把关键词计数当事实硬裁判
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: genre-maintainer
+  readiness: PLANNED
+  start_gate: G-P2
+  required_decisions:
+  - ADR-007
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-15
+  - CA-08
+  - RR-11
+  - SUP-01
+  design_references:
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+- task_id: V2-017
+  title: Contract Compiler
+  phase: P4
+  priority: P0
+  goal: 从人工 SeriesVision 编译且不依赖 P10
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-012
+  - V2-014
+  acceptance_criteria:
+  - 从人工 SeriesVision 编译且不依赖 P10
+  - RequiredTransition 与 Delta 使用同一语义
+  - 计划冲突或不可满足合约返回诊断而非改写 Canon
+  - 双书 fixture 经人工审定并包含知识及揭示边界
+  - 接续合约绑定前章正文 hash/实际结束证据及本章起点；前章修订使旧接续失效，第一章显式无前章
+  - 场景可消费角色目标/知识与预期代价；安静或认知推进章节无需强制升级战斗字段
+  - 规划输入有版本与 supersession，冻结区和可调整未来计划分离；失效输入不得静默编译
+  - Canon/Pack/计划修订触发有范围的失效和重规划提议，批准新计划后重新编译且不改写 Canon
+  tests:
+  - AT-V2-017
+  artifacts:
+  - src/anovel/contracts/compiler.py
+  - specs/fixtures/stories
+  - tests/contract/test_v2_017.py
+  - src/anovel/planning/models.py
+  - src/anovel/planning/versions.py
+  - src/anovel/planning/replanning.py
+  - src/anovel/contracts/models.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不实现完整多入口 Genesis 或作者富文本工作台
+  - 不把固定套路升级为所有小说的硬规则
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: planning-maintainer
+  readiness: PLANNED
+  start_gate: G-P3
+  required_decisions:
+  - ADR-004
+  - ADR-008
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-04
+  - AR-08
+  - AR-10
+  - AR-11
+  - CA-10
+  - CA-14
+  - CA-24
+  - RR-07
+  - SUP-01
+  - SUP-02
+  - SUP-04
+  - PR-01
+  design_references:
+  - archive/gptdoc/ANovel_V2_Planning_Contract_Spec_v1.0/PLANNING_CONTRACT_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-002
+  - EXT-005
+  foundational_references:
+  - FND-001
+- task_id: V2-018
+  title: Context Compiler
+  phase: P5
+  priority: P0
+  goal: 低语义相关但必需的旧事实不被裁剪
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 02_ARCHITECTURE_BASELINE.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-017
+  acceptance_criteria:
+  - 低语义相关但必需的旧事实不被裁剪
+  - 预算溢出必需项时明确阻断
+  - 错项目未来知识无泄漏且每项 inclusion 可解释
+  - 必要的前章实际末段与接续约束不被可选检索挤出；无法容纳时阻断而非以钩子摘要替代
+  - 冻结输入在不调用生成模型时可编译 ContextArtifact，审查者专用事实不会通过缓存进入 Writer 或角色知识
+  tests:
+  - AT-V2-018
+  artifacts:
+  - src/anovel/context/compiler.py
+  - tests/contract/test_v2_018.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不实现模型训练、Agent Swarm 或自动发布
+  - 不靠省略强制上下文项降低成本
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: context-maintainer
+  readiness: PLANNED
+  start_gate: G-P4
+  required_decisions:
+  - ADR-009
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-10
+  - AR-13
+  - CA-05
+  - CA-10
+  - RR-05
+  - RR-07
+  - SUP-03
+  design_references:
+  - archive/gptdoc/ANovel_V2_Context_Intelligence_Spec_v1.0/CONTEXT_INTELLIGENCE_SPEC.md
+  - archive/gptdoc/ANovel_V2_Production_Workflow_Spec_v1.0/PRODUCTION_WORKFLOW_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  external_practices:
+  - EXT-002
+  - EXT-003
+- task_id: V2-019
+  title: Model Gateway and provider abstraction
+  phase: P5
+  priority: P0
+  goal: 真实 Provider 结构化响应及错误分类有受控证据
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-018
+  acceptance_criteria:
+  - 真实 Provider 结构化响应及错误分类有受控证据
+  - 超时 UNKNOWN 可表示且无响应不伪造 hash
+  - 请求 attempt 模型指纹和待核费用可查
+  - 无总预算不启动真实调用
+  - 额度不足、UNKNOWN 待核和 inflight 预留参与预算准入；重启重试及 fallback 不重置预算
+  tests:
+  - AT-V2-019
+  artifacts:
+  - src/anovel/gateway
+  - model-policy.yaml
+  - tests/integration/test_v2_019.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不实现模型训练、Agent Swarm 或自动发布
+  - 不靠省略强制上下文项降低成本
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: gateway-maintainer
+  readiness: PLANNED
+  start_gate: G-P4
+  required_decisions:
+  - ADR-010
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-14
+  - AR-17
+  - AR-18
+  - CA-15
+  - CA-16
+  - CA-22
+  - RR-05
+  - RR-06
+  - RR-08
+  - RR-12
+  - SUP-06
+  - DA-08
+  design_references:
+  - archive/gptdoc/ANovel_V2_Context_Intelligence_Spec_v1.0/CONTEXT_INTELLIGENCE_SPEC.md
+  - archive/gptdoc/ANovel_V2_Production_Workflow_Spec_v1.0/PRODUCTION_WORKFLOW_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  foundational_references:
+  - FND-009
+- task_id: V2-020
+  title: Single Chapter Workflow
+  phase: P6
+  priority: P0
+  goal: 缺前置产物不继续到提交
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 02_ARCHITECTURE_BASELINE.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-019
+  - V2-011
+  acceptance_criteria:
+  - 缺前置产物不继续到提交
+  - 章内 overlay 可供后续场景消费但失败后不入 Canon
+  - Draft accepted published 状态独立且测试 Gate 不被当生产 Gate；若开展 P6 开发样章读稿或简单基线诊断，记录条件/成本/人工反馈，未评阅不得宣称阅读证据且意见不授予提交权限
+  - CLI 与任务入口适配同一 Workflow 应用服务，模型返回已完成但无持久化产物/收据时不能转 accepted
+  - 操作者改稿产生新候选并使旧抽取/检查/确认失效；检测到外部文件 hash 改变时停止旧流程
+  tests:
+  - AT-V2-020
+  artifacts:
+  - src/anovel/workflow/chapter.py
+  - tests/contract/test_v2_020.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不在 Q0–Q3 正式集成前宣称生产提交通过
+  - 不实现自动发表或多个编排入口
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: workflow-maintainer
+  readiness: PLANNED
+  start_gate: G-P5
+  required_decisions:
+  - ADR-008
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-07
+  - AR-11
+  - CA-02
+  - CA-03
+  - RR-05
+  - RR-10
+  - RR-12
+  - SUP-06
+  design_references:
+  - changes/2026-09-21_REVIEW_ROUND3_ADOPTION.md
+  - archive/gptdoc/ANovel_V2_Production_Workflow_Spec_v1.0/PRODUCTION_WORKFLOW_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  external_practices:
+  - EXT-004
+  - EXT-006
+  foundational_references:
+  - FND-005
+  - FND-006
+- task_id: V2-021
+  title: NarrativeDelta extractor
+  phase: P6
+  priority: P0
+  goal: 候选正文与 Delta 绑定同一 hash
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-020
+  acceptance_criteria:
+  - 候选正文与 Delta 绑定同一 hash
+  - 误信传闻和已发生事实不混淆
+  - 故意遗漏正文后半段违规能够进入覆盖诊断
+  - 语义抽取证据缺失冲突或正文位置错误不能凭模型置信度获得硬门禁 PASS
+  tests:
+  - AT-V2-021
+  artifacts:
+  - src/anovel/workflow/extractor.py
+  - tests/contract/test_v2_021.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不在 Q0–Q3 正式集成前宣称生产提交通过
+  - 不实现自动发表或多个编排入口
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P5
+  required_decisions:
+  - ADR-011
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-12
+  - SUP-03
+  - DA-07
+  design_references:
+  - archive/gptdoc/ANovel_V2_Production_Workflow_Spec_v1.0/PRODUCTION_WORKFLOW_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+- task_id: V2-022
+  title: Q0 deterministic validators
+  phase: P7
+  priority: P0
+  goal: 缺必要 Artifact 或错 hash 拒绝
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-021
+  acceptance_criteria:
+  - 缺必要 Artifact 或错 hash 拒绝
+  - 空 Findings 不视为已执行
+  - 检查 ERROR UNKNOWN 和无授权 SKIP 阻断
+  - ADR-011 定义逐检查 PASS/FAIL/UNKNOWN/ERROR 与证据可接受性；授权人工裁决有范围且不绕过硬失败
+  tests:
+  - AT-V2-022
+  artifacts:
+  - src/anovel/quality/q0.py
+  - tests/contract/test_v2_022.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-011
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-02
+  - AR-05
+  - AR-12
+  - RR-02
+  - DA-07
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+- task_id: V2-023
+  title: Q1 Canon validators
+  phase: P7
+  priority: P0
+  goal: 过期前值与死亡角色无解释复活拒绝
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-021
+  - V2-012
+  acceptance_criteria:
+  - 过期前值与死亡角色无解释复活拒绝
+  - 跨书关系和知识越界拒绝
+  - 合法误信与读者先知场景通过
+  tests:
+  - AT-V2-023
+  artifacts:
+  - src/anovel/quality/q1.py
+  - tests/contract/test_v2_023.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-011
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-05
+  - AR-12
+  - DA-07
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  foundational_references:
+  - FND-003
+- task_id: V2-024
+  title: Q2 Genre validators
+  phase: P7
+  priority: P0
+  goal: 双 Pack 污染负例被发现
+  normative_specs:
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-021
+  - V2-014
+  acceptance_criteria:
+  - 双 Pack 污染负例被发现
+  - 合法引用梦境商会样本不过度阻断
+  - 正文遗漏或不确定结果不能静默 PASS
+  - 正文实际发生由错误套路引入的非法能力时被拦截，合法引述或梦境对照不被误拒绝
+  tests:
+  - AT-V2-024
+  artifacts:
+  - src/anovel/quality/q2.py
+  - tests/contract/test_v2_024.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-011
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-05
+  - AR-12
+  - CA-09
+  - DA-07
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-001
+- task_id: V2-025
+  title: Q3 Transition validators
+  phase: P7
+  priority: P0
+  goal: 必需转移缺失被报告
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-021
+  - V2-017
+  acceptance_criteria:
+  - 必需转移缺失被报告
+  - 保护事实变更被拒绝
+  - 安静或信息揭示章节满足其合约时可通过
+  - 正文重复前章收尾动作的反例被报告；显式回忆或不同视角复述不因词面重叠直接硬拒绝，未知不伪报 PASS
+  - 角色基于误信做出错误选择的合法样本可通过；违背已冻结知识/揭示边界的样本不能靠动机评分放行
+  tests:
+  - AT-V2-025
+  artifacts:
+  - src/anovel/quality/q3.py
+  - tests/contract/test_v2_025.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-011
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-05
+  - AR-12
+  - SUP-04
+  - DA-07
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-002
+  - EXT-005
+  foundational_references:
+  - FND-002
+- task_id: V2-026
+  title: CommitPermit integration
+  phase: P7
+  priority: P0
+  goal: 空证据 ALLOW 和伪造 issuer 拒绝
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-022
+  - V2-023
+  - V2-024
+  - V2-025
+  acceptance_criteria:
+  - 空证据 ALLOW 和伪造 issuer 拒绝
+  - 旧候选旧 parent 或旧 policy 证据不可复用
+  - 完整必跑检查后才能经唯一服务接受正文
+  - 人工点击同意但缺必跑检查或绑定旧候选的请求不能获得有效 Permit
+  - 许可签发后取消或控制版本变化，提交端原子核验执行权限；过期执行不能复活
+  tests:
+  - AT-V2-026
+  artifacts:
+  - src/anovel/quality/permit_issuer.py
+  - tests/contract/test_v2_026.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  - 不允许模型通过 JSON 字段自行签发许可
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-011
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-02
+  - AR-05
+  - CA-03
+  - RR-02
+  - RR-06
+  - DA-06
+  - DA-07
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-006
+  foundational_references:
+  - FND-007
+- task_id: V2-027
+  title: Workflow retry and checkpoint
+  phase: P6
+  priority: P0
+  goal: 不同阶段崩溃恢复同一逻辑请求
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 02_ARCHITECTURE_BASELINE.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-020
+  acceptance_criteria:
+  - 不同阶段崩溃恢复同一逻辑请求
+  - 取消后迟到响应不自动提交
+  - 重复投递及 UNKNOWN 不伪报成功或零费用
+  - 人工改稿或 Contract/Pack/parent 改变后，旧检查点不得跳过重验继续提交
+  - 取消与提交并发覆盖双方先赢、已发许可、重启旧执行和已提交收据恢复
+  tests:
+  - AT-V2-027
+  artifacts:
+  - src/anovel/workflow/recovery.py
+  - tests/integration/test_v2_027.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不在 Q0–Q3 正式集成前宣称生产提交通过
+  - 不实现自动发表或多个编排入口
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: workflow-maintainer
+  readiness: PLANNED
+  start_gate: G-P5
+  required_decisions:
+  - ADR-010
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-11
+  - AR-14
+  - AR-18
+  - CA-04
+  - CA-15
+  - RR-08
+  - SUP-05
+  - DA-06
+  - DA-08
+  design_references:
+  - archive/gptdoc/ANovel_V2_Production_Workflow_Spec_v1.0/PRODUCTION_WORKFLOW_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-004
+  foundational_references:
+  - FND-005
+  - FND-006
+- task_id: V2-028
+  title: Kill restart fault harness
+  phase: P8
+  priority: P1
+  goal: 提交前后 kill 能恢复无半写
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - 02_ARCHITECTURE_BASELINE.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-027
+  acceptance_criteria:
+  - 提交前后 kill 能恢复无半写
+  - 响应丢失后取得同一收据
+  - 投影落后可重建且无第二权威路径
+  - 两种入口适配器重复投递同一逻辑请求并在提交响应丢失后恢复，只产生一个权威提交
+  - 首次有价值持久运行的最小备份可隔离恢复；HEAD 正文 Delta 收据许可与政策证据闭包一致
+  tests:
+  - AT-V2-028
+  artifacts:
+  - tests/certification/fault_harness.py
+  - tests/certification/test_v2_028.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: reliability-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-07
+  - AR-14
+  - CA-04
+  - DA-11
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-004
+- task_id: V2-029
+  title: QualityAggregator
+  phase: P7
+  priority: P1
+  goal: 高软分不能覆盖硬失败
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-022
+  - V2-023
+  - V2-024
+  - V2-025
+  acceptance_criteria:
+  - 高软分不能覆盖硬失败
+  - required check 集合缺失则不能 PASS
+  - 证据来源 E1 E2 与 E3 E4 不混标
+  tests:
+  - AT-V2-029
+  artifacts:
+  - src/anovel/quality/aggregator.py
+  - tests/contract/test_v2_029.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-011
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-05
+  - CA-12
+  - SUP-04
+  - DA-07
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  foundational_references:
+  - FND-007
+- task_id: V2-030
+  title: Diagnosis engine
+  phase: P7
+  priority: P1
+  goal: 诊断包含正文位置与受影响依赖
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-029
+  acceptance_criteria:
+  - 诊断包含正文位置与受影响依赖
+  - 区分表达事实与不可满足合约
+  - 重复无改善能升级重规划并保留原证据
+  tests:
+  - AT-V2-030
+  artifacts:
+  - src/anovel/repair/diagnosis.py
+  - tests/contract/test_v2_030.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-012
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - SUP-05
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  foundational_references:
+  - FND-002
+- task_id: V2-031
+  title: Patch-first Repairer
+  phase: P7
+  priority: P1
+  goal: 补丁只改计划授权范围且保留保护区域
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-030
+  acceptance_criteria:
+  - 补丁只改计划授权范围且保留保护区域
+  - 达到预算或轮次上限停止
+  - 新文本新 hash 使旧 Permit 失效
+  - 相同硬缺陷持续存在或缺陷在候选间往返时停止并保留升级诊断，不因正文 hash 改变或评分上升重置计数
+  - 修复共享 Gateway 总预算及待核责任；到达额度或停滞边界停止，不重启计数
+  tests:
+  - AT-V2-031
+  artifacts:
+  - src/anovel/repair/patcher.py
+  - tests/contract/test_v2_031.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-012
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-11
+  - CA-22
+  - RR-05
+  - SUP-05
+  - DA-08
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-007
+  foundational_references:
+  - FND-002
+- task_id: V2-032
+  title: Repair regression validator
+  phase: P7
+  priority: P1
+  goal: 修复题材后新增事实错误可检出
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-031
+  acceptance_criteria:
+  - 修复题材后新增事实错误可检出
+  - 删除兑现或改变关键动机触发诊断
+  - 重新抽取重验完整前提后才可接受
+  - 补丁使原硬缺陷消失但引入新硬缺陷时仍拒绝；已有正确区域回归结果保留
+  tests:
+  - AT-V2-032
+  artifacts:
+  - src/anovel/repair/regression.py
+  - tests/contract/test_v2_032.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不提前建设 P11 学习平台
+  - 不强制把未实现的 Q4–Q8 标为 PASS
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: quality-maintainer
+  readiness: PLANNED
+  start_gate: G-P6
+  required_decisions:
+  - ADR-012
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-11
+  - SUP-05
+  design_references:
+  - archive/gptdoc/ANovel_V2_Quality_Evaluation_Repair_Spec_v1.0/QUALITY_EVALUATION_REPAIR_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  external_practices:
+  - EXT-007
+- task_id: V2-033
+  title: Three-chapter smoke certification
+  phase: P8
+  priority: P0
+  goal: 三个连续接受章节有完整收据链
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-026
+  - V2-027
+  - V2-032
+  acceptance_criteria:
+  - 三个连续接受章节有完整收据链
+  - 失败尝试和修复未从分母删除
+  - 适用硬门禁全执行且无测试旁路
+  - 三章样本核对实际正文接续，包含高潮后有收尾动作而下一章不重复执行的案例
+  - 认证协议先冻结版本、中文篇幅计量、人工介入等级、全部分母、读稿和停止条件
+  tests:
+  - AT-V2-033
+  artifacts:
+  - tests/certification/smoke_runner.py
+  - tests/certification/test_v2_033.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: certification-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions:
+  - ADR-013
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-07
+  - AR-16
+  - DA-09
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-002
+  foundational_references:
+  - FND-004
+- task_id: V2-034
+  title: Urban 10-chapter certification
+  phase: P8
+  priority: P0
+  goal: 都市连续十章有全文题材覆盖与 Canon 证据
+  normative_specs:
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-033
+  - V2-015
+  acceptance_criteria:
+  - 都市连续十章有全文题材覆盖与 Canon 证据
+  - 真实调用预算与人工介入完整记录
+  - 真人最小读稿和基线对照有原始记录且不冒称市场成功
+  - 都市对照预先冻结输入/篇幅/模型/预算政策并记录实际成本；基线不绕过硬门禁进入 Canon
+  - 报告实际篇幅与自动程度，区分人工裁决和改稿，不用人工重写冒充自动成功
+  tests:
+  - AT-V2-034
+  artifacts:
+  - tests/certification/urban_10ch.py
+  - tests/certification/test_v2_034.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: certification-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions:
+  - ADR-013
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-12
+  - AR-15
+  - AR-16
+  - AR-17
+  - AR-20
+  - CA-09
+  - CA-13
+  - CA-14
+  - CA-16
+  - RR-11
+  - RR-12
+  - SUP-02
+  - SUP-06
+  - SUP-07
+  - SUP-08
+  - DA-09
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-008
+- task_id: V2-035
+  title: Fantasy 10-chapter certification
+  phase: P8
+  priority: P0
+  goal: 玄幻连续十章使用同一生产内核
+  normative_specs:
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-033
+  - V2-016
+  acceptance_criteria:
+  - 玄幻连续十章使用同一生产内核
+  - 进阶资源代价及合法交易样本可验证
+  - 真人阅读成本人工贡献与全部失败尝试可查
+  - 玄幻对照保留盲评顺序与人工介入记录，报告允许无改善和证据不足而不修改评估分母
+  - 报告实际篇幅与自动程度，区分人工裁决和改稿，不用人工重写冒充自动成功
+  tests:
+  - AT-V2-035
+  artifacts:
+  - tests/certification/fantasy_10ch.py
+  - tests/certification/test_v2_035.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: certification-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions:
+  - ADR-013
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-12
+  - AR-15
+  - AR-16
+  - AR-17
+  - AR-20
+  - CA-09
+  - CA-13
+  - CA-14
+  - CA-16
+  - RR-11
+  - RR-12
+  - SUP-02
+  - SUP-06
+  - SUP-07
+  - SUP-08
+  - DA-09
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-008
+- task_id: V2-036
+  title: Fault injection suite
+  phase: P8
+  priority: P0
+  goal: 两类十章运行覆盖故障与恢复矩阵
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-034
+  - V2-035
+  acceptance_criteria:
+  - 两类十章运行覆盖故障与恢复矩阵
+  - 隔离竞争重复投递全部有断言
+  - 证据与双题材运行汇合后才确认最终 G-P8
+  tests:
+  - AT-V2-036
+  artifacts:
+  - tests/certification/fault_injection.py
+  - tests/certification/test_v2_036.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: reliability-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions:
+  - ADR-013
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-07
+  - AR-16
+  - DA-11
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+- task_id: V2-037
+  title: Context inspector
+  phase: P8
+  priority: P2
+  goal: 可查看上下文必需项及省略理由
+  normative_specs:
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - 02_ARCHITECTURE_BASELINE.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies: []
+  acceptance_criteria:
+  - 可查看上下文必需项及省略理由
+  - 有来源版本和作用域
+  - 无权限内容不因诊断界面泄漏
+  - 两个 ContextArtifact 可比较纳入/排除和裁剪变化，显示来源/hash/作用域/角色/预算且不触发生成调用
+  tests:
+  - AT-V2-037
+  artifacts:
+  - src/anovel/inspectors/context.py
+  - tests/contract/test_v2_037.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  - 优先 CLI/报告，不建设复杂可视化前端
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: tooling-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  external_practices:
+  - EXT-003
+- task_id: V2-038
+  title: Canon inspector
+  phase: P8
+  priority: P2
+  goal: 可追踪 HEAD parent 事件和变化
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies: []
+  acceptance_criteria:
+  - 可追踪 HEAD parent 事件和变化
+  - 支持核对历史与投影
+  - 检查器无旁路修改能力
+  - 最小只读审阅显示接受正文及当次 ChangeSet/parent/检查证据，不能从 inspector 直接改事实
+  tests:
+  - AT-V2-038
+  artifacts:
+  - src/anovel/inspectors/canon.py
+  - tests/contract/test_v2_038.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  - 检查器只读，不提供直接 SQL 改写入口
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: tooling-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  external_practices:
+  - EXT-006
+- task_id: V2-039
+  title: Lineage inspector
+  phase: P8
+  priority: P2
+  goal: 正文合约检查许可提交链可查询
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies: []
+  acceptance_criteria:
+  - 正文合约检查许可提交链可查询
+  - 失效证据有原因
+  - 长期引用不会只剩不可解析 ID
+  tests:
+  - AT-V2-039
+  artifacts:
+  - src/anovel/inspectors/lineage.py
+  - tests/contract/test_v2_039.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 十章报告不宣称三十章或全题材支持
+  - 不建设复杂 WYSIWYG 或真实市场预测
+  - 不复制产生新的权威正文或 Canon 库
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: tooling-maintainer
+  readiness: PLANNED
+  start_gate: G-P7
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Genre_Intelligence_Spec_v1.0/GENRE_INTELLIGENCE_SPEC.md
+  foundational_references:
+  - FND-008
+  - FND-009
+- task_id: V2-040
+  title: 30-chapter certification runner
+  phase: P9
+  priority: P0
+  goal: 双题材各三十章及恢复证据成立
+  normative_specs:
+  - 04_GENRE_AND_STORY_FIXTURES.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-036
+  acceptance_criteria:
+  - 双题材各三十章及恢复证据成立
+  - 承诺债务重复和人物持续性有文本审阅
+  - 独立样本与版本绑定明确且失败成本全部记录
+  - 三十章报告区分工程/阅读/成本结论，比较持续收益并披露模型预算和人工差异，不将复杂管线默认判优
+  - 工程阅读人工和成本结论独立；不优或证据不足时形成有责任人和预算的继续投入决定
+  tests:
+  - AT-V2-040
+  artifacts:
+  - tests/certification/thirty_chapter.py
+  - tests/certification/test_v2_040.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 三十章认证不外推百章、百万字或爆款保证
+  - 不新增更多 Genre 代替双 Anchor 深度验证
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: certification-maintainer
+  readiness: PLANNED
+  start_gate: G-P8
+  required_decisions:
+  - ADR-013
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-07
+  - AR-16
+  - AR-20
+  - CA-13
+  - CA-14
+  - CA-16
+  - CA-24
+  - RR-11
+  - RR-12
+  - SUP-02
+  - SUP-07
+  - SUP-08
+  - DA-09
+  - DA-10
+  design_references:
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - archive/gptdoc/ANovel_V2_Planning_Contract_Spec_v1.0/PLANNING_CONTRACT_SPEC.md
+  - changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+  external_practices:
+  - EXT-008
+- task_id: V2-041
+  title: Idea-driven Genesis
+  phase: P10
+  priority: P1
+  goal: Idea 输入编译为版本化候选
+  normative_specs:
+  - 01_PRODUCT_SCOPE_AND_SUCCESS.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-040
+  acceptance_criteria:
+  - Idea 输入编译为版本化候选
+  - 候选与初始事实分离
+  - 继续使用既有生产入口不新建 Writer 分支
+  - 开始高级智能前消费 V2-040 继续投入决定；暂停或补证结果不能自动解锁完整投入
+  tests:
+  - AT-V2-041
+  artifacts:
+  - src/anovel/intelligence/idea_genesis.py
+  - tests/contract/test_v2_041.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: intelligence-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - DA-10
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+- task_id: V2-042
+  title: Reference ingestion
+  phase: P10
+  priority: P1
+  goal: 参考来源权限与版本可追溯
+  normative_specs:
+  - 00_GOVERNANCE_AND_SOURCE_AUTHORITY.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-040
+  acceptance_criteria:
+  - 参考来源权限与版本可追溯
+  - 外部文本指令不能越过资料边界
+  - 原文不直接传入 Writer
+  tests:
+  - AT-V2-042
+  artifacts:
+  - src/anovel/intelligence/reference_ingestion.py
+  - tests/contract/test_v2_042.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: intelligence-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions:
+  - ADR-014
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-19
+  - CA-23
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+- task_id: V2-043
+  title: BookNarrativeProfile
+  phase: P10
+  priority: P1
+  goal: 抽象叙事结构与具体专有桥段分开
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-042
+  acceptance_criteria:
+  - 抽象叙事结构与具体专有桥段分开
+  - 每条判断有来源及不确定性
+  - 不把单本参考当整个 Genre 的规则
+  tests:
+  - AT-V2-043
+  artifacts:
+  - src/anovel/intelligence/book_profile.py
+  - tests/contract/test_v2_043.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: intelligence-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+- task_id: V2-044
+  title: ReferenceEvidencePack
+  phase: P10
+  priority: P1
+  goal: EvidencePack 与 Quality EvidenceRecord 不混型
+  normative_specs:
+  - 00_GOVERNANCE_AND_SOURCE_AUTHORITY.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-043
+  acceptance_criteria:
+  - EvidencePack 与 Quality EvidenceRecord 不混型
+  - Pack 不能直接修改 Canon
+  - 引用摘要来源和有效期可查
+  tests:
+  - AT-V2-044
+  artifacts:
+  - src/anovel/intelligence/reference_evidence.py
+  - tests/contract/test_v2_044.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: intelligence-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions:
+  - ADR-014
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-19
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+- task_id: V2-045
+  title: Originality firewall
+  phase: P10
+  priority: P0
+  goal: 换名复写负例不能因没有原文输入而通过
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-044
+  acceptance_criteria:
+  - 换名复写负例不能因没有原文输入而通过
+  - 相似度低不自动证明原创
+  - 风险结果进入适用检查而非自动发布
+  tests:
+  - AT-V2-045
+  artifacts:
+  - src/anovel/intelligence/originality.py
+  - tests/contract/test_v2_045.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: intelligence-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions:
+  - ADR-014
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-23
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+- task_id: V2-046
+  title: Genesis Tournament
+  phase: P10
+  priority: P1
+  goal: 候选比较保留全部样本和预算
+  normative_specs:
+  - 01_PRODUCT_SCOPE_AND_SUCCESS.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-041
+  - V2-044
+  - V2-045
+  acceptance_criteria:
+  - 候选比较保留全部样本和预算
+  - 未校准分数不自动授予提交权
+  - 选择记录可定位并说明局限
+  tests:
+  - AT-V2-046
+  artifacts:
+  - src/anovel/intelligence/tournament.py
+  - tests/contract/test_v2_046.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: intelligence-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+- task_id: V2-047
+  title: GenesisSpec compiler
+  phase: P10
+  priority: P0
+  goal: 多入口收敛到同一 GenesisSpec
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-046
+  acceptance_criteria:
+  - 多入口收敛到同一 GenesisSpec
+  - Scope Pack 初始事实与规划字段一致
+  - 编译器拒绝跨作用域和缺少必要输入
+  tests:
+  - AT-V2-047
+  artifacts:
+  - src/anovel/intelligence/genesis_compiler.py
+  - tests/contract/test_v2_047.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: intelligence-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions:
+  - ADR-014
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+- task_id: V2-048
+  title: GenesisCommit integration
+  phase: P10
+  priority: P0
+  goal: Genesis 通过同一 CanonCommitService
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-047
+  - V2-010
+  acceptance_criteria:
+  - Genesis 通过同一 CanonCommitService
+  - 重复初始化和并发 root 不产生第二根
+  - 后续 Workflow 不因开书来源改变
+  tests:
+  - AT-V2-048
+  artifacts:
+  - src/anovel/intelligence/genesis_commit.py
+  - tests/integration/test_v2_048.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不将参考原文直接注入 Writer
+  - 不新建与现有内核并行的生产/Canon 路径
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: canon-maintainer
+  readiness: PLANNED
+  start_gate: G-P9
+  required_decisions:
+  - ADR-014
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-08
+  design_references:
+  - archive/gptdoc/ANovel_V2_Multi_Source_Genesis_Spec_v1.0/MULTI_SOURCE_GENESIS_SPEC.md
+- task_id: V2-049
+  title: Corpus Registry
+  phase: P11
+  priority: P1
+  goal: 语料来源用途和版本登记完整
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-040
+  acceptance_criteria:
+  - 语料来源用途和版本登记完整
+  - 开发训练校准 holdout 分区明确
+  - 重复或无可用来源条目不静默进入学习
+  tests:
+  - AT-V2-049
+  artifacts:
+  - src/anovel/learning/corpus_registry.py
+  - tests/contract/test_v2_049.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions:
+  - ADR-015
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-23
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-050
+  title: GoldenSet migration
+  phase: P11
+  priority: P1
+  goal: 真人 Gold 保留原审核者和版本
+  normative_specs:
+  - 00_GOVERNANCE_AND_SOURCE_AUTHORITY.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-049
+  acceptance_criteria:
+  - 真人 Gold 保留原审核者和版本
+  - 模拟读者不迁成 E3
+  - 历史语义不明标签保持待判定
+  tests:
+  - AT-V2-050
+  artifacts:
+  - src/anovel/learning/golden_set.py
+  - tests/contract/test_v2_050.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-051
+  title: RegressionSet migration
+  phase: P11
+  priority: P0
+  goal: V1 失败模式绑定稳定输入与期望
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-049
+  acceptance_criteria:
+  - V1 失败模式绑定稳定输入与期望
+  - 目录数与实际执行测试数分开
+  - 修复后样本保留避免重新回归
+  tests:
+  - AT-V2-051
+  artifacts:
+  - src/anovel/learning/regression_set.py
+  - tests/contract/test_v2_051.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-052
+  title: ExperimentDefinition
+  phase: P11
+  priority: P1
+  goal: 实验先定义假设样本分母预算和停止条件
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-049
+  acceptance_criteria:
+  - 实验先定义假设样本分母预算和停止条件
+  - 对照配置可追溯
+  - 观察后改指标必须产生新版本
+  tests:
+  - AT-V2-052
+  artifacts:
+  - src/anovel/learning/experiments.py
+  - tests/contract/test_v2_052.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions:
+  - ADR-015
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-053
+  title: Benchmark runner
+  phase: P11
+  priority: P1
+  goal: 基线与实验条件可说明且保留全部运行
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-052
+  acceptance_criteria:
+  - 基线与实验条件可说明且保留全部运行
+  - holdout 不混入调参
+  - 模型政策版本和实际成本完整
+  tests:
+  - AT-V2-053
+  artifacts:
+  - src/anovel/learning/benchmark.py
+  - tests/certification/test_v2_053.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-20
+  - CA-23
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+  foundational_references:
+  - FND-004
+- task_id: V2-054
+  title: Blind pairwise evaluator
+  phase: P11
+  priority: P1
+  goal: 隐藏生成方法并处理呈现顺序
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-053
+  acceptance_criteria:
+  - 隐藏生成方法并处理呈现顺序
+  - 偏好与弃权原始记录保留
+  - 小样本不宣称总体市场优胜
+  tests:
+  - AT-V2-054
+  artifacts:
+  - src/anovel/learning/blind_pairwise.py
+  - tests/certification/test_v2_054.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings: []
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-055
+  title: Human evaluation ingestion
+  phase: P11
+  priority: P1
+  goal: 人工输入来源权限时间明确
+  normative_specs:
+  - 00_GOVERNANCE_AND_SOURCE_AUTHORITY.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-054
+  acceptance_criteria:
+  - 人工输入来源权限时间明确
+  - 人工评价不直接写 Canon
+  - E3 与真实行为 E4 分开存储
+  tests:
+  - AT-V2-055
+  artifacts:
+  - src/anovel/learning/human_evaluation.py
+  - tests/contract/test_v2_055.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions: []
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-20
+  - CA-13
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-056
+  title: Calibration pipeline
+  phase: P11
+  priority: P1
+  goal: 评价器与人工 Gold 的差异可测
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-055
+  acceptance_criteria:
+  - 评价器与人工 Gold 的差异可测
+  - 训练校准 holdout 无交叉
+  - 新评价器不直接继承旧证据
+  tests:
+  - AT-V2-056
+  artifacts:
+  - src/anovel/learning/calibration.py
+  - tests/contract/test_v2_056.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions:
+  - ADR-015
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-20
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-057
+  title: Promotion gate
+  phase: P11
+  priority: P1
+  goal: 无对照单样本或缺校准不能自动晋级
+  normative_specs:
+  - 00_GOVERNANCE_AND_SOURCE_AUTHORITY.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-056
+  acceptance_criteria:
+  - 无对照单样本或缺校准不能自动晋级
+  - 硬失败不能被更高软分抵消
+  - 策略晋级版本影响和回退记录齐全
+  tests:
+  - AT-V2-057
+  artifacts:
+  - src/anovel/learning/promotion.py
+  - tests/contract/test_v2_057.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 不把模拟读者当人工 Gold 或真实市场
+  - 不以自评高分自动晋级存在硬失败的策略
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: learning-maintainer
+  readiness: PLANNED
+  start_gate: G-P10
+  required_decisions:
+  - ADR-015
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-12
+  design_references:
+  - archive/gptdoc/ANovel_V2_Corpus_Evaluation_Learning_Spec_v1.0/CORPUS_EVALUATION_LEARNING_SPEC.md
+- task_id: V2-058
+  title: Backup restore validation
+  phase: P12
+  priority: P0
+  goal: 备份恢复到隔离环境并核对 HEAD 与 hash
+  normative_specs:
+  - 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-012
+  acceptance_criteria:
+  - 备份恢复到隔离环境并核对 HEAD 与 hash
+  - dump 失败和截断备份明确失败
+  - 旧 Schema 及事件可按版本重建
+  - 正式恢复承接早期恢复包与实际演练，验证不可重建 Artifact 保留及版本兼容
+  tests:
+  - AT-V2-058
+  artifacts:
+  - scripts/restore_validation.py
+  - tests/integration/test_v2_058.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 百章不外推三百章或百万字通过
+  - 不提前实现实时市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: reliability-maintainer
+  readiness: PLANNED
+  start_gate: G-P11
+  required_decisions:
+  - ADR-016
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-18
+  - CA-19
+  - DA-11
+  design_references:
+  - archive/gptdoc/ANovel_V2_Platform_Observability_Security_Spec_v1.0/PLATFORM_OBSERVABILITY_SECURITY_SPEC.md
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+  - changes/2026-09-21_REVIEW_ADOPTION.md
+- task_id: V2-059
+  title: Release manifest
+  phase: P12
+  priority: P1
+  goal: release 绑定代码锁依赖规范模型和认证
+  normative_specs:
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-004
+  - V2-058
+  acceptance_criteria:
+  - release 绑定代码锁依赖规范模型和认证
+  - 缺必要证据不能发布
+  - 组件变更触发适用重验而非继承永久 PASS
+  tests:
+  - AT-V2-059
+  artifacts:
+  - src/anovel/platform/release_manifest.py
+  - tests/contract/test_v2_059.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 百章不外推三百章或百万字通过
+  - 不提前实现实时市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: delivery-maintainer
+  readiness: PLANNED
+  start_gate: G-P11
+  required_decisions:
+  - ADR-016
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - AR-18
+  - SUP-08
+  design_references:
+  - archive/gptdoc/ANovel_V2_Platform_Observability_Security_Spec_v1.0/PLATFORM_OBSERVABILITY_SECURITY_SPEC.md
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md
+- task_id: V2-060
+  title: 100-chapter reliability runner
+  phase: P12
+  priority: P0
+  goal: 连续百章状态增长上下文与成本趋势可查
+  normative_specs:
+  - 01_PRODUCT_SCOPE_AND_SUCCESS.md
+  - 06_CERTIFICATION_AND_PRODUCT_EVALUATION.md
+  - 07_PLATFORM_SECURITY_AND_DELIVERY.md
+  - AI_EXECUTION_PROTOCOL.md
+  dependencies:
+  - V2-040
+  - V2-057
+  - V2-058
+  acceptance_criteria:
+  - 连续百章状态增长上下文与成本趋势可查
+  - 承诺债务人物记忆和恢复通过
+  - 人工介入可见且不能外推为三百章或百万字通过
+  tests:
+  - AT-V2-060
+  artifacts:
+  - tests/certification/hundred_chapter.py
+  - tests/certification/test_v2_060.py
+  out_of_scope:
+  - 不绕过前置阶段门禁
+  - 百章不外推三百章或百万字通过
+  - 不提前实现实时市场预测
+  status: OPEN
+  execution_packet_ref: null
+  owner_role: certification-maintainer
+  readiness: PLANNED
+  start_gate: G-P11
+  required_decisions:
+  - ADR-016
+  evidence:
+    code: []
+    tests: []
+    ci: []
+    acceptance: []
+  related_findings:
+  - CA-24
+  design_references:
+  - archive/gptdoc/ANovel_V2_Platform_Observability_Security_Spec_v1.0/PLATFORM_OBSERVABILITY_SECURITY_SPEC.md
+  - archive/gptdoc/ANovel_V2_Implementation_Plan_v1.0/IMPLEMENTATION_PLAN.md

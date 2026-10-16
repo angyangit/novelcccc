@@ -1,0 +1,237 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-007
+plan_version: 1.3.1
+repository_revision: 5877a66771b273527462a72886c0942e5e325f77
+worktree_dirty: false
+plan_manifest_sha256: 22deee27bd616890fb7c0866e14db331650e9279c274d87a3abc7eadfc69f573
+environment:
+  fingerprint: macOS15.1.1-arm64; Python3.12.14
+  runtime_versions:
+    python: 3.12.14
+  database_image: null
+  ci_context: null
+implementer: Local AI implementer under V2-007 authorization
+verifier: Local contract tests plus governance regression; not independent human review
+owner_role: domain-maintainer
+scope: Event Timeline Promise Core per frozen ADR-003. Implements Event/Promise/PromiseFulfillmentLink/Timeline with pure-domain semantics (no Canon persistence, no database, no Provider). Supports non-linear narrative time (story_time vs occurrence_chapter). Promise.status DERIVED from terminal_disposition + Link, not persisted. Terminal exclusivity enforced. IntervalTime partial order (OVERLAP/UNKNOWN allowed). Unknown occurrence ≠ occurred.
+action: IMPLEMENT
+change_review:
+  scope_ref: validation/execution/V2-007/scope-authorization.md
+  scope_revision: 01b4f9aae6a6211099b98b68c0615d4b816a7a11
+inputs:
+- source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  ref: validation/execution/V2-007/inputs/5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75.txt
+  sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
+- source_ref: 04_GENRE_AND_STORY_FIXTURES.md
+  ref: validation/execution/V2-007/inputs/9263d85a9dfb0f1645253b1df22c4473210dc4ac9cf8ece0d56ae56cf394cae0.txt
+  sha256: 9263d85a9dfb0f1645253b1df22c4473210dc4ac9cf8ece0d56ae56cf394cae0
+- source_ref: AI_EXECUTION_PROTOCOL.md
+  ref: validation/execution/V2-007/inputs/c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670.txt
+  sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
+- source_ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+  ref: validation/execution/V2-007/inputs/074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb.txt
+  sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+- source_ref: validation/execution/V2-007/adr-003-decision.yaml
+  ref: validation/execution/V2-007/inputs/3a4cfa682702490fab41e9ff006f034ecd02edebbeac7692979342f659c1d055.txt
+  sha256: 3a4cfa682702490fab41e9ff006f034ecd02edebbeac7692979342f659c1d055
+- source_ref: machine/implementation-backlog.yaml
+  ref: validation/execution/V2-007/inputs/fa2208043484331849851975c6b98cd6f92236a4acf00991ed585690f9ba5c9a.txt
+  sha256: fa2208043484331849851975c6b98cd6f92236a4acf00991ed585690f9ba5c9a
+- source_ref: machine/decision-register.yaml
+  ref: validation/execution/V2-007/inputs/ff8351d9f5a8d828b0f5f05ced96d5a12ee518fd713b04c00fc531885f814bc9.txt
+  sha256: ff8351d9f5a8d828b0f5f05ced96d5a12ee518fd713b04c00fc531885f814bc9
+- source_ref: machine/phase-gates.yaml
+  ref: validation/execution/V2-007/inputs/32a9b314e4729f6f776254d34d6477256440ca88affd9c1ab272ecc3c439e213.txt
+  sha256: 32a9b314e4729f6f776254d34d6477256440ca88affd9c1ab272ecc3c439e213
+- source_ref: machine/test-catalog.yaml
+  ref: validation/execution/V2-007/inputs/cddd8c61012b82ceffb06be60e16e7b0d2985fee6404a2df2df0962a36fb803c.txt
+  sha256: cddd8c61012b82ceffb06be60e16e7b0d2985fee6404a2df2df0962a36fb803c
+- source_ref: machine/ai-execution-policy.yaml
+  ref: validation/execution/V2-007/inputs/feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171.txt
+  sha256: feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171
+- source_ref: schemas/execution-packet.schema.json
+  ref: validation/execution/V2-007/inputs/4edb2219d3ecaa05cc8de1a7fb7378adbe64b7415a40dbb9d3e2a57d202ab404.txt
+  sha256: 4edb2219d3ecaa05cc8de1a7fb7378adbe64b7415a40dbb9d3e2a57d202ab404
+expected_outputs:
+- src/anovel/domain/events.py
+- src/anovel/domain/promises.py
+- tests/contract/test_v2_007.py
+allowed_paths:
+- src/anovel/domain/events.py
+- src/anovel/domain/promises.py
+- src/anovel/domain/__init__.py
+- tests/contract/test_v2_007.py
+- plan/validation/execution/V2-007/
+- plan/machine/implementation-backlog.yaml
+required_decisions:
+- ADR-003
+claims:
+- id: CLAIM-V2-007-001-P0-GATE
+  kind: FACT
+  statement: G-P0 phase gate is VERIFIED
+  sources:
+  - ref: machine/phase-gates.yaml
+    sha256: 32a9b314e4729f6f776254d34d6477256440ca88affd9c1ab272ecc3c439e213
+  blocks_actions: []
+  verification_plan: Verified by reading phase-gates.yaml P0 phase status field
+- id: CLAIM-V2-007-002-DEPENDENCY
+  kind: FACT
+  statement: V2-005 is CLOSED (dependency satisfied)
+  sources:
+  - ref: machine/implementation-backlog.yaml
+    sha256: fa2208043484331849851975c6b98cd6f92236a4acf00991ed585690f9ba5c9a
+  blocks_actions: []
+  verification_plan: Verified by reading implementation-backlog.yaml V2-005 status
+- id: CLAIM-V2-007-003-ADR
+  kind: FACT
+  statement: ADR-003 is ACCEPTED with valid decision_record bound
+  sources:
+  - ref: machine/decision-register.yaml
+    sha256: ff8351d9f5a8d828b0f5f05ced96d5a12ee518fd713b04c00fc531885f814bc9
+  - ref: validation/execution/V2-007/adr-003-decision.yaml
+    sha256: 3a4cfa682702490fab41e9ff006f034ecd02edebbeac7692979342f659c1d055
+  blocks_actions: []
+  verification_plan: Verified by reading decision-register ADR-003 status and decision_record path
+- id: CLAIM-V2-007-004-ADR-SEMANTICS
+  kind: FACT
+  statement: ADR-003 revision 38edb6e8 is semantically complete (INVALID_STATE_TESTS=0, SEMANTIC_CONSISTENCY achieved)
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  - ref: validation/execution/V2-007/adr-003-decision.yaml
+    sha256: 3a4cfa682702490fab41e9ff006f034ecd02edebbeac7692979342f659c1d055
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Verified by reading ADR-003 decision evidence rationale and revision binding
+- id: CLAIM-V2-007-005-PURE-DOMAIN
+  kind: FACT
+  statement: V2-007 scope is pure-domain semantics only (no Canon persistence, no database, no CanonCommitService)
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  - ref: machine/implementation-backlog.yaml
+    sha256: fa2208043484331849851975c6b98cd6f92236a4acf00991ed585690f9ba5c9a
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Implementation must not import or depend on database, SQLAlchemy, Canon services, or Provider
+- id: CLAIM-V2-007-006-PROMISE-STATUS-DERIVED
+  kind: FACT
+  statement: Promise.status is DERIVED (pure function from terminal_disposition + Links), not BASE field
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Promise dataclass must NOT have status field; derive_promise_status must be standalone function
+- id: CLAIM-V2-007-007-TERMINAL-EXCLUSIVITY
+  kind: FACT
+  statement: FULFILLED/FAILED/ABANDONED are mutually exclusive terminal states (enforced by validation)
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Implementation must reject FAILED/ABANDONED + PRIMARY/COMPLETE Link combinations
+- id: CLAIM-V2-007-008-PARTIAL-ORDER
+  kind: FACT
+  statement: IntervalTime ordering supports partial order (OVERLAP/UNKNOWN allowed, not forced total order)
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: IntervalTime comparison must use A.latest < B.earliest for BEFORE, not simple earliest sort
+- id: CLAIM-V2-007-009-UNKNOWN-NOT-OCCURRED
+  kind: FACT
+  statement: Unknown occurrence ≠ occurred (acceptance criterion, no automatic upgrade)
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  - ref: machine/implementation-backlog.yaml
+    sha256: fa2208043484331849851975c6b98cd6f92236a4acf00991ed585690f9ba5c9a
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Tests must verify missing Event/unresolved ref does not imply occurred=true
+- id: CLAIM-V2-007-010-AUTHORITATIVE-TEST
+  kind: FACT
+  statement: tests/contract/test_v2_007.py is authoritative acceptance artifact
+  sources:
+  - ref: machine/implementation-backlog.yaml
+    sha256: fa2208043484331849851975c6b98cd6f92236a4acf00991ed585690f9ba5c9a
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: tests/contract/test_v2_007.py must exist and cover AC-1 to AC-4
+- id: CLAIM-V2-007-011-DEEP-IMMUTABILITY
+  kind: ASSUMPTION
+  statement: Nested mutable collections (list, dict) in frozen dataclass require explicit immutable wrappers
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  blocks_actions: []
+  verification_plan: Implementation should use tuple/frozenset for collections, or document mutability risk
+- id: CLAIM-V2-007-012-PROJECT-ISOLATION
+  kind: ASSUMPTION
+  statement: EntityId project isolation requires explicit validation context (EntityRegistry or related entities)
+  sources:
+  - ref: decisions/ADR-003_EVENT_PROMISE_TEMPORAL_SEMANTICS.md
+    sha256: 074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb
+  blocks_actions: []
+  verification_plan: Validation functions must accept explicit context, not query database or global registry
+estimate:
+  range: 6-10 hours
+  unit: implementation hours
+  assumptions:
+  - ADR-003 is internally consistent and semantically complete
+  - V2-005 EntityId/ProjectId interfaces are stable
+  - No database schema or Canon integration required in V2-007
+  - Pure domain model only
+  confidence: medium
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 3
+  maximum_runtime: 14400
+stop_conditions:
+- All three authoritative artifacts exist (events.py, promises.py, test_v2_007.py)
+- AC-1 to AC-4 covered in test_v2_007.py
+- Terminal exclusivity validation enforced
+- IntervalTime partial order implemented
+- Promise.status DERIVED (no status field on Promise dataclass)
+- Unknown occurrence ≠ occurred verified
+- Local governance checks PASS
+- No database/Canon/Provider dependencies
+- No implementation code outside allowed_paths
+review_notes:
+- Historical PREPARE to IMPLEMENT sequencing mismatch acknowledged
+- Implementation commits (fd78108 through fba7639) occurred while packet was PREPARE
+- Forward remediation establishes proper governance binding from 01b4f9a onward
+- Scope authorization artifact created 2024-10-15 during remediation
+- R2 temporal precision finalized with precision-aware comparison no cross-precision ordering
+- R6 deep immutability finalized with defensive copying in __post_init__ for all collections
+- Execution packet updated to IMPLEMENT with change_review binding to scope-authorization.md
+- This packet now reflects actual implementation state and remediation work
+handoff:
+  current_step: V2-007 final semantic fix and machine state synchronization
+  completed_steps:
+  - Initial implementation (fd78108 through fba7639) under historical PREPARE state
+  - Semantic blockers R1-R6 initial remediation (3c6d1e8, a881ffe)
+  - R2 temporal precision with precision-aware comparison
+  - R6 deep immutability with defensive copying for all collections
+  - Scope authorization established (01b4f9a)
+  - Execution packet updated to IMPLEMENT with change_review binding
+  - R6 MappingProxyType backing alias fix
+  - R2 mixed-precision interval comparison fix
+  - Machine state synchronized to IN_PROGRESS
+  pending_items:
+  - Remote canonical MR creation
+  - Remote six-gate CI verification
+  - Revision-bound closure evidence
+  next_action: IMPLEMENT
+  last_check:
+    status: UNKNOWN
+    artifacts: []
+    missing_artifact_reason: Local validation commands executed and reported passing but not captured as persistent revision-bound artifacts; remote CI validation pending

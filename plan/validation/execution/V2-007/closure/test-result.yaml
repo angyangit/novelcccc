@@ -1,9 +1,9 @@
 record_type: plan_execution_evidence
 schema_version: '1.0'
-evidence_id: V2-007-test-result-b09dbd7a
+evidence_id: V2-007-test-result-c259310d
 evidence_type: TEST_RESULT
 subject_id: V2-007
-revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
 status: PASS
 producer: pytest 9.1.1
 executed_at: '2026-10-17T04:58:00Z'
@@ -20,4 +20,4 @@ check_ids:
 - AT-V2-007-02
 - AT-V2-007-03
 decision: VERIFIED
-rationale: 52/52 tests passed for V2-007 authoritative acceptance at revision b09dbd7a
+rationale: 52/52 tests passed for V2-007 authoritative acceptance at closure candidate c259310d. Product test unchanged from b09dbd7a (verified by git diff).

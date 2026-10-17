@@ -608,11 +608,11 @@ tasks:
   evidence:
     code:
     - ref: validation/execution/V2-007/closure/code-revalidation.yaml
-      revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
       status: PASS
     tests:
     - ref: validation/execution/V2-007/closure/test-result.yaml
-      revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
       status: PASS
     ci:
     - ref: validation/execution/V2-007/closure/ci/ci-static.yaml
@@ -635,7 +635,7 @@ tasks:
       status: PASS
     acceptance:
     - ref: validation/execution/V2-007/closure/acceptance.yaml
-      revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
       status: PASS
   related_findings:
   - CA-07

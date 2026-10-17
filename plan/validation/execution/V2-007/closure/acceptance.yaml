@@ -1,9 +1,9 @@
 record_type: plan_execution_evidence
 schema_version: '1.0'
-evidence_id: V2-007-acceptance-b09dbd7a
+evidence_id: V2-007-acceptance-c259310d
 evidence_type: ACCEPTANCE_RECORD
 subject_id: V2-007
-revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
 status: PASS
 producer: Local acceptance verification + remote CI validation
 executed_at: '2026-10-17T05:16:22Z'
@@ -60,4 +60,4 @@ check_ids:
 - AC-V2-007-3
 - AC-V2-007-4
 decision: ACCEPTED
-rationale: All ADR-003 acceptance criteria verified. Local validation passed (52/52 authoritative tests, 845/845 full regression). Remote CI validation passed (6/6 gates). All findings properly dispositioned with partial resolution and clear handoff to next tasks. V2-007 ready for CLOSED status.
+rationale: All ADR-003 acceptance criteria verified at closure candidate c259310d. Local validation passed (52/52 authoritative tests, 845/845 full regression). Remote CI validation passed (6/6 gates at c259310d). Product code unchanged from b09dbd7a (verified by git diff). All findings properly dispositioned with partial resolution and clear handoff to next tasks. V2-007 ready for CLOSED status.

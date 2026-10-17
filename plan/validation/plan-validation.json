@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-17T05:39:14.008460+00:00",
+  "generated_at_utc": "2026-10-17T06:14:09.450897+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
   "status": "FAIL",
   "not_certified": [
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "c259310d11b1216cc7a3f3c516f818b35cadc12b",
+  "validated_repository_revision": "0e450ac10274485663883ce114405a8bce1202ac",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -50,7 +50,6 @@
     }
   },
   "errors": [
-    "TASK_EVIDENCE V2-007: mixed revisions",
     "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
     "EVIDENCE_COVERAGE V2-007 acceptance: missing checks",
     "EVIDENCE_RECORD validation/execution/V2-007/execution-packet.yaml: 'evidence_id' is a required property; 'evidence_type' is a required property; 'subject_id' is a required property",
@@ -63,7 +62,6 @@
     "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
   ],
   "fatal_errors": [
-    "TASK_EVIDENCE V2-007: mixed revisions",
     "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
     "EVIDENCE_COVERAGE V2-007 acceptance: missing checks",
     "EVIDENCE_RECORD validation/execution/V2-007/execution-packet.yaml: 'evidence_id' is a required property; 'evidence_type' is a required property; 'subject_id' is a required property",

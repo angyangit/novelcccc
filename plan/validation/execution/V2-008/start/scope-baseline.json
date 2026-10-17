@@ -1,0 +1,45 @@
+{
+  "record_type": "local_change_baseline",
+  "schema_version": "1.0",
+  "task_id": "V2-008",
+  "opening_revision": "664dc2c968627af789c18710582275859a4d07ef",
+  "packet_ref": "plan/validation/execution/V2-008/execution-packet.yaml",
+  "allowed_paths": [
+    "src/anovel/domain/delta.py",
+    "src/anovel/domain/__init__.py",
+    "specs/schemas/narrative-delta.schema.json",
+    "tests/contract/test_v2_008.py",
+    "plan/validation/execution/V2-008/",
+    "plan/machine/implementation-backlog.yaml",
+    "plan/machine/test-catalog.yaml",
+    "plan/FILE_MANIFEST.json",
+    "plan/generated/",
+    "plan/validation/plan-validation.json"
+  ],
+  "pre_existing": {},
+  "protected_paths": [
+    "plan/scripts/",
+    "scripts/task_execution.py",
+    "scripts/check_changes.py",
+    "plan/schemas/",
+    "plan/machine/decision-register.yaml",
+    "plan/machine/phase-gates.yaml",
+    "plan/machine/remediation-register.yaml",
+    "plan/machine/ai-execution-policy.yaml",
+    ".github/",
+    "pyproject.toml",
+    "uv.lock",
+    "AGENTS.md"
+  ],
+  "authorization_source": {
+    "kind": "existing_user_task_authorization",
+    "ref": "plan/validation/execution/V2-008/start/authorization.md",
+    "sha256": "c86d75edafc2ecd61aa2c80fb10b78436af348cefd50621640c8857504325f1f"
+  },
+  "limitations": [
+    "Implementer and verifier may be same operator (not independent review)",
+    "Local validation does not replace protected CI or remote verification",
+    "Scope enforcement relies on task-entry checks and change_review mechanism",
+    "Canon persistence, database, Provider, V2-009/V2-010 explicitly out of scope"
+  ]
+}

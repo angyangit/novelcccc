@@ -20,6 +20,7 @@ input_evidence_refs:
 - validation/execution/V2-007/closure/ci/ci-arch-fitness.yaml
 - validation/execution/V2-007/closure/ci/ci-secret-dependency.yaml
 - validation/execution/V2-007/closure/ci/ci-postgres-env.yaml
+- validation/execution/V2-007/execution-packet.yaml
 finding_dispositions:
 - finding_id: CA-07
   responsibility: PARTIAL
@@ -36,7 +37,6 @@ finding_dispositions:
   disposition: PARTIALLY_RESOLVED
   evidence_refs:
   - validation/execution/V2-007/execution-packet.yaml
-  - validation/execution/V2-007/adr-003-decision.yaml
   reason: V2-007 properly bound ADR-003 with decision record and timing (before_interface_implementation). ADR归属 and 决定时点 corrected for V2-007. Remaining tasks still require ADR binding per repository policy.
   remaining_work: ADR binding for V2-013, V2-018, V2-019, V2-020, V2-031
   next_task: V2-013
@@ -47,7 +47,6 @@ finding_dispositions:
   disposition: PARTIALLY_RESOLVED
   evidence_refs:
   - validation/execution/V2-007/closure/test-result.yaml
-  - validation/execution/V2-007/closure/acceptance-review.md
   reason: V2-007 establishes Event (objective occurrence) vs Promise (narrative commitment) vs Character Goal (subjective motivation) semantic separation per ADR-003. Hearsay/misinformation/author-future-plans separation requires continued enforcement in V2-018 (Context assembly) and V2-021 (Production orchestration).
   remaining_work: Hearsay filtering in Context, production validation preventing未来计划混入
   next_task: V2-018
@@ -55,9 +54,8 @@ finding_dispositions:
   due_gate: G-P5
 check_ids:
 - AT-V2-007
-- AC-V2-007-1
-- AC-V2-007-2
-- AC-V2-007-3
-- AC-V2-007-4
+- AT-V2-007-01
+- AT-V2-007-02
+- AT-V2-007-03
 decision: ACCEPTED
 rationale: All ADR-003 acceptance criteria verified at closure candidate c259310d. Local validation passed (52/52 authoritative tests, 845/845 full regression). Remote CI validation passed (6/6 gates at c259310d). Product code unchanged from b09dbd7a (verified by git diff). All findings properly dispositioned with partial resolution and clear handoff to next tasks. V2-007 ready for CLOSED status.

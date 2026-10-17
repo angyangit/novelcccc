@@ -10,7 +10,7 @@ P0—P14、双 Anchor 架构保持不变。61 个任务身份/阶段/依赖按�
 
 保留 [v1.2.2](changes/2026-09-21_REVIEW_ROUND3_ADOPTION.md)、[v1.2.1](changes/2026-09-21_REVIEW_REFRESH_ADOPTION.md)、[v1.2](changes/2026-09-21_REVIEW_ADOPTION.md)和 [v1.1](changes/2026-09-20_EXTERNAL_PRACTICES_ADOPTION.md)的历史变更记录；旧版本数字与结论只适用于其声明时点。
 
-**当前状态：P0 阶段已完成并验证（V2-001 through V2-004 CLOSED）。P1 阶段活跃（V2-005, V2-006, V2-061 CLOSED; V2-007 IN_PROGRESS, ADR-003 ACCEPTED; V2-008 OPEN, requires ADR-004）。** Plan v1.3.1，61 任务。文档校验通过只说明本资料包内部检查通过，不代表 CI、数据库或真实模型已经通过。
+**当前状态：P0 阶段已完成并验证（V2-001 through V2-004 CLOSED）。P1 阶段活跃（V2-005, V2-006, V2-061, V2-007 CLOSED; V2-008 OPEN, requires ADR-004）。** Plan v1.3.1，61 任务。文档校验通过只说明本资料包内部检查通过，不代表 CI、数据库或真实模型已经通过。
 
 开工前清理已按用户授权完成：根目录旧资料的重复副本已删除，独有文件补充归档；旧根 ZIP 的 Git 恢复依据和逐文件去向保存在项目根下 `docs/archive/remediation/repository-layout-migration.md` / `.json`。来源登记中的 `origin` 是历史位置，不要求根副本继续存在。
 
@@ -59,6 +59,6 @@ V2-001 已 CLOSED：具备最小 Python 骨架、锁定安装、本地真实 Pos
 
 [archive/](archive/) 保留来源快照；内部的 NORMATIVE、FINAL、READY、PASS 等标签都是历史内容，不构成当前授权。旧 Schema 不进入生产验证器的自动扫描路径，需经任务修正、正反例测试后进入未来的 `specs/`。
 
-**实施状态（当前）**：V2-001 through V2-004 通过 [G-P0 出口审核](validation/closure/G-P0-38b0c57/)（M0、4 任务、16 个实施契约、146 步验收）。V2-005, V2-006, V2-061 已 CLOSED。V2-007 (Event Timeline Promise Core), V2-008 (NarrativeDelta Implementation) 及更高任务 OPEN。V2-007 需要 ADR-003 决策。实施历史记录见 validation/execution/。
+**实施状态（当前）**：V2-001 through V2-004 通过 [G-P0 出口审核](validation/closure/G-P0-38b0c57/)（M0、4 任务、16 个实施契约、146 步验收）。V2-005, V2-006, V2-061, V2-007 已 CLOSED。V2-008 (NarrativeDelta Implementation) 及更高任务 OPEN。下一步为 ADR-004 formal decision；完成 ADR-004 后才准备 V2-008 execution packet。实施历史记录见 validation/execution/。
 
 规划验证还需运行 `python3 -B plan/scripts/test_governance.py` 与 `python3 -B plan/scripts/test_ai_execution.py`。最低义务基线不可由 `--write-views` 自动放宽；原始审核和新复测结果分开保留。V2-003 的 `scripts/check_architecture.py` 扫描完整生产包并区分 Canon 公共提交服务与内部写能力；`scripts/check_changes.py` 使用固定 scope/review Git pin 审查实际变化，`task_execution.py` 对受限动作按执行包绑定强制运行命令前后差异检查。用法见[任务执行指南](09_TASK_EXECUTION_GUIDE.md)。这些本地工具不能抵抗共享写权限者修改检查器，可信 CI 和有效权限保护仍须 V2-004 实施。V2-017 的[设计执行包](task-packets/V2-017_PLANNING_CONTRACT_PACKET.md)在 P4 消费，不替代任务开工时的正式记录。

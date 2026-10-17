@@ -10,6 +10,8 @@ Canonical machine-readable state:
 - Gates: plan/machine/phase-gates.yaml  
 - Decisions: plan/machine/decision-register.yaml
 
+**Dynamic task/ADR state in this document is informational only. Before acting, always read plan/machine/* live.**
+
 If conflicts exist, machine SSOT always wins.
 
 ---
@@ -21,9 +23,7 @@ If conflicts exist, machine SSOT always wins.
 
 **Current Canonical HEAD**: Query live via `git fetch origin && git rev-parse origin/main`. Do not treat this derived document as HEAD authority.
 
-**Last Verified Baseline**: `a6e8747cab69fabd10b857eccede7dda5b9452af` (V2-007 implementation work)
-
-**Latest Product Closure**: V2-061 (718c3cb) verified and integrated to default branch
+**Last Closed Task**: V2-007 (Event Timeline Promise Core) at 6136ec5
 
 **Plan Version**: 1.3.1 (治理修订：V2-006 任务身份调和)
 **Task Count**: 61 (V2-001 through V2-061)
@@ -71,8 +71,14 @@ If conflicts exist, machine SSOT always wins.
   - Contract: ADR-002 ACCEPTED
   - Closure: See `plan/validation/execution/V2-061/closure/`
 
+- **V2-007**: Event Timeline Promise Core
+  - Status: CLOSED
+  - SHA: `6136ec5a667dcdfd79b88457f9b205cc23f9318e` (merge commit for PR #3)
+  - Evidence: GitHub Actions run 39011231262, 52/52 tests, 6/6 gates at c259310d
+  - Contract: ADR-003 ACCEPTED
+  - Closure: See `plan/validation/execution/V2-007/closure/`
+
 **Open Tasks**:
-- **V2-007**: Event Timeline Promise Core (IN_PROGRESS, ADR-003 ACCEPTED)
 - **V2-008**: NarrativeDelta Implementation (OPEN, requires ADR-004)
 
 ---
@@ -155,11 +161,12 @@ pytest tests/architecture/ -v
 5. All changes require explicit authorization before implementation
 
 **Current Phase**: P1 Domain Foundation (ACTIVE / NOT VERIFIED)
-**Current Active Implementation Task**: V2-007 (Event Timeline Promise Core)
-**Last Closed Task**: V2-061 (Character Knowledge & Intent Core)
-**Current Task**: V2-007 (Event Timeline Promise Core)
-**Required Decision**: ADR-003 (Event Timeline Core Architecture) - ACCEPTED
-**V2-007 Implementation Status**: IN_PROGRESS (ADR-003 accepted, implementation ongoing)
+**Current Active Implementation Task**: NONE
+**Last Closed Task**: V2-007 (Event Timeline Promise Core)
+**Next Legitimate Action**: ADR-004 FORMAL DECISION
+**Required Decision**: ADR-004 (NarrativeDelta Architecture) - REQUIRED (decision_record: null)
+
+**V2-008 Status**: OPEN (awaiting ADR-004 acceptance before execution packet preparation)
 
 ---
 

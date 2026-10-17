@@ -12,10 +12,15 @@
 - V2-005: Entity Identity & Alias Resolution (CLOSED, Tag `v2.005-complete` at `bd303e6`)
 - V2-006: Entity Relationship Tracking (CLOSED, Tag `v2.006-complete` at `bba1061`)
 - V2-061: Character Knowledge & Intent Core (CLOSED, Pipeline #16 PASS at `718c3cb`)
+- V2-007: Event Timeline Promise Core (CLOSED, PR #3 PASS at `6136ec5`)
 
 **当前 P1 状态**:
-- V2-007: Event Timeline Promise Core (IN_PROGRESS, ADR-003 ACCEPTED)
+- Phase: ACTIVE / NOT_VERIFIED
 - V2-008: NarrativeDelta Implementation (OPEN, requires ADR-004)
+- ADR-003: ACCEPTED
+- ADR-004: REQUIRED (decision_record: null)
+
+**下一步行动**: ADR-004 FORMAL DECISION
 
 权威机器资料见 [phase-gates.yaml](plan/machine/phase-gates.yaml) 和 [implementation-backlog.yaml](plan/machine/implementation-backlog.yaml)。详细状态：[PROJECT_STATUS.md](PROJECT_STATUS.md)。
 

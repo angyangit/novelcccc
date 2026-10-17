@@ -1,0 +1,271 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-008
+plan_version: 1.3.1
+repository_revision: 67eb7e8ac0e2e9b6cc6cad7bf3cb1891b6aa72f9
+worktree_dirty: false
+plan_manifest_sha256: 94688047b2972cb72036b3a0707fb4c6c5b07386d8b5efdf2e767659389c7e4c
+environment:
+  fingerprint: macOS15.1.1-arm64; Python3.12.14
+  runtime_versions:
+    python: 3.12.14
+  database_image: null
+  ci_context: null
+implementer: Local AI implementer under V2-008 authorization
+verifier: Local contract tests plus governance regression; not independent human review
+owner_role: domain-maintainer
+scope: NarrativeDelta Implementation per frozen ADR-004. Implements finite change language (SET_FACT/END_FACT/UNDO_FACT), precondition algebra (ExpectValue/ExpectAbsent/ExpectPresent/ExpectUnknown), pure-domain reducer semantics (no Canon persistence, no database, no Provider). NarrativeDelta equals proposal not Canon state. Registered versioned typed operations only. Fail-closed validation (unknown op/wrong type/stale precondition rejects). UNKNOWN not-equal NO_CHANGE not-equal UNDO_FACT semantic distinction enforced. Authority boundary - NarrativeDelta proposal permission not-equal Canon commit permission (CanonCommitService only).
+action: IMPLEMENT
+change_review: null
+inputs:
+- source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  ref: validation/execution/V2-008/inputs/5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75.txt
+  sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
+- source_ref: AI_EXECUTION_PROTOCOL.md
+  ref: validation/execution/V2-008/inputs/c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670.txt
+  sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
+- source_ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+  ref: validation/execution/V2-008/inputs/48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef.txt
+  sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+- source_ref: validation/execution/V2-008/adr-004-decision.yaml
+  ref: validation/execution/V2-008/inputs/76c14ca6733c89cdd988c49bb077da5b2f556c500dcc967f2b43a8f528ff32f8.txt
+  sha256: 76c14ca6733c89cdd988c49bb077da5b2f556c500dcc967f2b43a8f528ff32f8
+- source_ref: machine/implementation-backlog.yaml
+  ref: validation/execution/V2-008/inputs/c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3.txt
+  sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+- source_ref: machine/decision-register.yaml
+  ref: validation/execution/V2-008/inputs/95528902c6d877e6a113443bd91cc2d78245a24850636b07c94f4735da422853.txt
+  sha256: 95528902c6d877e6a113443bd91cc2d78245a24850636b07c94f4735da422853
+- source_ref: machine/phase-gates.yaml
+  ref: validation/execution/V2-008/inputs/32a9b314e4729f6f776254d34d6477256440ca88affd9c1ab272ecc3c439e213.txt
+  sha256: 32a9b314e4729f6f776254d34d6477256440ca88affd9c1ab272ecc3c439e213
+- source_ref: machine/test-catalog.yaml
+  ref: validation/execution/V2-008/inputs/deded5989150584aec623370d38bff78243d43b0c2ad76d65206fd2fbf267935.txt
+  sha256: deded5989150584aec623370d38bff78243d43b0c2ad76d65206fd2fbf267935
+- source_ref: machine/ai-execution-policy.yaml
+  ref: validation/execution/V2-008/inputs/feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171.txt
+  sha256: feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171
+- source_ref: schemas/execution-packet.schema.json
+  ref: validation/execution/V2-008/inputs/4edb2219d3ecaa05cc8de1a7fb7378adbe64b7415a40dbb9d3e2a57d202ab404.txt
+  sha256: 4edb2219d3ecaa05cc8de1a7fb7378adbe64b7415a40dbb9d3e2a57d202ab404
+expected_outputs:
+- src/anovel/domain/delta.py
+- specs/schemas/narrative-delta.schema.json
+- tests/contract/test_v2_008.py
+allowed_paths:
+- src/anovel/domain/delta.py
+- src/anovel/domain/__init__.py
+- specs/schemas/narrative-delta.schema.json
+- tests/contract/test_v2_008.py
+- plan/validation/execution/V2-008/
+- plan/machine/implementation-backlog.yaml
+- plan/machine/test-catalog.yaml
+- plan/FILE_MANIFEST.json
+- plan/validation/plan-validation.json
+required_decisions:
+- ADR-004
+claims:
+- id: CLAIM-V2-008-001-P0-GATE
+  kind: FACT
+  statement: G-P0 phase gate is VERIFIED
+  sources:
+  - ref: machine/phase-gates.yaml
+    sha256: 32a9b314e4729f6f776254d34d6477256440ca88affd9c1ab272ecc3c439e213
+  blocks_actions: []
+  verification_plan: Verified by reading phase-gates.yaml P0 phase status=VERIFIED
+- id: CLAIM-V2-008-002-DEPENDENCY-V2-006
+  kind: FACT
+  statement: V2-006 is CLOSED (dependency satisfied)
+  sources:
+  - ref: machine/implementation-backlog.yaml
+    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  blocks_actions: []
+  verification_plan: Verified by reading implementation-backlog.yaml V2-006 status=CLOSED
+- id: CLAIM-V2-008-003-DEPENDENCY-V2-007
+  kind: FACT
+  statement: V2-007 is CLOSED (dependency satisfied)
+  sources:
+  - ref: machine/implementation-backlog.yaml
+    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  blocks_actions: []
+  verification_plan: Verified by reading implementation-backlog.yaml V2-007 status=CLOSED
+- id: CLAIM-V2-008-004-DEPENDENCY-V2-061
+  kind: FACT
+  statement: V2-061 is CLOSED (dependency satisfied)
+  sources:
+  - ref: machine/implementation-backlog.yaml
+    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  blocks_actions: []
+  verification_plan: Verified by reading implementation-backlog.yaml V2-061 status=CLOSED
+- id: CLAIM-V2-008-005-ADR
+  kind: FACT
+  statement: ADR-004 is ACCEPTED with valid decision_record bound
+  sources:
+  - ref: machine/decision-register.yaml
+    sha256: 95528902c6d877e6a113443bd91cc2d78245a24850636b07c94f4735da422853
+  - ref: validation/execution/V2-008/adr-004-decision.yaml
+    sha256: 76c14ca6733c89cdd988c49bb077da5b2f556c500dcc967f2b43a8f528ff32f8
+  blocks_actions: []
+  verification_plan: Verified by reading decision-register ADR-004 status=ACCEPTED and decision_record path
+- id: CLAIM-V2-008-006-ADR-SEMANTICS
+  kind: FACT
+  statement: ADR-004 revision b9b9924 is semantically complete and implementation-deterministic (21 semantic areas frozen, 11 alternatives rejected)
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  - ref: validation/execution/V2-008/adr-004-decision.yaml
+    sha256: 76c14ca6733c89cdd988c49bb077da5b2f556c500dcc967f2b43a8f528ff32f8
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Verified by reading ADR-004 decision evidence rationale and revision binding b9b9924
+- id: CLAIM-V2-008-007-PURE-DOMAIN
+  kind: FACT
+  statement: V2-008 scope is pure-domain semantics only (no Canon persistence, no database, no CanonCommitService implementation)
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  - ref: machine/implementation-backlog.yaml
+    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Implementation must not import or depend on database, SQLAlchemy, Canon services, or Provider
+- id: CLAIM-V2-008-008-DELTA-IDENTITY
+  kind: FACT
+  statement: NarrativeDelta is proposal not Canon state; lifecycle PROPOSED → VALIDATED → {ACCEPTED → COMMITTED | REJECTED}
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: NarrativeDelta dataclass must NOT have commit authority; validation returns ACCEPTED/REJECTED, not commit
+- id: CLAIM-V2-008-009-FINITE-OPERATIONS
+  kind: FACT
+  statement: Operations are REGISTERED VERSIONED TYPED; three P1 operations (SET_FACT, END_FACT, UNDO_FACT); unregistered operations rejected
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Implementation must define finite DeltaOperationKind enum/registry; unknown operations rejected in validation
+- id: CLAIM-V2-008-010-PRECONDITION-ALGEBRA
+  kind: FACT
+  statement: Four Expect types (ExpectValue/ExpectAbsent/ExpectPresent/ExpectUnknown); ExpectAny REJECTED; implicit overwrite REJECTED
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Precondition types must be exactly four variants; SET_FACT without precondition rejected
+- id: CLAIM-V2-008-011-SEMANTIC-DISTINCTIONS
+  kind: FACT
+  statement: UNKNOWN (state value) ≠ NO_CHANGE (Delta result empty operations) ≠ UNDO_FACT (operation type)
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Implementation must not use null/None to conflate these three semantics; tests verify distinction
+- id: CLAIM-V2-008-012-REDUCER-CONTRACT
+  kind: FACT
+  statement: Reducer pure deterministic versioned fail-closed provider-independent (no side effects, immutable input, no LLM calls)
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: Reducer function must be stateless pure function; validation failure rejects entire Delta
+- id: CLAIM-V2-008-013-AUTHORITY-BOUNDARY
+  kind: FACT
+  statement: Only CanonCommitService can commit Delta to Canon; Extractor/Planner/Quality Gate/Permit Issuer cannot directly modify Canon
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: NarrativeDelta validation returns proposal acceptance; commit authority deferred to V2-009/V2-010
+- id: CLAIM-V2-008-014-EXISTING-DOMAIN-CONVENTIONS
+  kind: ASSUMPTION
+  statement: Existing domain modules (identity, events, promises, relationship, character, knowledge) use frozen dataclass, NewType IDs, project isolation, explicit validation
+  sources:
+  - ref: machine/implementation-backlog.yaml
+    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  blocks_actions: []
+  verification_plan: Read existing domain modules to confirm conventions; replicate in delta.py
+- id: CLAIM-V2-008-015-IMMUTABILITY
+  kind: ASSUMPTION
+  statement: Deep immutability requires defensive copying for nested collections (precedent from V2-007 R6 remediation)
+  sources:
+  - ref: machine/implementation-backlog.yaml
+    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  blocks_actions: []
+  verification_plan: Use tuple/frozenset for collections or defensive copy in __post_init__; document mutability risk
+- id: CLAIM-V2-008-016-NO-CANON-INTEGRATION
+  kind: FACT
+  statement: V2-008 does NOT implement Canon persistence, idempotency mechanism, or CanonCommitService (deferred to V2-009/V2-010)
+  sources:
+  - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+    sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+  - ref: machine/implementation-backlog.yaml
+    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  blocks_actions:
+  - IMPLEMENT
+  verification_plan: No database imports, no Canon service implementation in V2-008 artifacts
+estimate:
+  range: 8-12 hours
+  unit: implementation hours
+  assumptions:
+  - ADR-004 is semantically complete and implementation-deterministic
+  - V2-005/V2-006/V2-061/V2-007 EntityId/Event/Promise interfaces are stable
+  - No database schema or Canon integration required in V2-008
+  - Pure domain model only
+  - Finite operation registry limits scope
+  confidence: medium
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 3
+  maximum_runtime: 14400
+stop_conditions:
+- All three authoritative artifacts exist (delta.py, narrative-delta.schema.json, test_v2_008.py)
+- AT-V2-008-01 covered (SET_FACT missing path/value/evidence rejected)
+- AT-V2-008-02 covered (UNKNOWN ≠ NO_CHANGE ≠ UNDO_FACT semantic distinction)
+- AT-V2-008-03 covered (unknown operation and wrong type payload rejected)
+- Finite operation registry implemented (SET_FACT, END_FACT, UNDO_FACT only)
+- Four precondition types implemented (ExpectValue/ExpectAbsent/ExpectPresent/ExpectUnknown)
+- NarrativeDelta proposal lifecycle enforced (not Canon commit authority)
+- Reducer pure deterministic fail-closed validated
+- Local governance checks PASS
+- No database/Canon/Provider dependencies
+- No implementation code outside allowed_paths
+review_notes:
+- V2-008 execution packet prepared 2026-10-17 after ADR-004 acceptance
+- ADR-004 frozen 21 semantic areas, rejected 11 alternatives
+- Dependencies V2-006/V2-007/V2-061 all CLOSED with evidence
+- P0 gate VERIFIED, P1 gate NOT_VERIFIED (expected for active P1 task)
+- Canon integration (persistence, idempotency, CanonCommitService) explicitly deferred to V2-009/V2-010
+- Schema artifacts deferred (consistent with ADR-003 precedent - semantic validation without formal schema)
+- No Genre-specific Core fields (cultivation_level, company finance) in scope
+- Free-dictionary mutation language explicitly rejected by ADR-004
+handoff:
+  current_step: V2-008 execution packet preparation complete; awaiting IMPLEMENT authorization
+  completed_steps:
+  - Machine truth verified (ADR-004=ACCEPTED, V2-006/V2-007/V2-061=CLOSED, P0=VERIFIED)
+  - ADR-004 semantic decision bound (revision b9b9924, 21 areas frozen)
+  - Input snapshots created (10 normative/machine files with SHA256 binding)
+  - Execution packet schema validation prepared
+  - Allowed paths and forbidden paths defined
+  - Claims registered (16 claims, 13 FACT, 3 ASSUMPTION)
+  - Acceptance criteria mapped to AT-V2-008-01/02/03
+  pending_items:
+  - Actual NarrativeDelta implementation (delta.py)
+  - JSON Schema contract (narrative-delta.schema.json)
+  - Contract tests (test_v2_008.py)
+  - Machine state transition (V2-008 readiness PLANNED → execution state)
+  - Local governance validation
+  - GitHub CI 6/6 gates
+  next_action: IMPLEMENT
+  last_check:
+    status: NOT_RUN
+    artifacts: []
+    missing_artifact_reason: PREPARE phase complete; no implementation artifacts exist yet; packet authorizes future IMPLEMENT

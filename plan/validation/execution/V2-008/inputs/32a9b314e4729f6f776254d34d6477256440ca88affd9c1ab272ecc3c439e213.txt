@@ -1,0 +1,274 @@
+version: 1.2.0
+entry_gate:
+  id: P0_ENTRY_READY
+  status: READY_FOR_PLANNING_EXECUTION
+  evidence:
+  - README.md
+  - PHASE_0_REPOSITORY_BOOTSTRAP_EXECUTION.md
+critical_path:
+- V2-005
+- V2-008
+- V2-009
+- V2-010
+- V2-013
+- V2-017
+- V2-018
+- V2-019
+- V2-020
+- V2-021
+- V2-022
+- V2-023
+- V2-024
+- V2-025
+- V2-026
+- V2-033
+- V2-034
+- V2-035
+- V2-040
+phases:
+- id: P0
+  name: Repository & Governance
+  entry_gate: P0_ENTRY_READY
+  exit_gate: G-P0
+  status: VERIFIED
+  tasks:
+  - V2-001
+  - V2-002
+  - V2-003
+  - V2-004
+  exit_criteria:
+  - 四任务关闭证据完整
+  - 当前提交 CI 绿色且负例能阻断
+  - 锁定安装和 PostgreSQL 环境真实可运行
+  - 现行资料与阶段 Gate 无歧义
+  - 类型化证据、治理正反回归及 DA-01～05 本阶段责任处置完成
+  evidence_refs:
+  - validation/closure/G-P0-38b0c57/P0-phase-decision.yaml
+  task_refinement: READY
+- id: P1
+  name: Narrative Kernel
+  entry_gate: G-P0
+  exit_gate: G-P1
+  status: NOT_VERIFIED
+  tasks:
+  - V2-005
+  - V2-006
+  - V2-061
+  - V2-007
+  - V2-008
+  exit_criteria:
+  - 实体及作用域正反例通过
+  - 知识时序与操作类型一致
+  - 未决基础 Schema 决策已落实
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P2
+  name: Canon Kernel
+  entry_gate: G-P1
+  exit_gate: G-P2
+  status: NOT_VERIFIED
+  tasks:
+  - V2-009
+  - V2-010
+  - V2-011
+  - V2-012
+  exit_criteria:
+  - 短事务原子性 CAS 幂等 PostgreSQL 证据
+  - 唯一根提交与完整收据
+  - 快照重建和跨项目隔离
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P3
+  name: Genre Kernel
+  entry_gate: G-P2
+  exit_gate: G-P3
+  status: NOT_VERIFIED
+  tasks:
+  - V2-013
+  - V2-014
+  - V2-015
+  - V2-016
+  exit_criteria:
+  - 双 Anchor 版本化扩展和规则
+  - 污染与合法语境对照
+  - 无静默默认题材
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P4
+  name: Planning & Contracts
+  entry_gate: G-P3
+  exit_gate: G-P4
+  status: NOT_VERIFIED
+  tasks:
+  - V2-017
+  exit_criteria:
+  - 双 Story Fixture 审定
+  - 类型化 Contract 与 Canon/Genre 绑定
+  - 章内候选协议和可读性自由边界
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P5
+  name: Context & Model Gateway
+  entry_gate: G-P4
+  exit_gate: G-P5
+  status: NOT_VERIFIED
+  tasks:
+  - V2-018
+  - V2-019
+  exit_criteria:
+  - Context 必需集合与预算失败正确
+  - 真实 Provider 接缝证据与预算
+  - UNKNOWN 和费用模型可追踪
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P6
+  name: Single-Chapter Production
+  entry_gate: G-P5
+  exit_gate: G-P6
+  status: NOT_VERIFIED
+  tasks:
+  - V2-020
+  - V2-021
+  - V2-027
+  exit_criteria:
+  - 编排抽取重试检查点产物完成
+  - 测试 fixture 与生产权限隔离
+  - Draft/accepted 分离；完整生产放行仍待 P7
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P7
+  name: Quality & Repair
+  entry_gate: G-P6
+  exit_gate: G-P7
+  status: NOT_VERIFIED
+  tasks:
+  - V2-022
+  - V2-023
+  - V2-024
+  - V2-025
+  - V2-026
+  - V2-029
+  - V2-030
+  - V2-031
+  - V2-032
+  exit_criteria:
+  - Q0–Q3 及聚合器和正式 Permit 集成
+  - M4 单章真实完整闭环
+  - 有限 Patch 与完整重验；M5 证据
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P8
+  name: Dual-Genre 10-Chapter Certification
+  entry_gate: G-P7
+  exit_gate: G-P8
+  status: NOT_VERIFIED
+  tasks:
+  - V2-028
+  - V2-033
+  - V2-034
+  - V2-035
+  - V2-036
+  - V2-037
+  - V2-038
+  - V2-039
+  exit_criteria:
+  - 双 Genre 十章运行
+  - 故障恢复与检查器可查
+  - 最小真人评阅与全成本
+  - 最终证据聚合后完成 M6
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P9
+  name: 30-Chapter Certification
+  entry_gate: G-P8
+  exit_gate: G-P9
+  status: NOT_VERIFIED
+  tasks:
+  - V2-040
+  exit_criteria:
+  - 双 Genre 三十章
+  - 弧线承诺疲劳与 durable recovery
+  - 独立样本/版本/全部尝试记录
+  - 工程/阅读/人工/成本独立结论和继续投入决定已记录
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P10
+  name: Genesis & Reference Intelligence
+  entry_gate: G-P9
+  exit_gate: G-P10
+  status: NOT_VERIFIED
+  tasks:
+  - V2-041
+  - V2-042
+  - V2-043
+  - V2-044
+  - V2-045
+  - V2-046
+  - V2-047
+  - V2-048
+  exit_criteria:
+  - 多入口 Genesis 归一
+  - Reference 与原创边界
+  - 同一 Canon 写路径
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P11
+  name: Human Calibration / Learning
+  entry_gate: G-P10
+  exit_gate: G-P11
+  status: NOT_VERIFIED
+  tasks:
+  - V2-049
+  - V2-050
+  - V2-051
+  - V2-052
+  - V2-053
+  - V2-054
+  - V2-055
+  - V2-056
+  - V2-057
+  exit_criteria:
+  - Corpus Gold Regression 分区
+  - 真实盲评校准
+  - 策略晋级有证据与回退
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P12
+  name: 100-Chapter Reliability
+  entry_gate: G-P11
+  exit_gate: G-P12
+  status: NOT_VERIFIED
+  tasks:
+  - V2-058
+  - V2-059
+  - V2-060
+  exit_criteria:
+  - 百章连续运行
+  - 实际备份恢复与 release manifest
+  - 长期债务和成本/人工贡献可查
+  evidence_refs: []
+  task_refinement: PLANNED
+- id: P13
+  name: Reader / Market Feedback
+  entry_gate: G-P12
+  exit_gate: G-P13
+  status: NOT_VERIFIED
+  tasks: []
+  exit_criteria:
+  - 进入前补充任务并完成阶段细化
+  - 真实 Reader/Market 证据
+  - 信号归因与政策晋级单独验证
+  evidence_refs: []
+  task_refinement: DEFERRED_UNPLANNED
+- id: P14
+  name: 300+ Chapter / Million-word Evolution
+  entry_gate: G-P13
+  exit_gate: G-P14
+  status: NOT_VERIFIED
+  tasks: []
+  exit_criteria:
+  - 进入前补充任务并完成阶段细化
+  - 三百章及百万字演进实证
+  - 长期恢复与叙事更新可验证
+  evidence_refs: []
+  task_refinement: DEFERRED_UNPLANNED

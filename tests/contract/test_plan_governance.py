@@ -75,11 +75,22 @@ def test_context_import_alias_resolves_to_history(tmp_path):
     assert any('CONTEXT_ARCHIVE' in error for error in engineering.context_inventory(tmp_path)['errors'])
 
 
+def _make_verified_dependency_incomplete(data):
+    """Create a progress-stable TASK_START violation from a closed dependency chain."""
+    tasks = {
+        task['task_id']: task
+        for task in data['implementation-backlog']['tasks']
+    }
+    assert 'V2-005' in tasks['V2-006']['dependencies']
+    assert tasks['V2-006']['status'] in {'VERIFIED', 'CLOSED'}
+    tasks['V2-005']['status'] = 'OPEN'
+
+
 @pytest.mark.parametrize('mutate,prefix', [
     (lambda d: d['implementation-backlog']['tasks'][1].update(phase='P1'), 'TASK_PHASE'),
     (lambda d: d['implementation-backlog']['tasks'][1]['evidence'].pop('ci'), 'TASK_SCHEMA'),
     (lambda d: d['implementation-backlog']['tasks'][1]['evidence'].pop('acceptance'), 'TASK_SCHEMA'),
-    (lambda d: d['implementation-backlog']['tasks'][8].update(status='IN_PROGRESS'), 'TASK_START'),
+    (_make_verified_dependency_incomplete, 'TASK_START'),
     (lambda d: d['external-practice-register']['practices'][0].update(source_refs=['MISSING']), 'EXTERNAL_SOURCE'),
 ])
 def test_existing_rules_reject_single_mutations(mutate, prefix):

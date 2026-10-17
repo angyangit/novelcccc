@@ -2,7 +2,10 @@
 
 面向中文网文的自动创作与可靠生产项目。最终目标是提升作品的阅读竞争力；工程通过、真人阅读结果与市场成绩分别验证，不承诺爆款。
 
-当前为 **Plan v1.3.1**（治理修订：V2-006 任务身份调和）。P0 (Repository & Governance) 已验证完成，P1 (Domain Foundation) 活跃但未验证。权威仓库：`https://gitlab.com/TomAy47287015/ainoveloacc.git`，当前分支：`dev_cc`。
+当前为 **Plan v1.3.1**（治理修订：V2-006 任务身份调和）。P0 (Repository & Governance) 已验证完成，P1 (Domain Foundation) 活跃但未验证。
+
+**Canonical Repository**: `https://github.com/AY123/AiNoverCC.git`
+**Canonical Branch**: `main`
 
 **已关闭任务**:
 - V2-001 through V2-004: P0 基础设施 (CLOSED, G-P0 PASS)
@@ -11,8 +14,8 @@
 - V2-061: Character Knowledge & Intent Core (CLOSED, Pipeline #16 PASS at `718c3cb`)
 
 **当前 P1 状态**:
-- V2-007: Event Timeline Promise Core (OPEN, requires ADR-003)
-- V2-008: NarrativeDelta Implementation (OPEN)
+- V2-007: Event Timeline Promise Core (IN_PROGRESS, ADR-003 ACCEPTED)
+- V2-008: NarrativeDelta Implementation (OPEN, requires ADR-004)
 
 权威机器资料见 [phase-gates.yaml](plan/machine/phase-gates.yaml) 和 [implementation-backlog.yaml](plan/machine/implementation-backlog.yaml)。详细状态：[PROJECT_STATUS.md](PROJECT_STATUS.md)。
 

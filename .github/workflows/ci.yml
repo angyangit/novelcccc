@@ -1,0 +1,298 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: 3.12.14
+  UV_VERSION: 0.12.17
+  POSTGRES_DB: bootstrap_test
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: ci_test_password_not_real
+  ANOVELOS_TEST_DSN: postgresql+psycopg://postgres:ci_test_password_not_real@localhost:5432/bootstrap_test
+
+jobs:
+  static:
+    name: STATIC
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          pip install uv==${{ env.UV_VERSION }}
+          uv --version
+
+      - name: Install dependencies
+        run: |
+          uv sync --frozen
+
+      - name: Run format check
+        run: |
+          echo "=== STATIC Gate ==="
+          echo "Format check..."
+          uv run ruff format --check plan/scripts/ src/
+
+      - name: Run lint check
+        run: |
+          echo "Lint check..."
+          uv run ruff check plan/scripts/ src/
+
+      - name: Run type check
+        run: |
+          echo "Type check..."
+          uv run mypy plan/scripts/ src/ --ignore-missing-imports --no-strict-optional
+
+      - name: STATIC gate result
+        run: echo "STATIC gate PASS"
+
+  schema_contract:
+    name: SCHEMA_CONTRACT
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          pip install uv==${{ env.UV_VERSION }}
+          uv --version
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run plan validation
+        run: |
+          echo "=== SCHEMA_CONTRACT Gate ==="
+          mkdir -p dist/ci/schema
+          uv run python plan/scripts/validate_plan.py --check --output-dir dist/ci/schema
+
+      - name: Run governance tests
+        run: |
+          uv run pytest tests/contract/test_plan_governance.py -v --tb=short
+
+      - name: SCHEMA_CONTRACT gate result
+        run: echo "SCHEMA_CONTRACT gate PASS"
+
+  unit:
+    name: UNIT
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          pip install uv==${{ env.UV_VERSION }}
+          uv --version
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run unit tests
+        run: |
+          echo "=== UNIT Gate ==="
+          uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: dist/ci/unit/
+
+  arch_fitness:
+    name: ARCH_FITNESS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          pip install uv==${{ env.UV_VERSION }}
+          uv --version
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Run architecture fitness tests
+        run: |
+          echo "=== ARCH_FITNESS Gate ==="
+          uv run pytest tests/architecture/test_dependency_boundaries.py tests/architecture/test_change_review.py tests/architecture/test_weakening_checks.py -v --tb=short --junitxml=dist/ci/arch/junit.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-test-results
+          path: dist/ci/arch/
+
+  postgres_env:
+    name: POSTGRES_ENV
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.11-bookworm@sha256:639ab7ceb90e13123085b741fb31ef493fba25463002f6da665352e7b534b652
+        env:
+          POSTGRES_DB: bootstrap_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_test_password_not_real
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          pip install uv==${{ env.UV_VERSION }}
+          uv --version
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Wait for PostgreSQL
+        run: |
+          echo "=== POSTGRES_ENV Gate ==="
+          echo "Waiting for PostgreSQL to be ready..."
+          sleep 5
+
+      - name: Check PostgreSQL connection
+        run: |
+          uv run python scripts/check_postgres.py
+
+      - name: Run PostgreSQL integration tests
+        run: |
+          uv run pytest tests/integration/test_postgres_ci_service.py -v --tb=short
+
+      - name: POSTGRES_ENV gate result
+        run: echo "POSTGRES_ENV gate PASS"
+
+  secret_dependency:
+    name: SECRET_DEPENDENCY
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          pip install uv==${{ env.UV_VERSION }}
+          uv --version
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Install gitleaks
+        run: |
+          echo "Installing gitleaks..."
+          GITLEAKS_VERSION="8.21.2"
+          GITLEAKS_SHA256="5bc41815076e6ed6ef8fbecc9d9b75bcae31f39029ceb55da08086315316e3ba"
+          wget -q "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -O /tmp/gitleaks.tar.gz
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          chmod +x /tmp/gitleaks
+          /tmp/gitleaks version
+
+      - name: Run secret scanning
+        run: |
+          echo "=== SECRET_DEPENDENCY Gate ==="
+          mkdir -p dist/ci/security
+          echo "Secret scanning with gitleaks..."
+          /tmp/gitleaks detect --config .gitleaks.toml --no-git --verbose --source . --report-format json --report-path dist/ci/security/gitleaks-report.json
+          echo "Gitleaks scan PASS"
+
+      - name: Run supplementary checks
+        run: |
+          echo "Supplementary grep-based checks..."
+          if grep -r "ANOVELOS_.*SECRET" plan/ src/ scripts/ --include="*.py" --include="*.yaml" 2>/dev/null | grep -v "^#" | grep -v "tests/fixtures"; then
+            echo "WARNING: Supplementary check found potential secrets"
+            exit 1
+          fi
+          if grep -r "api[_-]key.*=" plan/ src/ scripts/ --include="*.py" --include="*.yaml" 2>/dev/null | grep -v "^#" | grep -v "example"; then
+            echo "WARNING: Supplementary check found potential API keys"
+            exit 1
+          fi
+          echo "Supplementary checks PASS"
+
+      - name: Check dependency integrity
+        run: |
+          echo "Dependency integrity check..."
+          uv pip check
+
+      - name: Run dependency audit
+        run: |
+          echo "Dependency vulnerability scan..."
+          uv pip list --format=freeze > /tmp/requirements-all.txt
+          sed '/^anovelos==/d' /tmp/requirements-all.txt > /tmp/requirements.txt
+          if [ -s /tmp/requirements.txt ]; then
+            uv run pip-audit --strict -r /tmp/requirements.txt
+          else
+            echo "No dependencies to audit"
+          fi
+
+      - name: SECRET_DEPENDENCY gate result
+        run: echo "SECRET_DEPENDENCY gate PASS"
+
+      - name: Upload security results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-results
+          path: dist/ci/security/

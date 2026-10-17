@@ -1,5 +1,32 @@
 # ANovelOS 执行入口
 
+## CANONICAL REPOSITORY
+
+**CRITICAL**: This project uses GitHub as the sole canonical platform.
+
+**Canonical Repository**: `https://github.com/AY123/AiNoverCC.git`
+**Canonical Branch**: `main`
+
+**The former GitLab repository is DEPRECATED and HISTORICAL ONLY.**
+
+AI agents **MUST NOT** use GitLab for current:
+- Implementation work
+- Merge requests / Pull requests
+- CI authority
+- Task state resolution
+- ADR state resolution
+- Canonical HEAD resolution
+
+**Before any restricted task, AI agents MUST:**
+1. Run `git remote -v` to verify origin points to GitHub
+2. Run `git fetch origin --prune`
+3. Run `git rev-parse origin/main` to get current canonical HEAD
+4. Read `plan/machine/*` for authoritative task/ADR state
+
+Historical reports and documentation **cannot override these live checks**.
+
+---
+
 ## AI Context Policy
 
 ### Default Active Context (优先读取)

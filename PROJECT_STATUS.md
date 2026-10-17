@@ -1,6 +1,6 @@
 # Project Status
 
-**Last Updated**: 2026-10-15
+**Last Updated**: 2026-10-17
 **Document Type**: Derived Summary (Canonical: plan/machine/*)
 
 **IMPORTANT**: This is a human-readable derived summary.
@@ -16,13 +16,12 @@ If conflicts exist, machine SSOT always wins.
 
 ## Current State
 
-**Canonical Repository**: `https://gitlab.com/TomAy47287015/ainoveloacc.git`
-**Canonical Branch**: `dev_cc`
+**Canonical Repository**: `https://github.com/AY123/AiNoverCC.git`
+**Canonical Branch**: `main`
 
-**Current Canonical HEAD**: Query live `dev_cc` via `git rev-parse origin/dev_cc`. Do not treat this derived document as HEAD authority.
+**Current Canonical HEAD**: Query live via `git fetch origin && git rev-parse origin/main`. Do not treat this derived document as HEAD authority.
 
-**Last Verified Baseline Before This Reconciliation**: `04068fff57eefd56aaef063bc6286bad02de844e` (Governance fix integration)
-**Baseline CI**: Pipeline #29 (2948969594) - SUCCESS, 6/6 hard gates PASS
+**Last Verified Baseline**: `a6e8747cab69fabd10b857eccede7dda5b9452af` (V2-007 implementation work)
 
 **Latest Product Closure**: V2-061 (718c3cb) verified and integrated to default branch
 
@@ -73,8 +72,8 @@ If conflicts exist, machine SSOT always wins.
   - Closure: See `plan/validation/execution/V2-061/closure/`
 
 **Open Tasks**:
-- **V2-007**: Event Timeline Promise Core (OPEN, requires ADR-003)
-- **V2-008**: NarrativeDelta Implementation (OPEN)
+- **V2-007**: Event Timeline Promise Core (IN_PROGRESS, ADR-003 ACCEPTED)
+- **V2-008**: NarrativeDelta Implementation (OPEN, requires ADR-004)
 
 ---
 
@@ -100,16 +99,13 @@ The historical machine V2-006 definition ("Character relationship knowledge core
 
 ### Canonical Repository and CI
 
-**Canonical Repository**: `https://gitlab.com/TomAy47287015/ainoveloacc.git`
-**Canonical Branch**: `dev_cc`
-**Current CI**: GitLab CI/CD (`.gitlab-ci.yml`)
-**Last Verified Baseline Pipeline**: #29 (2948969594) - SUCCESS, 6/6 hard gates PASS at 04068ff
+**Canonical Repository**: `https://github.com/AY123/AiNoverCC.git`
+**Canonical Branch**: `main`
+**Current CI**: GitHub Actions (`.github/workflows/`)
 
-### Historical V2-006 Remote Verification (Non-Canonical)
+### Historical CI Evidence
 
-**Historical V2-006 Remote Verification Repository**: `TomAy47287015/aianovelcc` (GitLab)
-- Pipeline 2925763616, 6/6 gates SUCCESS, 899/899 tests PASS
-- Note: This was historical verification only; current canonical state is queried from live dev_cc
+Historical GitLab CI evidence is preserved in closure artifacts but GitLab is no longer the operational CI platform.
 
 ### Local Validation
 
@@ -159,11 +155,11 @@ pytest tests/architecture/ -v
 5. All changes require explicit authorization before implementation
 
 **Current Phase**: P1 Domain Foundation (ACTIVE / NOT VERIFIED)
-**Current Active Implementation Task**: NONE
+**Current Active Implementation Task**: V2-007 (Event Timeline Promise Core)
 **Last Closed Task**: V2-061 (Character Knowledge & Intent Core)
-**Next Candidate Task**: V2-007 (Event Timeline Promise Core)
-**Required Decision**: ADR-003 (Event Timeline Core Architecture)
-**V2-007 Implementation Status**: NOT YET AUTHORIZED (ADR-003 decision required first)
+**Current Task**: V2-007 (Event Timeline Promise Core)
+**Required Decision**: ADR-003 (Event Timeline Core Architecture) - ACCEPTED
+**V2-007 Implementation Status**: IN_PROGRESS (ADR-003 accepted, implementation ongoing)
 
 ---
 

@@ -1,0 +1,182 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-007
+revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+status: PASS
+verified_at: '2026-10-17T04:59:00Z'
+verifier: AI implementer (formal closure validation)
+decision: ACCEPTED
+scope: V2-007 Event Timeline Promise Core formal closure validation
+
+evidence_summary: |
+  V2-007 Event Timeline Promise Core implementation satisfies all ADR-003 requirements
+  and acceptance criteria. Formal closure validation completed at revision
+  b09dbd7a62d25cc244ba377ab90b53142de4666d.
+
+  Acceptance criteria verified:
+  - AC-1: Same chapter multiple events with distinguishable story-time ✅
+  - AC-2: Flashback (story order ≠ disclosure order) ✅
+  - AC-3: Promise lifecycle (OPEN → FULFILLED/FAILED/ABANDONED) ✅
+  - AC-4: Promise ≠ Character Goal distinction ✅
+
+  Additional requirements verified:
+  - Unknown occurrence ≠ occurred ✅
+  - Promise.status DERIVED (not persisted) ✅
+  - Terminal exclusivity (FULFILLED ⊕ FAILED ⊕ ABANDONED) ✅
+  - IntervalTime partial order (OVERLAP/UNKNOWN) ✅
+  - Mixed precision handling (cross-precision returns UNKNOWN) ✅
+  - Project isolation (Event/Promise/Link) ✅
+  - Deep immutability (defensive copying) ✅
+  - MappingProxyType backing alias prevention ✅
+  - Fulfillment link uniqueness ✅
+
+  Scope compliance verified:
+  - Pure domain implementation (no database, no Canon, no Provider) ✅
+  - No prohibited dependencies ✅
+
+  Test results:
+  - Authoritative V2-007 tests: 52/52 PASS
+  - Full architecture + contract regression: 845/845 PASS
+  - Plan validation: PASS (0 fatal errors)
+  - AI execution regression: 36/36 PASS
+  - STATIC gate: PASS (format, lint, type checks)
+
+  Ready for remote CI validation and machine state transition to CLOSED.
+
+referenced_evidence:
+- ref: plan/validation/execution/V2-007/closure/code-revalidation.yaml
+  type: CODE
+  status: PASS
+  revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+
+- ref: plan/validation/execution/V2-007/closure/test-result.yaml
+  type: TEST_RESULT
+  status: PASS
+  revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+
+- ref: plan/validation/execution/V2-007/closure/acceptance-review.md
+  type: ACCEPTANCE_REVIEW
+  status: ACCEPTED
+  revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
+
+# CI evidence will be added after GitHub Actions validation
+pending_evidence:
+- type: CI
+  gates:
+  - STATIC
+  - UNIT
+  - SCHEMA_CONTRACT
+  - ARCH_FITNESS
+  - SECRET_DEPENDENCY
+  - POSTGRES_ENV
+  note: CI evidence to be added after PR creation and GitHub Actions run
+
+acceptance_criteria_mapping:
+  AC-1:
+    requirement: Same chapter multiple events with distinguishable story-time
+    status: PASS
+    test: test_same_chapter_multiple_events_distinguishable_story_time
+
+  AC-2:
+    requirement: Flashback (story order ≠ disclosure order)
+    status: PASS
+    test: test_flashback_story_order_differs_from_disclosure_order
+
+  AC-3:
+    requirement: Promise lifecycle (OPEN → FULFILLED/FAILED/ABANDONED)
+    status: PASS
+    tests:
+    - test_promise_lifecycle_open_to_fulfilled
+    - test_promise_lifecycle_supporting_remains_open
+    - test_promise_lifecycle_terminal_failed
+    - test_promise_lifecycle_terminal_abandoned
+
+  AC-4:
+    requirement: Promise ≠ Character Goal distinction
+    status: PASS
+    tests:
+    - test_promise_distinct_from_character_goal
+    - test_domain_composition_character_to_promise
+
+additional_requirements_mapping:
+  unknown_occurrence:
+    requirement: Unknown occurrence ≠ occurred
+    status: PASS
+    tests:
+    - test_unknown_occurrence_not_equal_to_occurred
+    - test_missing_event_ref_does_not_imply_occurred
+
+  promise_status_derived:
+    requirement: Promise.status is DERIVED (not persisted base field)
+    status: PASS
+    evidence: Code inspection shows no status field on Promise dataclass
+    tests:
+    - test_derive_promise_status_rejects_failed_plus_primary
+    - test_derive_promise_status_rejects_abandoned_plus_complete
+
+  terminal_exclusivity:
+    requirement: FULFILLED/FAILED/ABANDONED mutually exclusive
+    status: PASS
+    tests:
+    - test_terminal_exclusivity_rejects_failed_plus_primary
+    - test_terminal_exclusivity_rejects_abandoned_plus_complete
+    - test_terminal_exclusivity_allows_terminal_plus_supporting
+
+  partial_order:
+    requirement: IntervalTime partial order (OVERLAP/UNKNOWN)
+    status: PASS
+    tests:
+    - test_interval_time_overlap_not_forced_total_order
+    - test_interval_time_unknown_for_uncomparable
+    - test_interval_time_correct_before_semantics
+
+  mixed_precision:
+    requirement: Cross-precision temporal comparison returns UNKNOWN
+    status: PASS
+    tests:
+    - test_different_precision_year_vs_month_unknown
+    - test_different_precision_month_vs_day_unknown
+    - test_precise_vs_interval_mixed_precision_unknown
+    - test_interval_vs_interval_mixed_precision_unknown
+    - test_interval_internal_mixed_precision_unknown
+
+  project_isolation:
+    requirement: Project boundary enforcement
+    status: PASS
+    tests:
+    - test_event_project_isolation_rejects_cross_project_participant
+    - test_promise_project_isolation_rejects_cross_project_target
+    - test_fulfillment_link_project_isolation
+
+  deep_immutability:
+    requirement: Defensive copying for mutable collections
+    status: PASS
+    tests:
+    - test_event_participants_defensive_copy
+    - test_event_provenance_defensive_copy
+    - test_promise_target_entities_defensive_copy
+    - test_promise_provenance_defensive_copy
+    - test_timeline_events_defensive_copy
+    - test_timeline_narrative_sequence_defensive_copy
+
+  mapping_proxy_alias:
+    requirement: MappingProxyType backing alias prevention
+    status: PASS
+    tests:
+    - test_event_provenance_mapping_proxy_backing_alias
+    - test_promise_provenance_mapping_proxy_backing_alias
+
+  link_uniqueness:
+    requirement: (promise_id, event_id) uniqueness
+    status: PASS
+    tests:
+    - test_link_uniqueness_rejects_duplicate_pair
+
+related_findings: []
+
+notes:
+- Local validation completed successfully on b09dbd7a62d25cc244ba377ab90b53142de4666d
+- No product code changes since main (git diff origin/main -- src/ = empty)
+- Remote CI validation required before final closure
+- Machine state transition (IN_PROGRESS → CLOSED) deferred until after CI evidence

@@ -1,3 +1,19 @@
+# ============================================================================
+# HISTORICAL ONLY - DEPRECATED PLATFORM
+# ============================================================================
+#
+# This GitLab CI configuration is HISTORICAL and NO LONGER OPERATIONAL.
+#
+# Current CI Platform: GitHub Actions (.github/workflows/)
+# Canonical Repository: https://github.com/AY123/AiNoverCC.git
+# Canonical Branch: main
+#
+# This file is preserved for historical evidence only.
+# DO NOT USE as current CI authority.
+#
+# Original file: .gitlab-ci.yml (moved to archive 2026-10-17)
+# ============================================================================
+
 # ANovelOS V2 CI Pipeline
 # P0 Gates: STATIC, UNIT, SCHEMA_CONTRACT, ARCH_FITNESS, SECRET_DEPENDENCY, POSTGRES_ENV
 # Version: 1.0.0

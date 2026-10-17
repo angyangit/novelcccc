@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-15T13:01:17.085692+00:00",
+  "generated_at_utc": "2026-10-17T03:12:56.795381+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "f1aead436debeb04bf68b7a49ea7724e0a29b100",
+  "validated_repository_revision": "a6e8747cab69fabd10b857eccede7dda5b9452af",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "22deee27bd616890fb7c0866e14db331650e9279c274d87a3abc7eadfc69f573",
+  "manifest_sha256": "5c3d620a4d3b44ef0586b2771752f516010e47986f9ed0c6fa223ac2d322e622",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -52,9 +52,12 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_VERSION V2-007: manifest changed; reconcile context before continuation"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "EXEC_VERSION V2-007: manifest changed; reconcile context before continuation"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

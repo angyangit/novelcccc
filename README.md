@@ -2,27 +2,26 @@
 
 面向中文网文的自动创作与可靠生产项目。最终目标是提升作品的阅读竞争力；工程通过、真人阅读结果与市场成绩分别验证，不承诺爆款。
 
-当前为 **Plan v1.3.1**（治理修订：V2-006 任务身份调和）。P0 (Repository & Governance) 已验证完成，P1 (Domain Foundation) 活跃但未验证。
+当前为 **Plan v1.3.1**（治理修订：V2-006 任务身份调和）。P0 (Repository & Governance) 已验证完成，P1 (Domain Foundation) 为当前建设阶段。
 
-**Canonical Repository**: `https://github.com/AY123/AiNoverCC.git`
+**Canonical Repository**: `https://github.com/AY123/AiNoverCC.git`  
 **Canonical Branch**: `main`
 
-**已关闭任务**:
-- V2-001 through V2-004: P0 基础设施 (CLOSED, G-P0 PASS)
-- V2-005: Entity Identity & Alias Resolution (CLOSED, Tag `v2.005-complete` at `bd303e6`)
-- V2-006: Entity Relationship Tracking (CLOSED, Tag `v2.006-complete` at `bba1061`)
-- V2-061: Character Knowledge & Intent Core (CLOSED, Pipeline #16 PASS at `718c3cb`)
-- V2-007: Event Timeline Promise Core (CLOSED, PR #3 PASS at `6136ec5`)
+## 当前状态从哪里读取
 
-**当前 P1 状态**:
-- Phase: ACTIVE / NOT_VERIFIED
-- V2-008: NarrativeDelta Implementation (OPEN, requires ADR-004)
-- ADR-003: ACCEPTED
-- ADR-004: REQUIRED (decision_record: null)
+README 不再复制快速变化的 task / ADR / readiness / execution-packet / next-action 状态。
 
-**下一步行动**: ADR-004 FORMAL DECISION
+开始任何开发动作前，必须实时读取：
 
-权威机器资料见 [phase-gates.yaml](plan/machine/phase-gates.yaml) 和 [implementation-backlog.yaml](plan/machine/implementation-backlog.yaml)。详细状态：[PROJECT_STATUS.md](PROJECT_STATUS.md)。
+- [任务清单](plan/machine/implementation-backlog.yaml)
+- [阶段门禁](plan/machine/phase-gates.yaml)
+- [决策登记](plan/machine/decision-register.yaml)
+- [验收场景](plan/machine/test-catalog.yaml)
+- [整改义务](plan/machine/remediation-register.yaml)
+
+`plan/machine/` 是动态事实唯一权威；README、`PROJECT_STATUS.md` 和其他人工摘要都不得覆盖它。当前 HEAD 也必须从 GitHub / `origin/main` 实时获取。
+
+稳定历史里程碑包括：P0 已闭环，V2-005、V2-006、V2-061、V2-007 已形成正式历史闭包。具体当前任务、当前 ADR、是否允许开工以及下一合法动作，始终以 `plan/machine/*` 为准。
 
 ## 从这里开始
 

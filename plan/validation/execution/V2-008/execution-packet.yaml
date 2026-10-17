@@ -2,9 +2,9 @@ record_type: task_execution_packet
 schema_version: '1.0'
 task_id: V2-008
 plan_version: 1.3.1
-repository_revision: 67eb7e8ac0e2e9b6cc6cad7bf3cb1891b6aa72f9
+repository_revision: 664dc2c968627af789c18710582275859a4d07ef
 worktree_dirty: false
-plan_manifest_sha256: 94688047b2972cb72036b3a0707fb4c6c5b07386d8b5efdf2e767659389c7e4c
+plan_manifest_sha256: a89d927a25a8563a86a440bd49419ad56cd6861e296fb9212999591394077dd4
 environment:
   fingerprint: macOS15.1.1-arm64; Python3.12.14
   runtime_versions:
@@ -16,7 +16,9 @@ verifier: Local contract tests plus governance regression; not independent human
 owner_role: domain-maintainer
 scope: NarrativeDelta Implementation per frozen ADR-004. Implements finite change language (SET_FACT/END_FACT/UNDO_FACT), precondition algebra (ExpectValue/ExpectAbsent/ExpectPresent/ExpectUnknown), pure-domain reducer semantics (no Canon persistence, no database, no Provider). NarrativeDelta equals proposal not Canon state. Registered versioned typed operations only. Fail-closed validation (unknown op/wrong type/stale precondition rejects). UNKNOWN not-equal NO_CHANGE not-equal UNDO_FACT semantic distinction enforced. Authority boundary - NarrativeDelta proposal permission not-equal Canon commit permission (CanonCommitService only).
 action: IMPLEMENT
-change_review: null
+change_review:
+  scope_revision: dd403b537962b0ef25d627b4dbe990fd9e7be39b
+  scope_ref: plan/validation/execution/V2-008/start/scope-baseline.json
 inputs:
 - source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
   ref: validation/execution/V2-008/inputs/5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75.txt
@@ -31,8 +33,8 @@ inputs:
   ref: validation/execution/V2-008/inputs/76c14ca6733c89cdd988c49bb077da5b2f556c500dcc967f2b43a8f528ff32f8.txt
   sha256: 76c14ca6733c89cdd988c49bb077da5b2f556c500dcc967f2b43a8f528ff32f8
 - source_ref: machine/implementation-backlog.yaml
-  ref: validation/execution/V2-008/inputs/c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3.txt
-  sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+  ref: validation/execution/V2-008/inputs/5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12.txt
+  sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
 - source_ref: machine/decision-register.yaml
   ref: validation/execution/V2-008/inputs/95528902c6d877e6a113443bd91cc2d78245a24850636b07c94f4735da422853.txt
   sha256: 95528902c6d877e6a113443bd91cc2d78245a24850636b07c94f4735da422853
@@ -61,6 +63,7 @@ allowed_paths:
 - plan/machine/implementation-backlog.yaml
 - plan/machine/test-catalog.yaml
 - plan/FILE_MANIFEST.json
+- plan/generated/
 - plan/validation/plan-validation.json
 required_decisions:
 - ADR-004
@@ -78,7 +81,7 @@ claims:
   statement: V2-006 is CLOSED (dependency satisfied)
   sources:
   - ref: machine/implementation-backlog.yaml
-    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+    sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
   blocks_actions: []
   verification_plan: Verified by reading implementation-backlog.yaml V2-006 status=CLOSED
 - id: CLAIM-V2-008-003-DEPENDENCY-V2-007
@@ -86,7 +89,7 @@ claims:
   statement: V2-007 is CLOSED (dependency satisfied)
   sources:
   - ref: machine/implementation-backlog.yaml
-    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+    sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
   blocks_actions: []
   verification_plan: Verified by reading implementation-backlog.yaml V2-007 status=CLOSED
 - id: CLAIM-V2-008-004-DEPENDENCY-V2-061
@@ -94,7 +97,7 @@ claims:
   statement: V2-061 is CLOSED (dependency satisfied)
   sources:
   - ref: machine/implementation-backlog.yaml
-    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+    sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
   blocks_actions: []
   verification_plan: Verified by reading implementation-backlog.yaml V2-061 status=CLOSED
 - id: CLAIM-V2-008-005-ADR
@@ -125,7 +128,7 @@ claims:
   - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
     sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
   - ref: machine/implementation-backlog.yaml
-    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+    sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
   blocks_actions:
   - IMPLEMENT
   verification_plan: Implementation must not import or depend on database, SQLAlchemy, Canon services, or Provider
@@ -188,7 +191,7 @@ claims:
   statement: Existing domain modules (identity, events, promises, relationship, character, knowledge) use frozen dataclass, NewType IDs, project isolation, explicit validation
   sources:
   - ref: machine/implementation-backlog.yaml
-    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+    sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
   blocks_actions: []
   verification_plan: Read existing domain modules to confirm conventions; replicate in delta.py
 - id: CLAIM-V2-008-015-IMMUTABILITY
@@ -196,7 +199,7 @@ claims:
   statement: Deep immutability requires defensive copying for nested collections (precedent from V2-007 R6 remediation)
   sources:
   - ref: machine/implementation-backlog.yaml
-    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+    sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
   blocks_actions: []
   verification_plan: Use tuple/frozenset for collections or defensive copy in __post_init__; document mutability risk
 - id: CLAIM-V2-008-016-NO-CANON-INTEGRATION
@@ -206,7 +209,7 @@ claims:
   - ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
     sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
   - ref: machine/implementation-backlog.yaml
-    sha256: c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3
+    sha256: 5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12
   blocks_actions:
   - IMPLEMENT
   verification_plan: No database imports, no Canon service implementation in V2-008 artifacts

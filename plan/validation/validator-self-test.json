@@ -1,7 +1,7 @@
 {
   "scope": "planning validator self-test only",
-  "generated_at_utc": "2026-10-15T02:24:45.742718+00:00",
-  "manifest_sha256": "779626f343c4eedc16a6ae4de10524b3a03ad864315d8cd29e5b80a884688a4c",
+  "generated_at_utc": "2026-10-17T15:43:16.152218+00:00",
+  "manifest_sha256": "94688047b2972cb72036b3a0707fb4c6c5b07386d8b5efdf2e767659389c7e4c",
   "status": "PASS",
   "cases": [
     {
@@ -45,7 +45,8 @@
       "actual": "REJECT",
       "evidence": [
         "TASK_START V2-006: dependency V2-005 not verified",
-        "TASK_START V2-061: dependency V2-005 not verified"
+        "TASK_START V2-061: dependency V2-005 not verified",
+        "TASK_START V2-007: dependency V2-005 not verified"
       ]
     },
     {

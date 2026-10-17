@@ -1,0 +1,25 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-007-ci-static-c259310d
+evidence_type: CI_RUN
+subject_id: V2-007
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+status: PASS
+producer: GitHub Actions
+executed_at: '2026-10-17T05:11:47Z'
+environment_fingerprint: GitHub Actions ubuntu-latest; canonical .github/workflows/ci.yml
+artifacts:
+- ref: validation/execution/V2-007/closure/ci/static-github-actions.txt
+  sha256: ec5fb2ed47863b0ca6488564f3c3e5a9f9e5b8de83189c0945805ffb3e4e3f40
+input_evidence_refs:
+- validation/execution/V2-007/closure/code-revalidation.yaml
+check_ids:
+- STATIC
+command: |
+  uv run ruff format --check plan/scripts/ src/
+  uv run ruff check plan/scripts/ src/
+  uv run mypy plan/scripts/ src/ --ignore-missing-imports --no-strict-optional
+exit_code: 0
+pipeline_id: '39005336652'
+job_id: '117316532650'
+pipeline_url: https://github.com/AY123/AiNoverCC/actions/runs/39005336652

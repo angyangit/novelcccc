@@ -1,0 +1,24 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-007-ci-postgres-env-c259310d
+evidence_type: CI_RUN
+subject_id: V2-007
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+status: PASS
+producer: GitHub Actions
+executed_at: '2026-10-17T05:12:13Z'
+environment_fingerprint: GitHub Actions ubuntu-latest; canonical .github/workflows/ci.yml with postgres service
+artifacts:
+- ref: validation/execution/V2-007/closure/ci/postgres-env-github-actions.txt
+  sha256: 86d988674941ef0b5caec3ba1b907eba990d64c8e2f87e4cac228ca18701e74f
+input_evidence_refs:
+- validation/execution/V2-007/closure/test-result.yaml
+check_ids:
+- POSTGRES_ENV
+command: |
+  uv run python scripts/check_postgres.py
+  uv run pytest tests/integration/test_postgres_ci_service.py -v --tb=short
+exit_code: 0
+pipeline_id: '39005336652'
+job_id: '117316532570'
+pipeline_url: https://github.com/AY123/AiNoverCC/actions/runs/39005336652

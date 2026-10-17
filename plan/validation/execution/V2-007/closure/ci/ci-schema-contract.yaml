@@ -1,0 +1,24 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-007-ci-schema-contract-c259310d
+evidence_type: CI_RUN
+subject_id: V2-007
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+status: PASS
+producer: GitHub Actions
+executed_at: '2026-10-17T05:11:53Z'
+environment_fingerprint: GitHub Actions ubuntu-latest; canonical .github/workflows/ci.yml
+artifacts:
+- ref: validation/execution/V2-007/closure/ci/schema-contract-github-actions.txt
+  sha256: 4ea2792fe22d7ec2c13062a7022583bbdbee5586a51934d8757e6092cc748eee
+input_evidence_refs:
+- validation/execution/V2-007/closure/code-revalidation.yaml
+check_ids:
+- SCHEMA_CONTRACT
+command: |
+  uv run python plan/scripts/validate_plan.py --check --output-dir dist/ci/schema
+  uv run pytest tests/contract/test_plan_governance.py -v --tb=short
+exit_code: 0
+pipeline_id: '39005336652'
+job_id: '117316532504'
+pipeline_url: https://github.com/AY123/AiNoverCC/actions/runs/39005336652

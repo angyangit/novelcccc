@@ -1,115 +1,27 @@
 record_type: plan_execution_evidence
 schema_version: '1.0'
+evidence_id: V2-007-code-revalidation-b09dbd7a
 evidence_type: CODE
 subject_id: V2-007
 revision: b09dbd7a62d25cc244ba377ab90b53142de4666d
 status: PASS
-verified_at: '2026-10-17T04:58:00Z'
-verifier: AI implementer (local inspection + import analysis)
-scope: V2-007 Event Timeline Promise Core implementation artifacts
-evidence_summary: |
-  V2-007 implementation artifacts exist and satisfy ADR-003 requirements.
-
-  Verified artifacts:
-  - src/anovel/domain/events.py (Event, Timeline, story-time semantics)
-  - src/anovel/domain/promises.py (Promise, PromiseFulfillmentLink, status derivation)
-  - tests/contract/test_v2_007.py (52 authoritative acceptance tests)
-
-  Key invariants verified in code:
-  - Event occurrence immutability (frozen dataclass)
-  - Promise.status DERIVED (no status field on Promise dataclass, standalone derive_promise_status function)
-  - Terminal exclusivity (validate_terminal_exclusivity rejects FAILED/ABANDONED + PRIMARY/COMPLETE)
-  - IntervalTime partial order (compare_story_time returns OVERLAP/UNKNOWN, not forced total order)
-  - Mixed precision handling (different precision intervals return UNKNOWN)
-  - Project isolation (validate_event_project_isolation, validate_promise_project_isolation)
-  - Deep immutability (defensive copy in __post_init__ for all mutable collections)
-  - MappingProxyType backing alias prevention (defensive dict() copy before MappingProxyType)
-
-  No forbidden dependencies:
-  - No database imports (sqlalchemy, psycopg, alembic)
-  - No Canon imports (anovel.canon.repository, anovel.canon.commit_service)
-  - No Provider imports (anovel.provider)
-
-  ADR-003 alignment:
-  - Event.story_time supports PreciseTime | IntervalTime | RelativeTime
-  - Timeline.events supports non-linear disclosure order
-  - Promise distinct from Character Goal (separate module, different semantics)
-  - Unknown occurrence ≠ occurred (resolve_event_occurrence returns None for missing/unresolved refs)
-
-checks:
-- id: CODE-V2-007-001
-  description: events.py exists with Event, Timeline, IntervalTime, compare_story_time
-  status: PASS
-  method: file read + import inspection
-
-- id: CODE-V2-007-002
-  description: promises.py exists with Promise, PromiseFulfillmentLink, derive_promise_status
-  status: PASS
-  method: file read + import inspection
-
-- id: CODE-V2-007-003
-  description: test_v2_007.py exists with 52 authoritative tests
-  status: PASS
-  method: file read + pytest collection
-  result: 52 tests collected
-
-- id: CODE-V2-007-004
-  description: No database dependencies (sqlalchemy, psycopg)
-  status: PASS
-  method: grep -r "database|sqlalchemy|psycopg" on domain module
-  result: Only exclusion comments found, no imports
-
-- id: CODE-V2-007-005
-  description: No Canon persistence dependencies
-  status: PASS
-  method: grep -r "canon.repository|canon.commit_service|CanonCommitService" on domain module
-  result: No imports found
-
-- id: CODE-V2-007-006
-  description: No Provider dependencies
-  status: PASS
-  method: grep -r "provider" on domain module (case-insensitive on imports)
-  result: Only exclusion comments found, no imports
-
-- id: CODE-V2-007-007
-  description: Promise.status is DERIVED (no status field on dataclass)
-  status: PASS
-  method: code inspection of promises.py Promise dataclass
-  result: No status field present, derive_promise_status is standalone function
-
-- id: CODE-V2-007-008
-  description: Terminal exclusivity validation exists
-  status: PASS
-  method: code inspection for validate_terminal_exclusivity
-  result: Function exists, rejects FAILED/ABANDONED + PRIMARY/COMPLETE combinations
-
-- id: CODE-V2-007-009
-  description: IntervalTime partial order (OVERLAP/UNKNOWN supported)
-  status: PASS
-  method: code inspection of compare_story_time for IntervalTime
-  result: Returns OVERLAP when intervals overlap, UNKNOWN for uncomparable cases
-
-- id: CODE-V2-007-010
-  description: Mixed precision handling returns UNKNOWN
-  status: PASS
-  method: code inspection of _compare_interval_times
-  result: Different precision checks return UNKNOWN, no forced total order
-
+producer: Local V2-007 closure revalidation (AI implementer)
+executed_at: '2026-10-17T04:58:00Z'
+environment_fingerprint: macOS Darwin 24.1.0, Python 3.12.14, uv 0.12.17
 artifacts:
-  source_files:
-  - path: src/anovel/domain/events.py
-    sha256: computed_on_demand
-    lines: 748
-
-  - path: src/anovel/domain/promises.py
-    sha256: computed_on_demand
-    lines: 577
-
-  - path: tests/contract/test_v2_007.py
-    sha256: computed_on_demand
-    lines: 1736
-
-notes:
-- Code inspection performed on exact revision b09dbd7a62d25cc244ba377ab90b53142de4666d
-- All ADR-003 semantic requirements verified in implementation
-- No product code changes between main and closure branch (git diff origin/main -- src/ = empty)
+- ref: validation/execution/V2-007/closure/acceptance-review.md
+  sha256: 0ead3f0250b98ccc793a27fc728d2b98dadf70907127931fe9416c9a51036845
+input_evidence_refs: []
+check_ids:
+- CODE-V2-007-EVENTS-PY-EXISTS
+- CODE-V2-007-PROMISES-PY-EXISTS
+- CODE-V2-007-TEST-V2-007-PY-EXISTS
+- CODE-V2-007-NO-DATABASE-DEPS
+- CODE-V2-007-NO-CANON-DEPS
+- CODE-V2-007-NO-PROVIDER-DEPS
+- CODE-V2-007-PROMISE-STATUS-DERIVED
+- CODE-V2-007-TERMINAL-EXCLUSIVITY
+- CODE-V2-007-PARTIAL-ORDER
+- CODE-V2-007-MIXED-PRECISION
+decision: VERIFIED
+rationale: V2-007 implementation artifacts exist at revision b09dbd7a with all ADR-003 requirements verified. No database/Canon/Provider dependencies. Promise.status is DERIVED. All semantic invariants present in code.

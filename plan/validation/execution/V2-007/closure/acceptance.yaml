@@ -20,7 +20,6 @@ input_evidence_refs:
 - validation/execution/V2-007/closure/ci/ci-arch-fitness.yaml
 - validation/execution/V2-007/closure/ci/ci-secret-dependency.yaml
 - validation/execution/V2-007/closure/ci/ci-postgres-env.yaml
-- validation/execution/V2-007/execution-packet.yaml
 finding_dispositions:
 - finding_id: CA-07
   responsibility: PARTIAL
@@ -36,7 +35,7 @@ finding_dispositions:
   responsibility: PARTIAL
   disposition: PARTIALLY_RESOLVED
   evidence_refs:
-  - validation/execution/V2-007/execution-packet.yaml
+  - validation/execution/V2-007/closure/code-revalidation.yaml
   reason: V2-007 properly bound ADR-003 with decision record and timing (before_interface_implementation). ADR归属 and 决定时点 corrected for V2-007. Remaining tasks still require ADR binding per repository policy.
   remaining_work: ADR binding for V2-013, V2-018, V2-019, V2-020, V2-031
   next_task: V2-013

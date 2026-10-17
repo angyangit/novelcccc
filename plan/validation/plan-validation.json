@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-17T06:23:45.849552+00:00",
+  "generated_at_utc": "2026-10-17T06:37:55.587737+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "FAIL",
+  "status": "PASS",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "a9f586a035603b8bd7e1730c21bb7840477e86c2",
+  "validated_repository_revision": "5eabaf8d17ebc73dc80da761b942986329613205",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "5c3d620a4d3b44ef0586b2771752f516010e47986f9ed0c6fa223ac2d322e622",
+  "manifest_sha256": "363bc6a411404c0b620b12086b10c0ec4430285055169fe85cf652dd179e02c8",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -50,27 +50,10 @@
     }
   },
   "errors": [
-    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
-    "EVIDENCE_COVERAGE V2-007 acceptance: missing checks",
-    "EVIDENCE_RECORD validation/execution/V2-007/execution-packet.yaml: 'evidence_id' is a required property; 'evidence_type' is a required property; 'subject_id' is a required property",
-    "FINDING_DISPOSITION V2-007: unbound evidence",
-    "FINDING_DISPOSITION V2-007: unbound evidence",
-    "EVIDENCE_RECORD validation/execution/V2-007/closure/acceptance-review.md: while scanning an alias\n  in \"<unicode string>\", line 3, column 1:\n    **Task**: V2-007 Event Timeline  ... \n    ^\nexpected alphabetic or numeric character, but found '*'\n  in \"<unicode string>\", line 3, column 2:\n    **Task**: V2-007 Event Timeline P ... \n     ^",
-    "FINDING_DISPOSITION V2-007: unbound evidence",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
   ],
-  "fatal_errors": [
-    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
-    "EVIDENCE_COVERAGE V2-007 acceptance: missing checks",
-    "EVIDENCE_RECORD validation/execution/V2-007/execution-packet.yaml: 'evidence_id' is a required property; 'evidence_type' is a required property; 'subject_id' is a required property",
-    "FINDING_DISPOSITION V2-007: unbound evidence",
-    "FINDING_DISPOSITION V2-007: unbound evidence",
-    "EVIDENCE_RECORD validation/execution/V2-007/closure/acceptance-review.md: while scanning an alias\n  in \"<unicode string>\", line 3, column 1:\n    **Task**: V2-007 Event Timeline  ... \n    ^\nexpected alphabetic or numeric character, but found '*'\n  in \"<unicode string>\", line 3, column 2:\n    **Task**: V2-007 Event Timeline P ... \n     ^",
-    "FINDING_DISPOSITION V2-007: unbound evidence",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
-  ],
+  "fatal_errors": [],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

@@ -1366,8 +1366,8 @@
   },
   {
     "path": "generated/PHASE_TASK_REGISTRY.md",
-    "bytes": 6234,
-    "sha256": "197596c97bfffa50cba493c53d70f123cecef251c72731a6743e6f6049b13dfd"
+    "bytes": 6211,
+    "sha256": "91a743190c3944505df8068145a54ac60b2a383563b4afedc79e8c9d5c3c23d8"
   },
   {
     "path": "machine/ai-execution-policy.yaml",
@@ -1406,8 +1406,8 @@
   },
   {
     "path": "machine/implementation-backlog.yaml",
-    "bytes": 93465,
-    "sha256": "fa2208043484331849851975c6b98cd6f92236a4acf00991ed585690f9ba5c9a"
+    "bytes": 94749,
+    "sha256": "c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3"
   },
   {
     "path": "machine/legacy-evidence-compatibility.yaml",
@@ -1441,8 +1441,8 @@
   },
   {
     "path": "machine/test-catalog.yaml",
-    "bytes": 40011,
-    "sha256": "cddd8c61012b82ceffb06be60e16e7b0d2985fee6404a2df2df0962a36fb803c"
+    "bytes": 40066,
+    "sha256": "deded5989150584aec623370d38bff78243d43b0c2ad76d65206fd2fbf267935"
   },
   {
     "path": "review/00_REVIEW_TRIAGE_POLICY.md",

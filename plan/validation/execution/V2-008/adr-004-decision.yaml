@@ -3,7 +3,7 @@ schema_version: '1.0'
 evidence_id: ADR-004-20261017-architecture-decision-finite-change-language
 evidence_type: ADR_DECISION
 subject_id: ADR-004
-revision: 0268b74504cc64ac94beb8de1f7bf3e066d95309
+revision: b9b99242ec94503f33db7d7334b25ed1f97a179a
 status: PASS
 producer: Architecture decision under ADR-004 requirement for V2-008 (semantically complete, internally consistent, implementation-deterministic)
 executed_at: '2026-10-17T00:00:00.000000+00:00'

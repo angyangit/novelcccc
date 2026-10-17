@@ -1,0 +1,23 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-007-test-result-c259310d
+evidence_type: TEST_RESULT
+subject_id: V2-007
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+status: PASS
+producer: pytest 9.1.1
+executed_at: '2026-10-17T04:58:00Z'
+environment_fingerprint: macOS Darwin 24.1.0, Python 3.12.14, pytest 9.1.1, uv 0.12.17
+command: uv run pytest tests/contract/test_v2_007.py -v --tb=short
+exit_code: 0
+artifacts:
+- ref: validation/execution/V2-007/closure/acceptance-review.md
+  sha256: 0ead3f0250b98ccc793a27fc728d2b98dadf70907127931fe9416c9a51036845
+input_evidence_refs: []
+finding_dispositions: []
+check_ids:
+- AT-V2-007-01
+- AT-V2-007-02
+- AT-V2-007-03
+decision: VERIFIED
+rationale: 52/52 tests passed for V2-007 authoritative acceptance at closure candidate c259310d. Product test unchanged from b09dbd7a (verified by git diff).

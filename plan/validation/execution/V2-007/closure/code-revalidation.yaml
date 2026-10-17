@@ -1,0 +1,27 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-007-code-revalidation-c259310d
+evidence_type: CODE
+subject_id: V2-007
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+status: PASS
+producer: Local V2-007 closure revalidation (AI implementer)
+executed_at: '2026-10-17T04:58:00Z'
+environment_fingerprint: macOS Darwin 24.1.0, Python 3.12.14, uv 0.12.17
+artifacts:
+- ref: validation/execution/V2-007/closure/acceptance-review.md
+  sha256: 0ead3f0250b98ccc793a27fc728d2b98dadf70907127931fe9416c9a51036845
+input_evidence_refs: []
+check_ids:
+- CODE-V2-007-EVENTS-PY-EXISTS
+- CODE-V2-007-PROMISES-PY-EXISTS
+- CODE-V2-007-TEST-V2-007-PY-EXISTS
+- CODE-V2-007-NO-DATABASE-DEPS
+- CODE-V2-007-NO-CANON-DEPS
+- CODE-V2-007-NO-PROVIDER-DEPS
+- CODE-V2-007-PROMISE-STATUS-DERIVED
+- CODE-V2-007-TERMINAL-EXCLUSIVITY
+- CODE-V2-007-PARTIAL-ORDER
+- CODE-V2-007-MIXED-PRECISION
+decision: VERIFIED
+rationale: V2-007 implementation artifacts exist at closure candidate c259310d with all ADR-003 requirements verified. Product code unchanged from b09dbd7a (verified by git diff). No database/Canon/Provider dependencies. Promise.status is DERIVED. All semantic invariants present in code.

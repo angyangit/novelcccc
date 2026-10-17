@@ -598,7 +598,7 @@ tasks:
   - 不绕过前置阶段门禁
   - 不引入数据库/Provider 实现依赖
   - Core 不内置公司财务或修炼境界字段
-  status: IN_PROGRESS
+  status: CLOSED
   execution_packet_ref: validation/execution/V2-007/execution-packet.yaml
   owner_role: domain-maintainer
   readiness: READY_TO_START
@@ -606,10 +606,37 @@ tasks:
   required_decisions:
   - ADR-003
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/execution/V2-007/closure/code-revalidation.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    tests:
+    - ref: validation/execution/V2-007/closure/test-result.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    ci:
+    - ref: validation/execution/V2-007/closure/ci/ci-static.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    - ref: validation/execution/V2-007/closure/ci/ci-unit.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    - ref: validation/execution/V2-007/closure/ci/ci-schema-contract.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    - ref: validation/execution/V2-007/closure/ci/ci-arch-fitness.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    - ref: validation/execution/V2-007/closure/ci/ci-secret-dependency.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    - ref: validation/execution/V2-007/closure/ci/ci-postgres-env.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
+    acceptance:
+    - ref: validation/execution/V2-007/closure/acceptance.yaml
+      revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+      status: PASS
   related_findings:
   - CA-07
   - RR-05

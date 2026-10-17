@@ -1,0 +1,24 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-007-ci-unit-c259310d
+evidence_type: CI_RUN
+subject_id: V2-007
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+status: PASS
+producer: GitHub Actions
+executed_at: '2026-10-17T05:16:22Z'
+environment_fingerprint: GitHub Actions ubuntu-latest; canonical .github/workflows/ci.yml
+artifacts:
+- ref: validation/execution/V2-007/closure/ci/unit-github-actions.txt
+  sha256: 23fb8190706e44e0c8f2beb6ef0023e77a57b10c61028ad809c7cf23434559b9
+input_evidence_refs:
+- validation/execution/V2-007/closure/code-revalidation.yaml
+- validation/execution/V2-007/closure/test-result.yaml
+check_ids:
+- UNIT
+command: |
+  uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+exit_code: 0
+pipeline_id: '39005336652'
+job_id: '117316532603'
+pipeline_url: https://github.com/AY123/AiNoverCC/actions/runs/39005336652

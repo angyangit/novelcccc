@@ -1,0 +1,60 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-007-acceptance-c259310d
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-007
+revision: c259310d11b1216cc7a3f3c516f818b35cadc12b
+status: PASS
+producer: Local acceptance verification + remote CI validation
+executed_at: '2026-10-17T05:16:22Z'
+environment_fingerprint: GitHub Actions ubuntu-latest + local macOS Darwin 24.1.0
+artifacts:
+- ref: validation/execution/V2-007/closure/acceptance-review.md
+  sha256: 0ead3f0250b98ccc793a27fc728d2b98dadf70907127931fe9416c9a51036845
+input_evidence_refs:
+- validation/execution/V2-007/closure/code-revalidation.yaml
+- validation/execution/V2-007/closure/test-result.yaml
+- validation/execution/V2-007/closure/ci/ci-static.yaml
+- validation/execution/V2-007/closure/ci/ci-unit.yaml
+- validation/execution/V2-007/closure/ci/ci-schema-contract.yaml
+- validation/execution/V2-007/closure/ci/ci-arch-fitness.yaml
+- validation/execution/V2-007/closure/ci/ci-secret-dependency.yaml
+- validation/execution/V2-007/closure/ci/ci-postgres-env.yaml
+finding_dispositions:
+- finding_id: CA-07
+  responsibility: PARTIAL
+  disposition: PARTIALLY_RESOLVED
+  evidence_refs:
+  - validation/execution/V2-007/closure/test-result.yaml
+  reason: V2-007 implements Event story_time and Timeline narrative_sequence semantics per ADR-003, enabling same-chapter temporal ordering and flashback support. Full resolution of chapter validity temporal semantics requires V2-012 (Canon projection with retcon).
+  remaining_work: Retcon semantics, temporal projection, knowledge validity windows
+  next_task: V2-012
+  owner_role: canon-maintainer
+  due_gate: G-P2
+- finding_id: RR-05
+  responsibility: PARTIAL
+  disposition: PARTIALLY_RESOLVED
+  evidence_refs:
+  - validation/execution/V2-007/closure/code-revalidation.yaml
+  reason: V2-007 properly bound ADR-003 with decision record and timing (before_interface_implementation). ADR归属 and 决定时点 corrected for V2-007. Remaining tasks still require ADR binding per repository policy.
+  remaining_work: ADR binding for V2-013, V2-018, V2-019, V2-020, V2-031
+  next_task: V2-013
+  owner_role: genre-maintainer
+  due_gate: G-P3
+- finding_id: SUP-03
+  responsibility: PARTIAL
+  disposition: PARTIALLY_RESOLVED
+  evidence_refs:
+  - validation/execution/V2-007/closure/test-result.yaml
+  reason: V2-007 establishes Event (objective occurrence) vs Promise (narrative commitment) vs Character Goal (subjective motivation) semantic separation per ADR-003. Hearsay/misinformation/author-future-plans separation requires continued enforcement in V2-018 (Context assembly) and V2-021 (Production orchestration).
+  remaining_work: Hearsay filtering in Context, production validation preventing未来计划混入
+  next_task: V2-018
+  owner_role: context-maintainer
+  due_gate: G-P5
+check_ids:
+- AT-V2-007
+- AT-V2-007-01
+- AT-V2-007-02
+- AT-V2-007-03
+decision: ACCEPTED
+rationale: All ADR-003 acceptance criteria verified at closure candidate c259310d. Local validation passed (52/52 authoritative tests, 845/845 full regression). Remote CI validation passed (6/6 gates at c259310d). Product code unchanged from b09dbd7a (verified by git diff). All findings properly dispositioned with partial resolution and clear handoff to next tasks. V2-007 ready for CLOSED status.

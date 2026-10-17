@@ -1,0 +1,49 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: ADR-004-20261017-architecture-decision-finite-change-language
+evidence_type: ADR_DECISION
+subject_id: ADR-004
+revision: 0268b74504cc64ac94beb8de1f7bf3e066d95309
+status: PASS
+producer: Architecture decision under ADR-004 requirement for V2-008 (semantically complete, internally consistent, implementation-deterministic)
+executed_at: '2026-10-17T00:00:00.000000+00:00'
+environment_fingerprint: Architecture decision - no runtime environment required
+artifacts:
+- ref: decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md
+  sha256: 48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef
+input_evidence_refs: []
+decision: ACCEPTED
+rationale: |
+  ADR-004 establishes finite change language and reducer precondition semantics for V2-008 NarrativeDelta implementation.
+
+  Core decisions frozen:
+
+  1. **NarrativeDelta Identity**: Proposal, not Canon state. Lifecycle: PROPOSED → VALIDATED → {ACCEPTED → COMMITTED | REJECTED}. Authority boundary: proposal permission ≠ commit permission.
+
+  2. **Finite Operation Registry**: REGISTERED, VERSIONED, TYPED. Three P1 operations: SET_FACT, END_FACT, UNDO_FACT. Unregistered operations rejected. No free-dictionary fallback.
+
+  3. **Precondition Algebra**: Four Expect types (ExpectValue, ExpectAbsent, ExpectPresent, ExpectUnknown). ExpectAny REJECTED. Implicit overwrite REJECTED. Precondition required for all SET_FACT.
+
+  4. **SET_FACT Contract**: Must include (subject, scope, path, value, precondition, evidence). value=None REJECTED (use END_FACT). Missing precondition REJECTED.
+
+  5. **END_FACT Contract**: Tombstone, not deletion. Precondition must be ExpectPresent or ExpectValue (not ExpectAbsent).
+
+  6. **UNDO_FACT Contract**: Reverts specific Canon commit. Must reference original_commit_ref. Precondition must be ExpectValue (current value equals undone value).
+
+  7. **Semantic Distinctions**: UNKNOWN (state value) ≠ NO_CHANGE (Delta result: empty operations) ≠ UNDO_FACT (operation type). Three concepts not interchangeable.
+
+  8. **Reducer Contract**: Pure function (no side effects, immutable input), deterministic (same input → same output), versioned (reducer version tracked), fail-closed (any validation failure → reject entire Delta), provider-independent (no LLM API calls).
+
+  9. **Type Safety**: FactPath has registered type. SET_FACT value must match path type. Type mismatch rejected.
+
+  10. **Scope Safety**: Operations cannot cross project boundaries. All EntityId references must be in same project.
+
+  11. **Evidence Requirements**: All operations must have evidence. Evidence must reference traceable source (text or artifact) with content_hash.
+
+  12. **Authority Boundary**: Only CanonCommitService can commit Delta to Canon. Extractor/Planner/Quality Gate/Permit Issuer cannot directly modify Canon.
+
+  Rejected alternatives: Free-dictionary changes, ExpectAny, NULL for deletion, partial success mode, provider-dependent reducers.
+
+  Establishes V2-008 implementation-deterministic semantics. Preserves V2-005/V2-006/V2-061/V2-007 authority boundaries. Canon integration (persistence, idempotency mechanism) deferred to V2-009/V2-010. Schema artifacts deferred (consistent with ADR-003 precedent).
+
+  Ratifies semantically complete, internally consistent, implementation-deterministic architecture decision; V2-008 implementation verification is separate.

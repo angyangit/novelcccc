@@ -33,7 +33,7 @@ decisions:
   verification_refs: []
 - id: ADR-004
   title: 有限变化语言与 reducer 前置条件
-  status: REQUIRED
+  status: ACCEPTED
   owner_role: domain-maintainer
   related_tasks:
   - V2-008
@@ -41,7 +41,7 @@ decisions:
   - V2-017
   decision_due_task: V2-008
   timing: before_interface_implementation
-  decision_record: null
+  decision_record: validation/execution/V2-008/adr-004-decision.yaml
   verification_refs: []
 - id: ADR-005
   title: 规范化字节 哈希与原始正文身份

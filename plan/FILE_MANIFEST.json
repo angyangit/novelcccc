@@ -1355,6 +1355,11 @@
     "sha256": "074d85168ead15338ead430e113cde4cb80ad29369edfdea265d0915a236a0eb"
   },
   {
+    "path": "decisions/ADR-004_FINITE_CHANGE_LANGUAGE_AND_REDUCER_PRECONDITIONS.md",
+    "bytes": 46089,
+    "sha256": "48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef"
+  },
+  {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",
     "bytes": 3286,
     "sha256": "c5f816a2050dacad720ff5a5600e0d89d52b19052d09dcd7d9af98299058eb4d"
@@ -1386,8 +1391,8 @@
   },
   {
     "path": "machine/decision-register.yaml",
-    "bytes": 5365,
-    "sha256": "ff8351d9f5a8d828b0f5f05ced96d5a12ee518fd713b04c00fc531885f814bc9"
+    "bytes": 5410,
+    "sha256": "95528902c6d877e6a113443bd91cc2d78245a24850636b07c94f4735da422853"
   },
   {
     "path": "machine/external-practice-register.yaml",

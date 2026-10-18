@@ -185,6 +185,13 @@ class ExpectValue:
 
     expected_value: Any
 
+    def __post_init__(self):
+        # Deep copy expected_value to prevent external mutation
+        if self.expected_value is not None:
+            object.__setattr__(
+                self, "expected_value", _deepcopy_value(self.expected_value)
+            )
+
 
 @dataclass(frozen=True)
 class ExpectAbsent:
@@ -1003,6 +1010,26 @@ class DeltaReducer:
         # Validate operation schema
         operation.validate_schema()
 
+        # Validate path against trusted registry
+        if isinstance(
+            operation, (SetFactOperation, EndFactOperation, UndoFactOperation)
+        ):
+            path_str = operation.path.path
+            if path_str not in FACT_PATH_REGISTRY:
+                raise ValueError(
+                    f"Unregistered FactPath: {path_str}. "
+                    f"Only registered paths allowed: {list(FACT_PATH_REGISTRY.keys())}"
+                )
+
+            # Validate expected_type matches registry
+            trusted_path = FACT_PATH_REGISTRY[path_str]
+            if operation.path.expected_type != trusted_path.expected_type:
+                raise ValueError(
+                    f"FactPath type mismatch for '{path_str}': "
+                    f"provided {operation.path.expected_type}, "
+                    f"registry expects {trusted_path.expected_type}"
+                )
+
         # Validate project isolation
         if isinstance(
             operation, (SetFactOperation, EndFactOperation, UndoFactOperation)
@@ -1045,13 +1072,22 @@ class DeltaReducer:
                 f"(current: {current_value}, exists: {path_exists})"
             )
 
-        # Type check (basic)
+        # Type check (strict: reject bool for int, enforce exact type)
         if operation.path.expected_type is not None:
             if operation.value != FactValue.UNKNOWN:
-                if not isinstance(operation.value, operation.path.expected_type):
+                value_type = type(operation.value)
+                expected_type = operation.path.expected_type
+
+                # Reject bool for int path (bool is subclass of int in Python)
+                if expected_type is int and value_type is bool:
                     raise ReducerError(
-                        f"Type mismatch: expected {operation.path.expected_type}, "
-                        f"got {type(operation.value)}"
+                        "Type mismatch: expected int, got bool. "
+                        "Use is_alive path for boolean values."
+                    )
+
+                if not isinstance(operation.value, expected_type):
+                    raise ReducerError(
+                        f"Type mismatch: expected {expected_type}, got {value_type}"
                     )
 
         # Apply state change (pure)

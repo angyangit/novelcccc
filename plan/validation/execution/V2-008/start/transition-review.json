@@ -1,0 +1,62 @@
+{
+  "record_type": "change_review_disposition",
+  "schema_version": "1.0",
+  "task_id": "V2-008",
+  "baseline_pin": {
+    "revision": "dd403b537962b0ef25d627b4dbe990fd9e7be39b",
+    "ref": "plan/validation/execution/V2-008/start/scope-baseline.json",
+    "sha256": "0f92c80e1e035072b758b7fc744b9619a5a418309766686a7cd33ac075107b80"
+  },
+  "review_date": "2026-10-18",
+  "review_scope": "V2-008 start transition governance changes (PR #8)",
+  "dispositions": [
+    {
+      "finding_id": "3841270fb04ce5339e5c1b220e98c921f188e660d3a1079593131d5e57b864a5",
+      "code": "MACHINE_POLICY_CHANGED",
+      "path": "plan/machine/implementation-backlog.yaml",
+      "layer": "index",
+      "old_sha": "c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3",
+      "new_sha": "5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12",
+      "disposition": "REVIEWED_NO_WEAKENING",
+      "reason": "Legitimate task lifecycle transition from PLANNED to READY_TO_START after execution packet preparation (PR #7) and scope authorization (PR #8). This is the expected progression per repository task execution protocol.",
+      "impact": "None - authorized governance progression enabling V2-008 IMPLEMENT action. No quality weakening, no requirement reduction, no validation bypass.",
+      "reviewer": "Repository Integrity Recovery Process",
+      "replacement_validation": "PR #8 CI validation 6/6 PASS (commit a8611aa489c3b17aa2c4dd6d720a4782109ba258, CI run 39048712543). Change represents readiness field transition /tasks/V2-008/readiness: PLANNED → READY_TO_START as documented in execution packet handoff.",
+      "authorization_source": {
+        "kind": "existing_user_task_authorization",
+        "ref": "plan/validation/execution/V2-008/start/authorization.md",
+        "sha256": "c86d75edafc2ecd61aa2c80fb10b78436af348cefd50621640c8857504325f1f"
+      },
+      "verification_artifacts": [
+        {
+          "ref": "plan/validation/execution/V2-008/start/transition-review.md",
+          "sha256": "57260a4879e44b7122f7b494b7bf12f574add1365a636bb3f6cd652c5f3f4cc9"
+        }
+      ]
+    },
+    {
+      "finding_id": "9554da69056475dbf55897d9486e2f9020e46fc5c94f1c00bb6065399e5a4140",
+      "code": "MACHINE_POLICY_CHANGED",
+      "path": "plan/machine/implementation-backlog.yaml",
+      "layer": "worktree",
+      "old_sha": "c91405b08a19d286a1941d9549fb6669a1049c1447e88e6df2c135af7059b0b3",
+      "new_sha": "5148e5b0af5be3a7cb746e5658b5227d4728711e3dcb6f4eec418eba924b7e12",
+      "disposition": "REVIEWED_NO_WEAKENING",
+      "reason": "Same as finding 3841270f - worktree layer detection of the same authorized readiness transition. Legitimate task lifecycle progression from PLANNED to READY_TO_START.",
+      "impact": "None - authorized governance progression. Worktree layer independently detected the same state change already reviewed in index layer.",
+      "reviewer": "Repository Integrity Recovery Process",
+      "replacement_validation": "Same validation as index layer finding: PR #8 CI 6/6 PASS. Both layers detect identical readiness field change from same PR #8 merge.",
+      "authorization_source": {
+        "kind": "existing_user_task_authorization",
+        "ref": "plan/validation/execution/V2-008/start/authorization.md",
+        "sha256": "c86d75edafc2ecd61aa2c80fb10b78436af348cefd50621640c8857504325f1f"
+      },
+      "verification_artifacts": [
+        {
+          "ref": "plan/validation/execution/V2-008/start/transition-review.md",
+          "sha256": "57260a4879e44b7122f7b494b7bf12f574add1365a636bb3f6cd652c5f3f4cc9"
+        }
+      ]
+    }
+  ]
+}

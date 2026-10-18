@@ -19,8 +19,8 @@ action: IMPLEMENT
 change_review:
   scope_revision: dd403b537962b0ef25d627b4dbe990fd9e7be39b
   scope_ref: plan/validation/execution/V2-008/start/scope-baseline.json
-  review_revision: 455bb21ca82fce988a3d13a3a43b1ba70e153210
-  review_ref: plan/validation/execution/V2-008/start/transition-review.md
+  review_revision: cbfa165300653978e017148b6e1b73d8cc6f1f23
+  review_ref: plan/validation/execution/V2-008/start/transition-review.json
 inputs:
 - source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
   ref: validation/execution/V2-008/inputs/5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75.txt

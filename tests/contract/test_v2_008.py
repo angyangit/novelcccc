@@ -1116,6 +1116,7 @@ def test_undo_restores_to_absent_when_no_previous_value(
         commit_changes=(
             CommitChange(
                 commit_id=commit_1,
+                project_id=project_id,
                 subject=entity_id,
                 path="age",
                 value_before=None,
@@ -1176,6 +1177,7 @@ def test_undo_restores_to_previous_value(
         commit_changes=(
             CommitChange(
                 commit_id=commit_1,
+                project_id=project_id,
                 subject=entity_id,
                 path="age",
                 value_before=None,
@@ -1217,6 +1219,7 @@ def test_undo_restores_to_previous_value(
         + (
             CommitChange(
                 commit_id=commit_2,
+                project_id=project_id,
                 subject=entity_id,
                 path="age",
                 value_before=25,
@@ -1276,6 +1279,7 @@ def test_undo_restores_to_unknown(sample_evidence: EvidenceRef, reducer: DeltaRe
         commit_changes=(
             CommitChange(
                 commit_id=commit_1,
+                project_id=project_id,
                 subject=entity_id,
                 path="age",
                 value_before=None,
@@ -1316,6 +1320,7 @@ def test_undo_restores_to_unknown(sample_evidence: EvidenceRef, reducer: DeltaRe
         + (
             CommitChange(
                 commit_id=commit_2,
+                project_id=project_id,
                 subject=entity_id,
                 path="age",
                 value_before=FactValue.UNKNOWN,
@@ -1374,6 +1379,7 @@ def test_undo_rejects_stale_current_value(
         commit_changes=(
             CommitChange(
                 commit_id=commit_2,
+                project_id=project_id,
                 subject=entity_id,
                 path="age",
                 value_before=25,
@@ -1383,6 +1389,7 @@ def test_undo_rejects_stale_current_value(
             ),
             CommitChange(
                 commit_id=commit_3,
+                project_id=project_id,
                 subject=entity_id,
                 path="age",
                 value_before=30,
@@ -1455,6 +1462,91 @@ def test_undo_rejects_missing_commit(
 
     with pytest.raises(ReducerError, match="Original commit not found"):
         reducer.apply_delta(state, delta_undo)
+
+
+def test_undo_rejects_cross_project_commit(
+    sample_evidence: EvidenceRef, reducer: DeltaReducer
+):
+    """UNDO_FACT rejects when trying to undo commit from different project."""
+    project_a = ProjectId("project-a")
+    project_b = ProjectId("project-b")
+    entity_id = EntityId(str(uuid.uuid4()))
+    commit_1 = CommitId("commit-001")
+
+    # Initial state in project-a
+    initial_state = CanonState(
+        project_id=project_a,
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
+        commit_changes=(),
+    )
+
+    # Commit in project-a
+    delta_1 = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_a,
+        operations=(
+            SetFactOperation(
+                subject=entity_id,
+                scope=project_a,
+                path=FactPath("age", int),
+                value=30,
+                precondition=ExpectAbsent(),
+                evidence=sample_evidence,
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    state_after_commit = reducer.apply_delta(initial_state, delta_1)
+    # Add commit to history with change tracking (project-a)
+    state_after_commit = CanonState(
+        project_id=state_after_commit.project_id,
+        facts=state_after_commit.facts,
+        tombstones=state_after_commit.tombstones,
+        commit_history=(commit_1,),
+        commit_changes=(
+            CommitChange(
+                commit_id=commit_1,
+                project_id=project_a,  # Commit in project-a
+                subject=entity_id,
+                path="age",
+                value_before=None,
+                existed_before=False,
+                value_after=30,
+                existed_after=True,
+            ),
+        ),
+    )
+
+    # Try to UNDO from project-b (should be rejected)
+    delta_undo = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_b,  # Different project!
+        operations=(
+            UndoFactOperation(
+                subject=entity_id,
+                scope=project_b,  # Different project scope!
+                path=FactPath("age", int),
+                original_commit_ref=commit_1,
+                precondition=ExpectValue(30),
+                evidence=sample_evidence,
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    with pytest.raises(
+        ReducerError, match="Delta project .* does not match Canon project"
+    ):
+        reducer.apply_delta(state_after_commit, delta_undo)
 
 
 """

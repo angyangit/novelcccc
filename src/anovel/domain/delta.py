@@ -653,6 +653,7 @@ class CommitChange:
 
     Attributes:
         commit_id: The commit that made this change
+        project_id: Project scope (must match operation scope)
         subject: Entity that was modified
         path: Fact path that was modified
         value_before: Value before commit (None if didn't exist)
@@ -662,6 +663,7 @@ class CommitChange:
     """
 
     commit_id: CommitId
+    project_id: ProjectId
     subject: EntityId
     path: str
     value_before: Any
@@ -736,6 +738,7 @@ class CanonState:
         if commit_id is not None:
             change = CommitChange(
                 commit_id=commit_id,
+                project_id=self.project_id,
                 subject=subject,
                 path=path.path,
                 value_before=old_value,
@@ -775,6 +778,7 @@ class CanonState:
             old_value, existed_before = self.get_value(subject, path)
             change = CommitChange(
                 commit_id=commit_id,
+                project_id=self.project_id,
                 subject=subject,
                 path=path.path,
                 value_before=old_value,
@@ -978,6 +982,13 @@ class DeltaReducer:
             raise ReducerError(
                 f"No change record found for commit {operation.original_commit_ref} "
                 f"on {operation.subject}:{operation.path.path}"
+            )
+
+        # Verify project_id matches (prevent cross-project UNDO)
+        if commit_change.project_id != operation.scope:
+            raise ReducerError(
+                f"Cannot undo commit from different project: "
+                f"commit project={commit_change.project_id}, operation scope={operation.scope}"
             )
 
         # Verify this commit actually modified this specific subject/path

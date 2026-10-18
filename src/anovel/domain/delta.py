@@ -27,10 +27,12 @@ Contract: V2-008 Implementation per ADR-004
 
 from __future__ import annotations
 
+import copy
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from types import MappingProxyType
 from typing import Any, Literal, NewType, Protocol
 
 from .identity import EntityId, ProjectId
@@ -42,6 +44,28 @@ DeltaId = NewType("DeltaId", str)
 
 CommitId = NewType("CommitId", str)
 """Reference to Canon commit (for UNDO_FACT)."""
+
+
+# --- Deep Copy Utility ---
+
+
+def _deepcopy_value(value: Any) -> Any:
+    """
+    Deep copy a value to prevent mutable reference leaks.
+
+    For nested dicts/lists, creates defensive copies.
+    For immutable types (int, str, bool, None, Enum), returns as-is.
+    For FactValue.UNKNOWN, returns as-is.
+
+    Contract: Prevent nested mutable payload mutations from affecting immutable objects.
+    """
+    if value is None or isinstance(value, (int, str, bool, float, Enum)):
+        return value
+    if isinstance(value, FactValue):
+        return value
+    # Deep copy for mutable structures (dict, list, etc.)
+    return copy.deepcopy(value)
+
 
 # --- Enums ---
 
@@ -107,6 +131,44 @@ class FactPath:
 
     path: str
     expected_type: type
+
+
+# --- Trusted Fact Path Registry ---
+
+# Minimal, genre-neutral registry of allowed fact paths per ADR-004 line 809.
+# Read-only, trusted source of truth for path types.
+# Prevents untrusted callers from specifying arbitrary expected_type.
+_FACT_PATH_REGISTRY_INTERNAL = {
+    "age": FactPath("age", int),
+    "is_alive": FactPath("is_alive", bool),
+    "name": FactPath("name", str),
+    "description": FactPath("description", str),
+}
+
+FACT_PATH_REGISTRY: MappingProxyType[str, FactPath] = MappingProxyType(
+    _FACT_PATH_REGISTRY_INTERNAL
+)
+
+
+def get_fact_path(path_str: str) -> FactPath:
+    """
+    Get FactPath from trusted registry.
+
+    Args:
+        path_str: Path string to look up
+
+    Returns:
+        Registered FactPath with authoritative type
+
+    Raises:
+        ValueError: Path not in registry (unregistered)
+
+    Contract: ADR-004 line 809 - reject unregistered paths
+    """
+    if path_str not in FACT_PATH_REGISTRY:
+        raise ValueError(f"Unregistered FactPath: {path_str}")
+
+    return FACT_PATH_REGISTRY[path_str]
 
 
 # --- Precondition Types ---
@@ -225,7 +287,7 @@ class SetFactOperation(Operation):
     evidence: EvidenceRef | None = None
 
     def __post_init__(self) -> None:
-        """Validate operation type and version consistency."""
+        """Validate operation type and version consistency, and deep copy mutable values."""
         if self.operation_type != OperationType.SET_FACT:
             raise ValueError(
                 f"SetFactOperation must have operation_type=SET_FACT, got {self.operation_type}"
@@ -235,6 +297,11 @@ class SetFactOperation(Operation):
                 f"Unregistered operation_version: {self.operation_version}. "
                 f"Registered versions: 1.0.0"
             )
+
+        # Deep copy value to prevent mutable reference leaks
+        if self.value is not None and self.value != FactValue.UNKNOWN:
+            copied_value = _deepcopy_value(self.value)
+            object.__setattr__(self, "value", copied_value)
 
     def validate_schema(self) -> None:
         """Validate SET_FACT payload completeness."""
@@ -671,6 +738,16 @@ class CommitChange:
     value_after: Any
     existed_after: bool
 
+    def __post_init__(self) -> None:
+        """Deep copy mutable values to prevent reference leaks."""
+        # Deep copy values to ensure immutability
+        if self.value_before is not None:
+            copied_before = _deepcopy_value(self.value_before)
+            object.__setattr__(self, "value_before", copied_before)
+        if self.value_after is not None:
+            copied_after = _deepcopy_value(self.value_after)
+            object.__setattr__(self, "value_after", copied_after)
+
 
 @dataclass(frozen=True)
 class CanonState:
@@ -694,17 +771,24 @@ class CanonState:
     commit_history: tuple[CommitId, ...]  # for UNDO_FACT validation
     commit_changes: tuple[CommitChange, ...] = ()  # commit change history for UNDO
 
+    def __post_init__(self) -> None:
+        """Deep copy all fact values to prevent mutable reference leaks."""
+        # Deep copy all values in facts tuple
+        copied_facts = tuple((key, _deepcopy_value(value)) for key, value in self.facts)
+        object.__setattr__(self, "facts", copied_facts)
+
     def get_value(self, subject: EntityId, path: FactPath) -> tuple[Any, bool]:
         """
         Get current value at path.
 
         Returns:
-            (value, exists): Value and existence flag
+            (value, exists): Value and existence flag (value is deep copied)
         """
         key = (subject, path.path)
         for k, v in self.facts:
             if k == key:
-                return (v, True)
+                # Deep copy to prevent mutation of stored value
+                return (_deepcopy_value(v), True)
         return (None, False)
 
     def set_value(
@@ -722,7 +806,7 @@ class CanonState:
         Args:
             subject: Entity being modified
             path: Fact path
-            value: New value
+            value: New value (will be deep copied)
             commit_id: Optional commit ID to track this change for UNDO
         """
         key = (subject, path.path)
@@ -730,8 +814,13 @@ class CanonState:
         # Get old value before change
         old_value, existed_before = self.get_value(subject, path)
 
+        # Deep copy input value to prevent mutation
+        copied_value = _deepcopy_value(value)
+
         # Remove old value if exists, add new value
-        new_facts = tuple((k, v) for (k, v) in self.facts if k != key) + ((key, value),)
+        new_facts = tuple((k, v) for (k, v) in self.facts if k != key) + (
+            (key, copied_value),
+        )
 
         # Track commit change if commit_id provided
         new_changes = self.commit_changes
@@ -743,7 +832,7 @@ class CanonState:
                 path=path.path,
                 value_before=old_value,
                 existed_before=existed_before,
-                value_after=value,
+                value_after=copied_value,
                 existed_after=True,
             )
             new_changes = self.commit_changes + (change,)
@@ -822,6 +911,36 @@ class CanonState:
             ):
                 return change
         return None
+
+    def has_subsequent_modifications(
+        self, commit_ref: CommitId, subject: EntityId, path: str
+    ) -> bool:
+        """
+        Check if any commit after commit_ref modified the same subject:path.
+
+        Used for ABA scenario detection in UNDO_FACT.
+
+        Returns:
+            True if subsequent commits modified this fact, False otherwise
+        """
+        # Find position of target commit in history
+        try:
+            target_idx = self.commit_history.index(commit_ref)
+        except ValueError:
+            # Commit not in history - fail closed
+            return True
+
+        # Check all commits after target_idx
+        commits_after = self.commit_history[target_idx + 1 :]
+        for later_commit in commits_after:
+            for change in self.commit_changes:
+                if (
+                    change.commit_id == later_commit
+                    and change.subject == subject
+                    and change.path == path
+                ):
+                    return True
+        return False
 
 
 # --- Reference Reducer Implementation ---
@@ -999,6 +1118,15 @@ class DeltaReducer:
             raise ReducerError(
                 f"Commit {operation.original_commit_ref} did not modify "
                 f"{operation.subject}:{operation.path.path}"
+            )
+
+        # Check for subsequent modifications (ABA scenario protection)
+        if canon_state.has_subsequent_modifications(
+            operation.original_commit_ref, operation.subject, operation.path.path
+        ):
+            raise ReducerError(
+                f"Cannot undo commit {operation.original_commit_ref}: "
+                f"fact {operation.subject}:{operation.path.path} has been modified by subsequent commits"
             )
 
         # Get current value

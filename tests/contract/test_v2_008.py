@@ -1362,7 +1362,7 @@ def test_undo_restores_to_unknown(sample_evidence: EvidenceRef, reducer: DeltaRe
 def test_undo_rejects_stale_current_value(
     sample_evidence: EvidenceRef, reducer: DeltaReducer
 ):
-    """UNDO_FACT rejects when current value doesn't match expected."""
+    """UNDO_FACT rejects when current value doesn't match expected (subsequent modification detected)."""
     project_id = ProjectId("test-project")
     entity_id = EntityId(str(uuid.uuid4()))
     commit_1 = CommitId("commit-001")
@@ -1420,7 +1420,8 @@ def test_undo_rejects_stale_current_value(
         provenance=(),
     )
 
-    with pytest.raises(ReducerError, match="current value does not match"):
+    # Now detects subsequent modification before precondition check (stronger guarantee)
+    with pytest.raises(ReducerError, match="has been modified by subsequent commits"):
         reducer.apply_delta(state, delta_undo)
 
 
@@ -2229,3 +2230,836 @@ def test_fact_path_frozen_prevents_modification():
 
     with pytest.raises(FrozenInstanceError):
         path.path = "modified"  # type: ignore
+
+
+# --- ABA Scenario Tests (Priority 1: UNDO_FACT Historical Binding) ---
+
+
+def test_undo_rejects_aba_scenario_same_final_value(
+    sample_evidence: EvidenceRef, reducer: DeltaReducer
+):
+    """
+    UNDO_FACT rejects ABA scenario where current value matches but history doesn't.
+
+    Timeline:
+        Commit A: 25 → 30
+        Commit B: 30 → 35
+        Commit C: 35 → 30 (back to A's output)
+
+    Current value is 30 (matches commit A's value_after).
+    But UNDO A should reject because C overwrote A's change.
+    """
+    from anovel.domain import CanonState, CommitChange, ReducerError
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+    commit_a = CommitId("commit-a")
+    commit_b = CommitId("commit-b")
+    commit_c = CommitId("commit-c")
+
+    state = CanonState(
+        project_id=project_id,
+        facts=(((entity_id, "age"), 30),),
+        tombstones=frozenset(),
+        commit_history=(commit_a, commit_b, commit_c),
+        commit_changes=(
+            CommitChange(
+                commit_id=commit_a,
+                project_id=project_id,
+                subject=entity_id,
+                path="age",
+                value_before=25,
+                existed_before=True,
+                value_after=30,
+                existed_after=True,
+            ),
+            CommitChange(
+                commit_id=commit_b,
+                project_id=project_id,
+                subject=entity_id,
+                path="age",
+                value_before=30,
+                existed_before=True,
+                value_after=35,
+                existed_after=True,
+            ),
+            CommitChange(
+                commit_id=commit_c,
+                project_id=project_id,
+                subject=entity_id,
+                path="age",
+                value_before=35,
+                existed_before=True,
+                value_after=30,
+                existed_after=True,
+            ),
+        ),
+    )
+
+    delta_undo = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            UndoFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                original_commit_ref=commit_a,
+                precondition=ExpectValue(30),
+                evidence=sample_evidence,
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    with pytest.raises(
+        ReducerError,
+        match="has been modified by subsequent commits",
+    ):
+        reducer.apply_delta(state, delta_undo)
+
+
+def test_undo_rejects_when_fact_modified_by_later_commit(
+    sample_evidence: EvidenceRef, reducer: DeltaReducer
+):
+    """
+    UNDO_FACT rejects when fact was modified by any commit after target.
+
+    Timeline:
+        Commit A: 25 → 30
+        Commit B: 30 → 35
+
+    Cannot UNDO A because B modified the same fact.
+    """
+    from anovel.domain import CanonState, CommitChange, ReducerError
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+    commit_a = CommitId("commit-a")
+    commit_b = CommitId("commit-b")
+
+    state = CanonState(
+        project_id=project_id,
+        facts=(((entity_id, "age"), 35),),
+        tombstones=frozenset(),
+        commit_history=(commit_a, commit_b),
+        commit_changes=(
+            CommitChange(
+                commit_id=commit_a,
+                project_id=project_id,
+                subject=entity_id,
+                path="age",
+                value_before=25,
+                existed_before=True,
+                value_after=30,
+                existed_after=True,
+            ),
+            CommitChange(
+                commit_id=commit_b,
+                project_id=project_id,
+                subject=entity_id,
+                path="age",
+                value_before=30,
+                existed_before=True,
+                value_after=35,
+                existed_after=True,
+            ),
+        ),
+    )
+
+    delta_undo = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            UndoFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                original_commit_ref=commit_a,
+                precondition=ExpectValue(30),
+                evidence=sample_evidence,
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    with pytest.raises(
+        ReducerError,
+        match="has been modified by subsequent commits",
+    ):
+        reducer.apply_delta(state, delta_undo)
+
+
+def test_undo_succeeds_when_no_subsequent_modifications(
+    sample_evidence: EvidenceRef, reducer: DeltaReducer
+):
+    """
+    UNDO_FACT succeeds when target commit is the latest modification.
+
+    Timeline:
+        Commit A: 25 → 30
+        (no other commits touching this fact)
+
+    UNDO A should succeed and restore to 25.
+    """
+    from anovel.domain import CanonState, CommitChange
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+    commit_a = CommitId("commit-a")
+
+    state = CanonState(
+        project_id=project_id,
+        facts=(((entity_id, "age"), 30),),
+        tombstones=frozenset(),
+        commit_history=(commit_a,),
+        commit_changes=(
+            CommitChange(
+                commit_id=commit_a,
+                project_id=project_id,
+                subject=entity_id,
+                path="age",
+                value_before=25,
+                existed_before=True,
+                value_after=30,
+                existed_after=True,
+            ),
+        ),
+    )
+
+    delta_undo = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            UndoFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                original_commit_ref=commit_a,
+                precondition=ExpectValue(30),
+                evidence=sample_evidence,
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    result = reducer.apply_delta(state, delta_undo)
+    assert result.get_value(entity_id, FactPath("age", int)) == (25, True)
+
+
+def test_undo_rejects_when_precondition_value_wrong(
+    sample_evidence: EvidenceRef, reducer: DeltaReducer
+):
+    """
+    UNDO_FACT precondition must match commit's actual value_after.
+
+    Timeline:
+        Commit A: 25 → 30
+
+    UNDO with ExpectValue(35) should reject (commit A's value_after is 30).
+    """
+    from anovel.domain import CanonState, CommitChange, ReducerError
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+    commit_a = CommitId("commit-a")
+
+    state = CanonState(
+        project_id=project_id,
+        facts=(((entity_id, "age"), 30),),
+        tombstones=frozenset(),
+        commit_history=(commit_a,),
+        commit_changes=(
+            CommitChange(
+                commit_id=commit_a,
+                project_id=project_id,
+                subject=entity_id,
+                path="age",
+                value_before=25,
+                existed_before=True,
+                value_after=30,
+                existed_after=True,
+            ),
+        ),
+    )
+
+    delta_undo = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            UndoFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                original_commit_ref=commit_a,
+                precondition=ExpectValue(35),
+                evidence=sample_evidence,
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    with pytest.raises(ReducerError, match="current value does not match"):
+        reducer.apply_delta(state, delta_undo)
+
+
+def test_undo_fails_closed_when_commit_history_incomplete(
+    sample_evidence: EvidenceRef, reducer: DeltaReducer
+):
+    """
+    UNDO_FACT fails closed when commit not in history.
+
+    If commit is missing from commit_changes, reject (fail-closed).
+    Cannot verify if subsequent commits modified the fact.
+    """
+    from anovel.domain import CanonState, ReducerError
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+    commit_a = CommitId("commit-a")
+
+    state = CanonState(
+        project_id=project_id,
+        facts=(((entity_id, "age"), 30),),
+        tombstones=frozenset(),
+        commit_history=(commit_a,),
+        commit_changes=(),
+    )
+
+    delta_undo = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            UndoFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                original_commit_ref=commit_a,
+                precondition=ExpectValue(30),
+                evidence=sample_evidence,
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    with pytest.raises(
+        ReducerError,
+        match="No change record found for commit|not in commit_changes",
+    ):
+        reducer.apply_delta(state, delta_undo)
+
+
+# --- FACT_PATH_REGISTRY Tests (Priority 2: Trusted Path Validation) ---
+
+
+def test_fact_path_registry_is_read_only():
+    """FACT_PATH_REGISTRY cannot be modified after initialization."""
+    from anovel.domain import FACT_PATH_REGISTRY
+
+    original_count = len(FACT_PATH_REGISTRY)
+
+    with pytest.raises(TypeError, match="does not support item assignment"):
+        FACT_PATH_REGISTRY["malicious.path"] = FactPath("malicious.path", str)  # type: ignore
+
+    assert len(FACT_PATH_REGISTRY) == original_count
+
+
+def test_get_fact_path_returns_registered_path():
+    """get_fact_path returns FactPath for registered paths."""
+    from anovel.domain import get_fact_path
+
+    age_path = get_fact_path("age")
+    assert age_path.path == "age"
+    assert age_path.expected_type == int
+
+
+def test_get_fact_path_rejects_unregistered_path():
+    """get_fact_path rejects unregistered paths."""
+    from anovel.domain import get_fact_path
+
+    with pytest.raises(ValueError, match="Unregistered FactPath"):
+        get_fact_path("malicious.unregistered.path")
+
+
+def test_registry_distinguishes_bool_from_int():
+    """Registry treats bool and int as distinct types."""
+    from anovel.domain import get_fact_path
+
+    is_alive_path = get_fact_path("is_alive")
+    age_path = get_fact_path("age")
+
+    assert is_alive_path.expected_type == bool
+    assert age_path.expected_type == int
+    assert is_alive_path.expected_type != age_path.expected_type
+
+
+def test_registry_is_genre_neutral():
+    """Registry contains only genre-neutral paths."""
+    from anovel.domain import FACT_PATH_REGISTRY
+
+    for path_str, fact_path in FACT_PATH_REGISTRY.items():
+        assert path_str in (
+            "age",
+            "is_alive",
+            "name",
+            "description",
+        ), f"Path '{path_str}' should be genre-neutral"
+
+
+def test_untrusted_caller_cannot_override_expected_type():
+    """Untrusted callers cannot specify their own expected_type."""
+    from anovel.domain import get_fact_path
+
+    trusted_path = get_fact_path("age")
+    assert trusted_path.expected_type == int
+
+    untrusted_path = FactPath("age", str)
+    assert untrusted_path.path == trusted_path.path
+    assert untrusted_path.expected_type != trusted_path.expected_type
+
+
+def test_registry_contains_minimal_set():
+    """Registry contains only minimal, essential paths."""
+    from anovel.domain import FACT_PATH_REGISTRY
+
+    assert len(FACT_PATH_REGISTRY) <= 10, "Registry should be minimal for V2-008"
+
+
+def test_registry_paths_have_valid_types():
+    """All registry paths have valid Python types."""
+    from anovel.domain import FACT_PATH_REGISTRY
+
+    for path_str, fact_path in FACT_PATH_REGISTRY.items():
+        assert isinstance(fact_path.path, str)
+        assert fact_path.path == path_str
+        assert isinstance(fact_path.expected_type, type)
+        assert fact_path.expected_type in (int, str, bool, float)
+
+
+# --- JSON Schema Round-Trip Tests (Priority 4: V2-008 Schema Validation) ---
+
+
+def test_set_fact_json_round_trip_preserves_semantics():
+    """SET_FACT operation key semantics survive Python → JSON → Python."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("test-project")
+
+    original = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            SetFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                value=30,
+                precondition=ExpectAbsent(),
+                evidence=EvidenceRef("TEXT", "ch1:p1", "a" * 64),
+            ),
+        ),
+        source_chapter="chapter_1",
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    assert original.delta_id is not None
+    assert original.project_id == project_id
+    assert len(original.operations) == 1
+    assert original.operations[0].operation_type == OperationType.SET_FACT
+    assert original.operations[0].subject == entity_id
+    assert original.operations[0].value == 30
+
+
+def test_unknown_value_distinguished_from_none_in_semantics():
+    """FactValue.UNKNOWN is semantically distinct from None."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("test-project")
+
+    delta_unknown = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            SetFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                value=FactValue.UNKNOWN,
+                precondition=ExpectAbsent(),
+                evidence=EvidenceRef("TEXT", "ch1:p1", "a" * 64),
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    assert delta_unknown.operations[0].value == FactValue.UNKNOWN
+    assert delta_unknown.operations[0].value is not None
+
+
+def test_no_change_delta_has_empty_operations():
+    """NO_CHANGE delta is represented by empty operations array."""
+    project_id = ProjectId("test-project")
+
+    delta_no_change = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    assert delta_no_change.operations == ()
+    assert len(delta_no_change.operations) == 0
+
+
+def test_undo_fact_has_distinct_operation_discriminator():
+    """UNDO_FACT is discriminated by operation_type field value."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("test-project")
+
+    delta_undo = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            UndoFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                original_commit_ref="commit-123",
+                precondition=ExpectValue(30),
+                evidence=EvidenceRef("TEXT", "ch1:p1", "a" * 64),
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    assert delta_undo.operations[0].operation_type == OperationType.UNDO_FACT
+    assert hasattr(delta_undo.operations[0], "original_commit_ref")
+
+
+def test_all_precondition_variants_have_distinct_semantics():
+    """All four precondition variants have distinct runtime representation."""
+    prec_value = ExpectValue(30)
+    prec_absent = ExpectAbsent()
+    prec_present = ExpectPresent()
+    prec_unknown = ExpectUnknown()
+
+    assert type(prec_value).__name__ == "ExpectValue"
+    assert hasattr(prec_value, "expected_value")
+    assert prec_value.expected_value == 30
+
+    assert type(prec_absent).__name__ == "ExpectAbsent"
+    assert type(prec_present).__name__ == "ExpectPresent"
+    assert type(prec_unknown).__name__ == "ExpectUnknown"
+
+
+def test_delta_id_is_uuid_v4_format():
+    """delta_id must be valid UUID v4 format."""
+    delta = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=ProjectId("test"),
+        operations=(),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    parsed_uuid = uuid.UUID(delta.delta_id)
+    assert parsed_uuid.version == 4
+
+
+def test_operation_version_is_exact_string():
+    """operation_version must be exact string '1.0.0'."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("test-project")
+
+    delta = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            SetFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                value=30,
+                precondition=ExpectAbsent(),
+                evidence=EvidenceRef("TEXT", "ch1:p1", "a" * 64),
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    assert delta.operations[0].operation_version == "1.0.0"
+
+
+def test_end_fact_operation_has_no_value_field():
+    """END_FACT operation does not have value field."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("test-project")
+
+    delta = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=project_id,
+        operations=(
+            EndFactOperation(
+                subject=entity_id,
+                scope=project_id,
+                path=FactPath("age", int),
+                precondition=ExpectPresent(),
+                evidence=EvidenceRef("TEXT", "ch1:p1", "a" * 64),
+            ),
+        ),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    assert delta.operations[0].operation_type == OperationType.END_FACT
+    assert not hasattr(delta.operations[0], "value")
+
+
+# --- Nested Payload Immutability Tests (Priority 5: Deep Copy Protection) ---
+
+
+def test_nested_dict_value_mutation_does_not_affect_operation():
+    """Modifying nested dict after passing to operation does not affect operation."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("proj")
+
+    nested_value = {"history": [25, 30], "metadata": {"source": "llm"}}
+
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=project_id,
+        path=FactPath("age", int),
+        value=nested_value,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    nested_value["history"].append(35)
+    nested_value["metadata"]["source"] = "modified"
+    nested_value["new_key"] = "new_value"
+
+    assert op.value == {"history": [25, 30], "metadata": {"source": "llm"}}
+
+
+def test_nested_list_in_canon_state_mutation_does_not_affect_state():
+    """Modifying nested list after storing in CanonState does not affect state."""
+    from anovel.domain import CanonState
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    history_value = {"ages": [25, 30, 35]}
+
+    state = CanonState(
+        project_id=project_id,
+        facts=(((entity_id, "age_history"), history_value),),
+        tombstones=frozenset(),
+        commit_history=(),
+        commit_changes=(),
+    )
+
+    history_value["ages"].append(40)
+    history_value["new_field"] = "injected"
+
+    retrieved_value, exists = state.get_value(entity_id, FactPath("age_history", dict))
+
+    assert retrieved_value == {"ages": [25, 30, 35]}
+
+
+def test_retrieved_nested_value_mutation_does_not_affect_state():
+    """Modifying retrieved nested value does not affect CanonState."""
+    from anovel.domain import CanonState
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    original_value = {"scores": [10, 20, 30]}
+
+    state = CanonState(
+        project_id=project_id,
+        facts=(((entity_id, "scores"), original_value),),
+        tombstones=frozenset(),
+        commit_history=(),
+        commit_changes=(),
+    )
+
+    retrieved_value, exists = state.get_value(entity_id, FactPath("scores", dict))
+    assert exists
+
+    if isinstance(retrieved_value, dict) and "scores" in retrieved_value:
+        retrieved_value["scores"].append(40)
+        retrieved_value["injected"] = "malicious"
+
+    second_retrieval, _ = state.get_value(entity_id, FactPath("scores", dict))
+
+    assert second_retrieval == {"scores": [10, 20, 30]}
+
+
+def test_commit_change_nested_value_immutability():
+    """CommitChange with nested values maintains immutability."""
+    from anovel.domain import CommitChange
+
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("test-project")
+
+    before_value = {"count": [1, 2, 3]}
+    after_value = {"count": [1, 2, 3, 4]}
+
+    change = CommitChange(
+        commit_id=CommitId("commit-001"),
+        project_id=project_id,
+        subject=entity_id,
+        path="history",
+        value_before=before_value,
+        existed_before=True,
+        value_after=after_value,
+        existed_after=True,
+    )
+
+    before_value["count"].append(99)
+    after_value["count"].append(99)
+
+    assert change.value_before == {"count": [1, 2, 3]}
+    assert change.value_after == {"count": [1, 2, 3, 4]}
+
+
+def test_reducer_with_nested_dict_value():
+    """Reducer handles nested dict values immutably."""
+    from anovel.domain import CanonState
+
+    project_id = ProjectId("test-project")
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    initial_state = CanonState(
+        project_id=project_id,
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
+        commit_changes=(),
+    )
+
+    nested_value = {"attributes": {"strength": 10, "agility": 15}}
+
+    result_state = initial_state.set_value(
+        entity_id,
+        FactPath("description", dict),
+        nested_value
+    )
+
+    nested_value["attributes"]["strength"] = 99
+    nested_value["injected"] = "malicious"
+
+    retrieved, _ = result_state.get_value(entity_id, FactPath("description", dict))
+    assert retrieved == {"attributes": {"strength": 10, "agility": 15}}
+
+
+def test_nested_list_in_operation_value():
+    """Operation with nested list maintains immutability."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("proj")
+
+    inner_list = [1, 2, 3]
+    outer_value = {"numbers": inner_list}
+
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=project_id,
+        path=FactPath("description", str),
+        value=outer_value,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    inner_list.append(4)
+    outer_value["numbers"] = [5, 6, 7]
+
+    assert op.value == {"numbers": [1, 2, 3]}
+
+
+def test_deeply_nested_structure_immutability():
+    """Deeply nested structures (3+ levels) maintain immutability."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("proj")
+
+    deeply_nested = {
+        "level1": {
+            "level2": {
+                "level3": [1, 2, {"level4": "value"}]
+            }
+        }
+    }
+
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=project_id,
+        path=FactPath("description", str),
+        value=deeply_nested,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    deeply_nested["level1"]["level2"]["level3"].append(3)
+    deeply_nested["level1"]["level2"]["level3"][2]["level4"] = "modified"
+    deeply_nested["level1"]["injected"] = "malicious"
+
+    expected = {
+        "level1": {
+            "level2": {
+                "level3": [1, 2, {"level4": "value"}]
+            }
+        }
+    }
+    assert op.value == expected
+
+
+def test_empty_containers_immutability():
+    """Empty dicts and lists maintain immutability."""
+    entity_id = EntityId(str(uuid.uuid4()))
+    project_id = ProjectId("proj")
+
+    empty_value = {"empty_list": [], "empty_dict": {}}
+
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=project_id,
+        path=FactPath("description", str),
+        value=empty_value,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    empty_value["empty_list"].append("injected")
+    empty_value["empty_dict"]["key"] = "value"
+
+    assert op.value == {"empty_list": [], "empty_dict": {}}

@@ -30,6 +30,7 @@ from .character import (
     create_character,
 )
 from .delta import (
+    FACT_PATH_REGISTRY,
     CanonState,
     CommitChange,
     CommitId,
@@ -53,6 +54,7 @@ from .delta import (
     UndoFactOperation,
     ValidationResult,
     evaluate_precondition,
+    get_fact_path,
     validate_operation,
 )
 
@@ -130,6 +132,8 @@ __all__ = [
     "ExpectUnknown",
     "FactPath",
     "FactValue",
+    "FACT_PATH_REGISTRY",
+    "get_fact_path",
     "EvidenceRef",
     "ValidationResult",
     "Reducer",

@@ -10,7 +10,33 @@ Public submodules:
     character: Character aggregate with knowledge, goals, and intents
     events: Event occurrence and timeline semantics
     promises: Promise lifecycle and fulfillment
+    delta: NarrativeDelta finite change language and reducer preconditions
 """
+
+# V2-008 NarrativeDelta
+from .delta import (
+    CommitId,
+    DeltaId,
+    EndFactOperation,
+    EvidenceRef,
+    ExpectAbsent,
+    ExpectPresent,
+    ExpectUnknown,
+    ExpectValue,
+    FactPath,
+    FactValue,
+    NarrativeDelta,
+    Operation,
+    OperationType,
+    Precondition,
+    Reducer,
+    ReducerError,
+    SetFactOperation,
+    UndoFactOperation,
+    ValidationResult,
+    evaluate_precondition,
+    validate_operation,
+)
 
 # V2-005 Entity Identity
 # V2-061 Character
@@ -86,6 +112,28 @@ from .promises import (
 )
 
 __all__ = [
+    # V2-008 NarrativeDelta
+    "DeltaId",
+    "CommitId",
+    "NarrativeDelta",
+    "Operation",
+    "OperationType",
+    "SetFactOperation",
+    "EndFactOperation",
+    "UndoFactOperation",
+    "Precondition",
+    "ExpectValue",
+    "ExpectAbsent",
+    "ExpectPresent",
+    "ExpectUnknown",
+    "FactPath",
+    "FactValue",
+    "EvidenceRef",
+    "ValidationResult",
+    "Reducer",
+    "ReducerError",
+    "validate_operation",
+    "evaluate_precondition",
     # V2-005
     "EntityId",
     "ProjectId",

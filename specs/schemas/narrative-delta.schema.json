@@ -1,0 +1,308 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://anovel.org/schemas/narrative-delta.schema.json",
+  "title": "NarrativeDelta",
+  "description": "Narrative state change proposal (not Canon state). Represents proposed changes that must be validated and authorized before Canon commit via CanonCommitService. Contract: V2-008 per ADR-004.",
+  "type": "object",
+  "properties": {
+    "delta_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier (UUID v4 format)"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project isolation boundary"
+    },
+    "operations": {
+      "type": "array",
+      "description": "List of registered operations (SET_FACT/END_FACT/UNDO_FACT). Empty array = NO_CHANGE (valid).",
+      "items": {
+        "$ref": "#/definitions/Operation"
+      }
+    },
+    "source_chapter": {
+      "type": ["string", "null"],
+      "description": "Source chapter reference (optional)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Proposal creation timestamp (ISO 8601)"
+    },
+    "authority": {
+      "type": "string",
+      "description": "Proposal source identifier (not commit authority)"
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Structured provenance metadata",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "delta_id",
+    "project_id",
+    "operations",
+    "source_chapter",
+    "created_at",
+    "authority",
+    "provenance"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "Operation": {
+      "type": "object",
+      "description": "Base operation (discriminated by operation_type)",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/SetFactOperation"
+        },
+        {
+          "$ref": "#/definitions/EndFactOperation"
+        },
+        {
+          "$ref": "#/definitions/UndoFactOperation"
+        }
+      ]
+    },
+    "SetFactOperation": {
+      "type": "object",
+      "description": "Set fact value operation. Required fields: subject, scope, path, value, precondition, evidence. value cannot be null (use END_FACT). precondition required (no implicit overwrite).",
+      "properties": {
+        "operation_type": {
+          "type": "string",
+          "const": "SET_FACT"
+        },
+        "operation_version": {
+          "type": "string",
+          "description": "Semantic version (e.g., '1.0.0')"
+        },
+        "subject": {
+          "type": "string",
+          "format": "uuid",
+          "description": "EntityId (fact owner)"
+        },
+        "scope": {
+          "type": "string",
+          "description": "ProjectId (project isolation)"
+        },
+        "path": {
+          "$ref": "#/definitions/FactPath"
+        },
+        "value": {
+          "description": "New value (typed, cannot be null). Can be FactValue.UNKNOWN."
+        },
+        "precondition": {
+          "$ref": "#/definitions/Precondition"
+        },
+        "evidence": {
+          "$ref": "#/definitions/EvidenceRef"
+        }
+      },
+      "required": [
+        "operation_type",
+        "operation_version",
+        "subject",
+        "scope",
+        "path",
+        "value",
+        "precondition",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "EndFactOperation": {
+      "type": "object",
+      "description": "End fact lifecycle operation (tombstone, not deletion). precondition must be ExpectPresent or ExpectValue (not ExpectAbsent).",
+      "properties": {
+        "operation_type": {
+          "type": "string",
+          "const": "END_FACT"
+        },
+        "operation_version": {
+          "type": "string",
+          "description": "Semantic version"
+        },
+        "subject": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "path": {
+          "$ref": "#/definitions/FactPath"
+        },
+        "precondition": {
+          "$ref": "#/definitions/Precondition"
+        },
+        "evidence": {
+          "$ref": "#/definitions/EvidenceRef"
+        }
+      },
+      "required": [
+        "operation_type",
+        "operation_version",
+        "subject",
+        "scope",
+        "path",
+        "precondition",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "UndoFactOperation": {
+      "type": "object",
+      "description": "Undo previous fact setting (correction, not deletion). precondition must be ExpectValue (current value equals undone value).",
+      "properties": {
+        "operation_type": {
+          "type": "string",
+          "const": "UNDO_FACT"
+        },
+        "operation_version": {
+          "type": "string",
+          "description": "Semantic version"
+        },
+        "subject": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "path": {
+          "$ref": "#/definitions/FactPath"
+        },
+        "original_commit_ref": {
+          "type": "string",
+          "description": "CommitId (specific Canon commit being undone)"
+        },
+        "precondition": {
+          "$ref": "#/definitions/ExpectValue"
+        },
+        "evidence": {
+          "$ref": "#/definitions/EvidenceRef"
+        }
+      },
+      "required": [
+        "operation_type",
+        "operation_version",
+        "subject",
+        "scope",
+        "path",
+        "original_commit_ref",
+        "precondition",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "Precondition": {
+      "description": "Four-variant precondition algebra. ExpectAny REJECTED (no implicit overwrite).",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/ExpectValue"
+        },
+        {
+          "$ref": "#/definitions/ExpectAbsent"
+        },
+        {
+          "$ref": "#/definitions/ExpectPresent"
+        },
+        {
+          "$ref": "#/definitions/ExpectUnknown"
+        }
+      ]
+    },
+    "ExpectValue": {
+      "type": "object",
+      "description": "Precondition: path must have specific value",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ExpectValue"
+        },
+        "expected_value": {
+          "description": "Expected current value (typed)"
+        }
+      },
+      "required": ["type", "expected_value"],
+      "additionalProperties": false
+    },
+    "ExpectAbsent": {
+      "type": "object",
+      "description": "Precondition: path must not exist",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ExpectAbsent"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+    "ExpectPresent": {
+      "type": "object",
+      "description": "Precondition: path must exist (any value)",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ExpectPresent"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+    "ExpectUnknown": {
+      "type": "object",
+      "description": "Precondition: path value must be UNKNOWN",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ExpectUnknown"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": false
+    },
+    "FactPath": {
+      "type": "object",
+      "description": "Typed fact path for state access",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Dot-notation path (e.g., 'characters.alice.age')"
+        },
+        "expected_type": {
+          "type": "string",
+          "description": "Python type name for this path"
+        }
+      },
+      "required": ["path", "expected_type"],
+      "additionalProperties": false
+    },
+    "EvidenceRef": {
+      "type": "object",
+      "description": "Evidence reference for traceability",
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "enum": ["TEXT", "ARTIFACT"],
+          "description": "Evidence source type"
+        },
+        "source_ref": {
+          "type": "string",
+          "description": "Specific reference (e.g., 'chapter_5:paragraph_3')"
+        },
+        "content_hash": {
+          "type": "string",
+          "description": "SHA-256 hash of source content"
+        }
+      },
+      "required": ["source_type", "source_ref", "content_hash"],
+      "additionalProperties": false
+    }
+  }
+}

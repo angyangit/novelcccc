@@ -53,6 +53,7 @@ class OperationType(Enum):
     Only these three operations are registered in P1.
     Unregistered operations cannot become commit proposals.
     """
+
     SET_FACT = "SET_FACT"
     END_FACT = "END_FACT"
     UNDO_FACT = "UNDO_FACT"
@@ -64,6 +65,7 @@ class FactValue(Enum):
 
     UNKNOWN: Fact exists but value is unknown (not None, not absent).
     """
+
     UNKNOWN = "UNKNOWN"
 
 
@@ -82,6 +84,7 @@ class EvidenceRef:
         source_ref: Specific reference (e.g., "chapter_5:paragraph_3")
         content_hash: SHA-256 hash of source content
     """
+
     source_type: Literal["TEXT", "ARTIFACT"]
     source_ref: str
     content_hash: str
@@ -101,6 +104,7 @@ class FactPath:
         path: Dot-notation path (e.g., "characters.alice.age")
         expected_type: Python type for this path
     """
+
     path: str
     expected_type: type
 
@@ -116,6 +120,7 @@ class ExpectValue:
     Semantics: current_value == expected_value
     Failure: value mismatch → reject
     """
+
     expected_value: Any
 
 
@@ -128,6 +133,7 @@ class ExpectAbsent:
     Failure: path exists → reject
     Use case: prevent duplicate creation
     """
+
     pass
 
 
@@ -140,6 +146,7 @@ class ExpectPresent:
     Failure: path absent → reject
     Use case: update existing fact
     """
+
     pass
 
 
@@ -152,6 +159,7 @@ class ExpectUnknown:
     Failure: path absent or has known value → reject
     Use case: resolve previous UNKNOWN
     """
+
     pass
 
 
@@ -173,6 +181,7 @@ class Operation:
 
     All operations must be REGISTERED, VERSIONED, TYPED.
     """
+
     operation_type: OperationType
     operation_version: str
 
@@ -202,6 +211,7 @@ class SetFactOperation(Operation):
         - precondition must exist (no ExpectAny, no implicit overwrite)
         - value type must match path.expected_type
     """
+
     operation_type: Literal[OperationType.SET_FACT] = OperationType.SET_FACT
     operation_version: str = "1.0.0"
 
@@ -221,9 +231,7 @@ class SetFactOperation(Operation):
         if self.path is None:
             raise ValueError("SET_FACT missing required field: path")
         if self.value is None:
-            raise ValueError(
-                "SET_FACT value cannot be None (use END_FACT instead)"
-            )
+            raise ValueError("SET_FACT value cannot be None (use END_FACT instead)")
         if self.precondition is None:
             raise ValueError(
                 "SET_FACT missing required field: precondition "
@@ -253,6 +261,7 @@ class EndFactOperation(Operation):
         - Not physical deletion (history preserved)
         - Cannot END absent fact (ExpectAbsent rejected)
     """
+
     operation_type: Literal[OperationType.END_FACT] = OperationType.END_FACT
     operation_version: str = "1.0.0"
 
@@ -306,6 +315,7 @@ class UndoFactOperation(Operation):
         - UNDO_FACT: correction ("previous setting was wrong")
         - END_FACT: lifecycle end ("fact was correct, now terminated")
     """
+
     operation_type: Literal[OperationType.UNDO_FACT] = OperationType.UNDO_FACT
     operation_version: str = "1.0.0"
 
@@ -325,9 +335,7 @@ class UndoFactOperation(Operation):
         if self.path is None:
             raise ValueError("UNDO_FACT missing required field: path")
         if self.original_commit_ref is None:
-            raise ValueError(
-                "UNDO_FACT missing required field: original_commit_ref"
-            )
+            raise ValueError("UNDO_FACT missing required field: original_commit_ref")
         if self.precondition is None:
             raise ValueError("UNDO_FACT missing required field: precondition")
         if not isinstance(self.precondition, ExpectValue):
@@ -373,21 +381,37 @@ class NarrativeDelta:
         - Only CanonCommitService can commit Delta to Canon
         - Delta can be rejected without affecting Canon
     """
+
     delta_id: DeltaId
     project_id: ProjectId
     operations: tuple[Operation, ...]  # Immutable sequence
     source_chapter: str | None
     created_at: datetime
     authority: str
-    provenance: dict[str, str]
+    provenance: tuple[tuple[str, str], ...]  # Immutable provenance metadata
 
     def __post_init__(self) -> None:
         """Validate Delta invariants on construction."""
         # Validate delta_id format (UUID v4)
         try:
-            uuid.UUID(self.delta_id, version=4)
+            parsed_uuid = uuid.UUID(self.delta_id)
+            if parsed_uuid.version != 4:
+                raise ValueError(
+                    f"delta_id must be UUID v4, got version {parsed_uuid.version}"
+                )
         except ValueError as e:
-            raise ValueError(f"delta_id must be UUID v4 format: {e}")
+            raise ValueError(f"delta_id must be UUID v4 format: {e}") from e
+
+        # Ensure operations is tuple (defensive copy)
+        if not isinstance(self.operations, tuple):
+            object.__setattr__(self, "operations", tuple(self.operations))
+
+        # Ensure provenance is tuple (defensive copy)
+        if not isinstance(self.provenance, tuple):
+            if isinstance(self.provenance, dict):
+                object.__setattr__(self, "provenance", tuple(self.provenance.items()))
+            else:
+                object.__setattr__(self, "provenance", tuple(self.provenance))
 
         # Validate all operations are registered types
         for op in self.operations:
@@ -410,6 +434,7 @@ class ValidationResult:
         pass_: Validation passed (True) or failed (False)
         reason: Failure reason (if pass_=False)
     """
+
     pass_: bool
     reason: str = ""
 
@@ -528,4 +553,272 @@ class Reducer(Protocol):
 
 class ReducerError(Exception):
     """Reducer operation application failed."""
+
     pass
+
+
+# --- Pure Domain Canon State (In-Memory Reference Implementation) ---
+
+
+@dataclass(frozen=True)
+class CanonState:
+    """
+    Pure in-memory Canon state for V2-008 domain semantics.
+
+    This is a reference implementation for testing reducer logic.
+    NOT persistent storage (V2-009 will implement persistence).
+
+    Attributes:
+        project_id: Project isolation boundary
+        facts: Immutable mapping of (subject, path) to values
+        tombstones: Immutable set of ended facts (lifecycle terminated)
+        commit_history: Immutable tuple of commit references for UNDO_FACT
+    """
+
+    project_id: ProjectId
+    facts: tuple[tuple[tuple[EntityId, str], Any], ...]  # ((entity, path), value)
+    tombstones: frozenset[tuple[EntityId, str]]  # ended facts
+    commit_history: tuple[CommitId, ...]  # for UNDO_FACT validation
+
+    def get_value(self, subject: EntityId, path: FactPath) -> tuple[Any, bool]:
+        """
+        Get current value at path.
+
+        Returns:
+            (value, exists): Value and existence flag
+        """
+        key = (subject, path.path)
+        for k, v in self.facts:
+            if k == key:
+                return (v, True)
+        return (None, False)
+
+    def set_value(
+        self,
+        subject: EntityId,
+        path: FactPath,
+        value: Any,
+    ) -> CanonState:
+        """
+        Return new state with value set (pure function).
+
+        Does not modify self.
+        """
+        key = (subject, path.path)
+        # Remove old value if exists, add new value
+        new_facts = tuple((k, v) for (k, v) in self.facts if k != key) + ((key, value),)
+
+        return CanonState(
+            project_id=self.project_id,
+            facts=new_facts,
+            tombstones=self.tombstones,
+            commit_history=self.commit_history,
+        )
+
+    def end_fact(self, subject: EntityId, path: FactPath) -> CanonState:
+        """
+        Return new state with fact ended (tombstone).
+
+        Does not modify self.
+        """
+        key = (subject, path.path)
+        new_tombstones = self.tombstones | {key}
+
+        return CanonState(
+            project_id=self.project_id,
+            facts=self.facts,
+            tombstones=new_tombstones,
+            commit_history=self.commit_history,
+        )
+
+    def is_ended(self, subject: EntityId, path: FactPath) -> bool:
+        """Check if fact lifecycle has ended."""
+        key = (subject, path.path)
+        return key in self.tombstones
+
+    def commit_exists(self, commit_ref: CommitId) -> bool:
+        """Check if commit exists in history."""
+        return commit_ref in self.commit_history
+
+
+# --- Reference Reducer Implementation ---
+
+
+class DeltaReducer:
+    """
+    Reference reducer implementation for V2-008.
+
+    Pure domain reducer with deterministic, fail-closed semantics.
+    No database, no Provider, no external state.
+    """
+
+    version: str = "1.0.0"
+
+    def apply_delta(self, canon_state: CanonState, delta: NarrativeDelta) -> CanonState:
+        """
+        Apply entire Delta atomically (fail-closed).
+
+        Args:
+            canon_state: Current immutable state
+            delta: Delta to apply
+
+        Returns:
+            New state with all operations applied
+
+        Raises:
+            ReducerError: Any operation failed → entire Delta rejected
+        """
+        # Validate project isolation
+        if delta.project_id != canon_state.project_id:
+            raise ReducerError(
+                f"Delta project {delta.project_id} does not match "
+                f"Canon project {canon_state.project_id}"
+            )
+
+        # Apply operations sequentially, fail-closed
+        current_state = canon_state
+        for op in delta.operations:
+            current_state = self.apply_operation(current_state, op)
+
+        return current_state
+
+    def apply_operation(
+        self, canon_state: CanonState, operation: Operation
+    ) -> CanonState:
+        """
+        Apply single operation (pure function).
+
+        Args:
+            canon_state: Current immutable state
+            operation: Operation to apply
+
+        Returns:
+            New state with operation applied
+
+        Raises:
+            ReducerError: Operation failed
+        """
+        # Validate operation schema
+        operation.validate_schema()
+
+        # Validate project isolation
+        if isinstance(
+            operation, (SetFactOperation, EndFactOperation, UndoFactOperation)
+        ):
+            if operation.scope != canon_state.project_id:
+                raise ReducerError(
+                    f"Operation scope {operation.scope} does not match "
+                    f"Canon project {canon_state.project_id}"
+                )
+
+        # Dispatch to specific handler
+        if isinstance(operation, SetFactOperation):
+            return self._apply_set_fact(canon_state, operation)
+        elif isinstance(operation, EndFactOperation):
+            return self._apply_end_fact(canon_state, operation)
+        elif isinstance(operation, UndoFactOperation):
+            return self._apply_undo_fact(canon_state, operation)
+        else:
+            raise ReducerError(f"Unknown operation type: {operation.operation_type}")
+
+    def _apply_set_fact(
+        self, canon_state: CanonState, operation: SetFactOperation
+    ) -> CanonState:
+        """Apply SET_FACT operation."""
+        # Check if fact has ended (tombstone)
+        if canon_state.is_ended(operation.subject, operation.path):
+            raise ReducerError(f"Cannot SET_FACT on ended fact: {operation.path.path}")
+
+        # Get current value
+        current_value, path_exists = canon_state.get_value(
+            operation.subject, operation.path
+        )
+
+        # Evaluate precondition
+        if not evaluate_precondition(
+            operation.precondition, current_value, path_exists
+        ):
+            raise ReducerError(
+                f"Precondition failed: {operation.precondition.__class__.__name__} "
+                f"(current: {current_value}, exists: {path_exists})"
+            )
+
+        # Type check (basic)
+        if operation.path.expected_type is not None:
+            if operation.value != FactValue.UNKNOWN:
+                if not isinstance(operation.value, operation.path.expected_type):
+                    raise ReducerError(
+                        f"Type mismatch: expected {operation.path.expected_type}, "
+                        f"got {type(operation.value)}"
+                    )
+
+        # Apply state change (pure)
+        return canon_state.set_value(operation.subject, operation.path, operation.value)
+
+    def _apply_end_fact(
+        self, canon_state: CanonState, operation: EndFactOperation
+    ) -> CanonState:
+        """Apply END_FACT operation (tombstone)."""
+        # Get current value
+        current_value, path_exists = canon_state.get_value(
+            operation.subject, operation.path
+        )
+
+        # Evaluate precondition (must be ExpectPresent or ExpectValue)
+        if not evaluate_precondition(
+            operation.precondition, current_value, path_exists
+        ):
+            raise ReducerError(
+                f"Precondition failed for END_FACT: "
+                f"{operation.precondition.__class__.__name__}"
+            )
+
+        # Check not already ended
+        if canon_state.is_ended(operation.subject, operation.path):
+            raise ReducerError(f"Fact already ended: {operation.path.path}")
+
+        # Apply tombstone (pure)
+        return canon_state.end_fact(operation.subject, operation.path)
+
+    def _apply_undo_fact(
+        self, canon_state: CanonState, operation: UndoFactOperation
+    ) -> CanonState:
+        """Apply UNDO_FACT operation."""
+        # Validate commit reference exists
+        if not canon_state.commit_exists(operation.original_commit_ref):
+            raise ReducerError(
+                f"Original commit not found: {operation.original_commit_ref}"
+            )
+
+        # Get current value
+        current_value, path_exists = canon_state.get_value(
+            operation.subject, operation.path
+        )
+
+        # Precondition must be ExpectValue (current matches undone)
+        if not isinstance(operation.precondition, ExpectValue):
+            raise ReducerError(
+                "UNDO_FACT precondition must be ExpectValue "
+                "(this should have been caught by validate_schema)"
+            )
+
+        if not evaluate_precondition(
+            operation.precondition, current_value, path_exists
+        ):
+            raise ReducerError(
+                f"Cannot undo: current value does not match expected "
+                f"(expected: {operation.precondition.expected_value}, "
+                f"current: {current_value})"
+            )
+
+        # For V2-008 domain semantics, UNDO means removing the fact
+        # (In V2-009 with real Canon, this would revert to pre-commit state)
+        key = (operation.subject, operation.path.path)
+        new_facts = tuple((k, v) for (k, v) in canon_state.facts if k != key)
+
+        return CanonState(
+            project_id=canon_state.project_id,
+            facts=new_facts,
+            tombstones=canon_state.tombstones,
+            commit_history=canon_state.commit_history,
+        )

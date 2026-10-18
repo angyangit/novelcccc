@@ -620,3 +620,397 @@ def test_narrative_delta_is_frozen():
 
     with pytest.raises(Exception):  # FrozenInstanceError or AttributeError
         delta.authority = "modified"  # type: ignore
+
+
+# --- Reducer Tests ---
+
+
+def test_reducer_apply_set_fact():
+    """Reducer can apply SET_FACT operation."""
+    from anovel.domain import CanonState, DeltaReducer
+
+    # Create initial state
+    state = CanonState(
+        project_id=ProjectId("proj_01"),
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
+    )
+
+    # Create operation
+    entity_id = EntityId(str(uuid.uuid4()))
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("age", int),
+        value=30,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    # Apply operation
+    reducer = DeltaReducer()
+    new_state = reducer.apply_operation(state, op)
+
+    # Verify new state
+    value, exists = new_state.get_value(entity_id, FactPath("age", int))
+    assert exists
+    assert value == 30
+
+    # Verify original state unchanged (pure function)
+    original_value, original_exists = state.get_value(entity_id, FactPath("age", int))
+    assert not original_exists
+
+
+def test_reducer_precondition_failure_rejects():
+    """Reducer rejects operation when precondition fails."""
+    from anovel.domain import CanonState, DeltaReducer, ReducerError
+
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    # Create state with existing value
+    state = CanonState(
+        project_id=ProjectId("proj_01"),
+        facts=(((entity_id, "age"), 25),),
+        tombstones=frozenset(),
+        commit_history=(),
+    )
+
+    # Operation expects value 30, but actual is 25
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("age", int),
+        value=35,
+        precondition=ExpectValue(expected_value=30),  # Wrong expectation
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    reducer = DeltaReducer()
+    with pytest.raises(ReducerError, match="Precondition failed"):
+        reducer.apply_operation(state, op)
+
+
+def test_reducer_type_mismatch_rejects():
+    """Reducer rejects SET_FACT with wrong value type."""
+    from anovel.domain import CanonState, DeltaReducer, ReducerError
+
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    state = CanonState(
+        project_id=ProjectId("proj_01"),
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
+    )
+
+    # Path expects int, but value is string
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("age", int),
+        value="thirty",  # Wrong type
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    reducer = DeltaReducer()
+    with pytest.raises(ReducerError, match="Type mismatch"):
+        reducer.apply_operation(state, op)
+
+
+def test_reducer_cross_project_rejected():
+    """Reducer rejects operation from different project."""
+    from anovel.domain import CanonState, DeltaReducer, ReducerError
+
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    state = CanonState(
+        project_id=ProjectId("proj_A"),
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
+    )
+
+    # Operation for different project
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_B"),  # Different project
+        path=FactPath("age", int),
+        value=30,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    reducer = DeltaReducer()
+    with pytest.raises(ReducerError, match="does not match"):
+        reducer.apply_operation(state, op)
+
+
+def test_reducer_atomic_delta_rejection():
+    """Reducer rejects entire Delta when any operation fails (atomic)."""
+    from anovel.domain import CanonState, DeltaReducer, ReducerError
+
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    state = CanonState(
+        project_id=ProjectId("proj_01"),
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
+    )
+
+    # Delta with 3 operations: valid, invalid, valid
+    op1 = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("name", str),
+        value="Alice",
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    op2 = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("age", int),
+        value=30,
+        precondition=ExpectValue(expected_value=25),  # Will fail - doesn't exist
+        evidence=EvidenceRef("TEXT", "ch1", "b" * 64),
+    )
+
+    op3 = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("active", bool),
+        value=True,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "c" * 64),
+    )
+
+    delta = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=ProjectId("proj_01"),
+        operations=(op1, op2, op3),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(("test", "atomic"),),
+    )
+
+    reducer = DeltaReducer()
+    with pytest.raises(ReducerError):
+        reducer.apply_delta(state, delta)
+
+    # Verify state unchanged (atomic rejection)
+    value1, exists1 = state.get_value(entity_id, FactPath("name", str))
+    assert not exists1  # First operation not applied
+
+    value3, exists3 = state.get_value(entity_id, FactPath("active", bool))
+    assert not exists3  # Third operation not applied
+
+
+def test_reducer_end_fact():
+    """Reducer can apply END_FACT operation (tombstone)."""
+    from anovel.domain import CanonState, DeltaReducer
+
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    # State with existing fact
+    state = CanonState(
+        project_id=ProjectId("proj_01"),
+        facts=(((entity_id, "age"), 30),),
+        tombstones=frozenset(),
+        commit_history=(),
+    )
+
+    op = EndFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("age", int),
+        precondition=ExpectPresent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    reducer = DeltaReducer()
+    new_state = reducer.apply_operation(state, op)
+
+    # Verify fact ended (tombstone)
+    assert new_state.is_ended(entity_id, FactPath("age", int))
+
+    # Verify original state unchanged
+    assert not state.is_ended(entity_id, FactPath("age", int))
+
+
+def test_reducer_cannot_set_fact_on_ended():
+    """Reducer rejects SET_FACT on ended fact."""
+    from anovel.domain import CanonState, DeltaReducer, ReducerError
+
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    # State with ended fact
+    state = CanonState(
+        project_id=ProjectId("proj_01"),
+        facts=(((entity_id, "age"), 30),),
+        tombstones=frozenset({(entity_id, "age")}),
+        commit_history=(),
+    )
+
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("age", int),
+        value=35,
+        precondition=ExpectPresent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    reducer = DeltaReducer()
+    with pytest.raises(ReducerError, match="ended fact"):
+        reducer.apply_operation(state, op)
+
+
+def test_reducer_deterministic():
+    """Reducer produces same output for same input (deterministic)."""
+    from anovel.domain import CanonState, DeltaReducer
+
+    entity_id = EntityId(str(uuid.uuid4()))
+
+    state = CanonState(
+        project_id=ProjectId("proj_01"),
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
+    )
+
+    op = SetFactOperation(
+        subject=entity_id,
+        scope=ProjectId("proj_01"),
+        path=FactPath("age", int),
+        value=30,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    reducer = DeltaReducer()
+
+    # Apply twice
+    result1 = reducer.apply_operation(state, op)
+    result2 = reducer.apply_operation(state, op)
+
+    # Results should be equal
+    assert result1.facts == result2.facts
+    assert result1.tombstones == result2.tombstones
+
+
+# --- Deep Immutability Tests ---
+
+
+def test_provenance_truly_immutable():
+    """NarrativeDelta provenance cannot be mutated after creation."""
+    delta = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=ProjectId("proj"),
+        operations=(),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(("key", "value"),),
+    )
+
+    # provenance is tuple, cannot be modified
+    assert isinstance(delta.provenance, tuple)
+    with pytest.raises((TypeError, AttributeError)):
+        delta.provenance[0] = ("new", "value")  # type: ignore
+
+
+def test_operations_truly_immutable():
+    """NarrativeDelta operations tuple cannot be mutated."""
+    op = SetFactOperation(
+        subject=EntityId(str(uuid.uuid4())),
+        scope=ProjectId("proj"),
+        path=FactPath("age", int),
+        value=30,
+        precondition=ExpectAbsent(),
+        evidence=EvidenceRef("TEXT", "ch1", "a" * 64),
+    )
+
+    delta = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=ProjectId("proj"),
+        operations=(op,),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance=(),
+    )
+
+    # operations is tuple, cannot be modified
+    assert isinstance(delta.operations, tuple)
+    with pytest.raises((TypeError, AttributeError)):
+        delta.operations.append(op)  # type: ignore
+
+
+def test_delta_accepts_dict_and_converts_to_tuple():
+    """NarrativeDelta converts dict provenance to immutable tuple."""
+    delta = NarrativeDelta(
+        delta_id=DeltaId(str(uuid.uuid4())),
+        project_id=ProjectId("proj"),
+        operations=(),
+        source_chapter=None,
+        created_at=datetime.now(timezone.utc),
+        authority="test",
+        provenance={"key": "value"},  # type: ignore
+    )
+
+    # Should be converted to tuple
+    assert isinstance(delta.provenance, tuple)
+
+
+# --- UUID Validation Tests ---
+
+
+def test_uuid_v1_rejected():
+    """Delta rejects UUID v1 (must be v4)."""
+    uuid_v1 = uuid.uuid1()
+
+    with pytest.raises(ValueError, match="UUID v4 format"):
+        NarrativeDelta(
+            delta_id=DeltaId(str(uuid_v1)),
+            project_id=ProjectId("proj"),
+            operations=(),
+            source_chapter=None,
+            created_at=datetime.now(timezone.utc),
+            authority="test",
+            provenance=(),
+        )
+
+
+def test_uuid_v5_rejected():
+    """Delta rejects UUID v5 (must be v4)."""
+    uuid_v5 = uuid.uuid5(uuid.NAMESPACE_DNS, "test")
+
+    with pytest.raises(ValueError, match="UUID v4 format"):
+        NarrativeDelta(
+            delta_id=DeltaId(str(uuid_v5)),
+            project_id=ProjectId("proj"),
+            operations=(),
+            source_chapter=None,
+            created_at=datetime.now(timezone.utc),
+            authority="test",
+            provenance=(),
+        )
+
+
+def test_invalid_uuid_string_rejected():
+    """Delta rejects invalid UUID string."""
+    with pytest.raises(ValueError, match="UUID v4 format"):
+        NarrativeDelta(
+            delta_id=DeltaId("not-a-uuid"),
+            project_id=ProjectId("proj"),
+            operations=(),
+            source_chapter=None,
+            created_at=datetime.now(timezone.utc),
+            authority="test",
+            provenance=(),
+        )

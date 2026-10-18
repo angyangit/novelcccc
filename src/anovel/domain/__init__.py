@@ -14,9 +14,26 @@ Public submodules:
 """
 
 # V2-008 NarrativeDelta
+# V2-005 Entity Identity
+# V2-061 Character
+from .character import (
+    ActionStatus,
+    Character,
+    CharacterLifecycle,
+    Goal,
+    GoalId,
+    GoalStatus,
+    Intent,
+    IntentId,
+    PlannedAction,
+    PlannedActionId,
+    create_character,
+)
 from .delta import (
+    CanonState,
     CommitId,
     DeltaId,
+    DeltaReducer,
     EndFactOperation,
     EvidenceRef,
     ExpectAbsent,
@@ -36,22 +53,6 @@ from .delta import (
     ValidationResult,
     evaluate_precondition,
     validate_operation,
-)
-
-# V2-005 Entity Identity
-# V2-061 Character
-from .character import (
-    ActionStatus,
-    Character,
-    CharacterLifecycle,
-    Goal,
-    GoalId,
-    GoalStatus,
-    Intent,
-    IntentId,
-    PlannedAction,
-    PlannedActionId,
-    create_character,
 )
 
 # V2-007 Event Timeline
@@ -132,6 +133,8 @@ __all__ = [
     "ValidationResult",
     "Reducer",
     "ReducerError",
+    "CanonState",
+    "DeltaReducer",
     "validate_operation",
     "evaluate_precondition",
     # V2-005

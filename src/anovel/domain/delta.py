@@ -210,6 +210,8 @@ class SetFactOperation(Operation):
         - value cannot be None (use END_FACT for lifecycle termination)
         - precondition must exist (no ExpectAny, no implicit overwrite)
         - value type must match path.expected_type
+        - operation_type must be SET_FACT (no spoofing)
+        - operation_version must be registered ("1.0.0")
     """
 
     operation_type: Literal[OperationType.SET_FACT] = OperationType.SET_FACT
@@ -221,6 +223,18 @@ class SetFactOperation(Operation):
     value: Any = None
     precondition: Precondition | None = None
     evidence: EvidenceRef | None = None
+
+    def __post_init__(self) -> None:
+        """Validate operation type and version consistency."""
+        if self.operation_type != OperationType.SET_FACT:
+            raise ValueError(
+                f"SetFactOperation must have operation_type=SET_FACT, got {self.operation_type}"
+            )
+        if self.operation_version not in ("1.0.0",):
+            raise ValueError(
+                f"Unregistered operation_version: {self.operation_version}. "
+                f"Registered versions: 1.0.0"
+            )
 
     def validate_schema(self) -> None:
         """Validate SET_FACT payload completeness."""
@@ -239,6 +253,22 @@ class SetFactOperation(Operation):
             )
         if self.evidence is None:
             raise ValueError("SET_FACT missing required field: evidence")
+
+        # Validate evidence format (LEVEL 1 & 2: field presence and format)
+        if not self.evidence.source_ref:
+            raise ValueError("Evidence source_ref cannot be empty")
+        if not self.evidence.content_hash:
+            raise ValueError("Evidence content_hash cannot be empty")
+        if len(self.evidence.content_hash) != 64:
+            raise ValueError(
+                f"Evidence content_hash must be 64 characters (SHA-256), got {len(self.evidence.content_hash)}"
+            )
+        try:
+            int(self.evidence.content_hash, 16)
+        except ValueError as e:
+            raise ValueError(
+                f"Evidence content_hash must be hexadecimal, got '{self.evidence.content_hash}'"
+            ) from e
 
 
 # --- END_FACT Operation ---
@@ -271,6 +301,18 @@ class EndFactOperation(Operation):
     precondition: Precondition | None = None
     evidence: EvidenceRef | None = None
 
+    def __post_init__(self) -> None:
+        """Validate operation type and version consistency."""
+        if self.operation_type != OperationType.END_FACT:
+            raise ValueError(
+                f"EndFactOperation must have operation_type=END_FACT, got {self.operation_type}"
+            )
+        if self.operation_version not in ("1.0.0",):
+            raise ValueError(
+                f"Unregistered operation_version: {self.operation_version}. "
+                f"Registered versions: 1.0.0"
+            )
+
     def validate_schema(self) -> None:
         """Validate END_FACT payload completeness."""
         if self.subject is None:
@@ -288,6 +330,22 @@ class EndFactOperation(Operation):
             )
         if self.evidence is None:
             raise ValueError("END_FACT missing required field: evidence")
+
+        # Validate evidence format (LEVEL 1 & 2: field presence and format)
+        if not self.evidence.source_ref:
+            raise ValueError("Evidence source_ref cannot be empty")
+        if not self.evidence.content_hash:
+            raise ValueError("Evidence content_hash cannot be empty")
+        if len(self.evidence.content_hash) != 64:
+            raise ValueError(
+                f"Evidence content_hash must be 64 characters (SHA-256), got {len(self.evidence.content_hash)}"
+            )
+        try:
+            int(self.evidence.content_hash, 16)
+        except ValueError as e:
+            raise ValueError(
+                f"Evidence content_hash must be hexadecimal, got '{self.evidence.content_hash}'"
+            ) from e
 
 
 # --- UNDO_FACT Operation ---
@@ -326,6 +384,18 @@ class UndoFactOperation(Operation):
     precondition: ExpectValue | None = None
     evidence: EvidenceRef | None = None
 
+    def __post_init__(self) -> None:
+        """Validate operation type and version consistency."""
+        if self.operation_type != OperationType.UNDO_FACT:
+            raise ValueError(
+                f"UndoFactOperation must have operation_type=UNDO_FACT, got {self.operation_type}"
+            )
+        if self.operation_version not in ("1.0.0",):
+            raise ValueError(
+                f"Unregistered operation_version: {self.operation_version}. "
+                f"Registered versions: 1.0.0"
+            )
+
     def validate_schema(self) -> None:
         """Validate UNDO_FACT payload completeness."""
         if self.subject is None:
@@ -345,6 +415,22 @@ class UndoFactOperation(Operation):
             )
         if self.evidence is None:
             raise ValueError("UNDO_FACT missing required field: evidence")
+
+        # Validate evidence format (LEVEL 1 & 2: field presence and format)
+        if not self.evidence.source_ref:
+            raise ValueError("Evidence source_ref cannot be empty")
+        if not self.evidence.content_hash:
+            raise ValueError("Evidence content_hash cannot be empty")
+        if len(self.evidence.content_hash) != 64:
+            raise ValueError(
+                f"Evidence content_hash must be 64 characters (SHA-256), got {len(self.evidence.content_hash)}"
+            )
+        try:
+            int(self.evidence.content_hash, 16)
+        except ValueError as e:
+            raise ValueError(
+                f"Evidence content_hash must be hexadecimal, got '{self.evidence.content_hash}'"
+            ) from e
 
 
 # --- NarrativeDelta ---
@@ -561,6 +647,30 @@ class ReducerError(Exception):
 
 
 @dataclass(frozen=True)
+class CommitChange:
+    """
+    Record of what a commit changed for UNDO_FACT restoration.
+
+    Attributes:
+        commit_id: The commit that made this change
+        subject: Entity that was modified
+        path: Fact path that was modified
+        value_before: Value before commit (None if didn't exist)
+        existed_before: Whether fact existed before commit
+        value_after: Value after commit (None if deleted/ended)
+        existed_after: Whether fact exists after commit
+    """
+
+    commit_id: CommitId
+    subject: EntityId
+    path: str
+    value_before: Any
+    existed_before: bool
+    value_after: Any
+    existed_after: bool
+
+
+@dataclass(frozen=True)
 class CanonState:
     """
     Pure in-memory Canon state for V2-008 domain semantics.
@@ -573,12 +683,14 @@ class CanonState:
         facts: Immutable mapping of (subject, path) to values
         tombstones: Immutable set of ended facts (lifecycle terminated)
         commit_history: Immutable tuple of commit references for UNDO_FACT
+        commit_changes: Immutable tuple tracking what each commit changed (for UNDO restoration)
     """
 
     project_id: ProjectId
     facts: tuple[tuple[tuple[EntityId, str], Any], ...]  # ((entity, path), value)
     tombstones: frozenset[tuple[EntityId, str]]  # ended facts
     commit_history: tuple[CommitId, ...]  # for UNDO_FACT validation
+    commit_changes: tuple[CommitChange, ...] = ()  # commit change history for UNDO
 
     def get_value(self, subject: EntityId, path: FactPath) -> tuple[Any, bool]:
         """
@@ -598,37 +710,86 @@ class CanonState:
         subject: EntityId,
         path: FactPath,
         value: Any,
+        commit_id: CommitId | None = None,
     ) -> CanonState:
         """
         Return new state with value set (pure function).
 
         Does not modify self.
+
+        Args:
+            subject: Entity being modified
+            path: Fact path
+            value: New value
+            commit_id: Optional commit ID to track this change for UNDO
         """
         key = (subject, path.path)
+
+        # Get old value before change
+        old_value, existed_before = self.get_value(subject, path)
+
         # Remove old value if exists, add new value
         new_facts = tuple((k, v) for (k, v) in self.facts if k != key) + ((key, value),)
+
+        # Track commit change if commit_id provided
+        new_changes = self.commit_changes
+        if commit_id is not None:
+            change = CommitChange(
+                commit_id=commit_id,
+                subject=subject,
+                path=path.path,
+                value_before=old_value,
+                existed_before=existed_before,
+                value_after=value,
+                existed_after=True,
+            )
+            new_changes = self.commit_changes + (change,)
 
         return CanonState(
             project_id=self.project_id,
             facts=new_facts,
             tombstones=self.tombstones,
             commit_history=self.commit_history,
+            commit_changes=new_changes,
         )
 
-    def end_fact(self, subject: EntityId, path: FactPath) -> CanonState:
+    def end_fact(
+        self, subject: EntityId, path: FactPath, commit_id: CommitId | None = None
+    ) -> CanonState:
         """
         Return new state with fact ended (tombstone).
 
         Does not modify self.
+
+        Args:
+            subject: Entity being modified
+            path: Fact path
+            commit_id: Optional commit ID to track this change for UNDO
         """
         key = (subject, path.path)
         new_tombstones = self.tombstones | {key}
+
+        # Track commit change if commit_id provided
+        new_changes = self.commit_changes
+        if commit_id is not None:
+            old_value, existed_before = self.get_value(subject, path)
+            change = CommitChange(
+                commit_id=commit_id,
+                subject=subject,
+                path=path.path,
+                value_before=old_value,
+                existed_before=existed_before,
+                value_after=None,
+                existed_after=False,  # Ended means lifecycle terminated
+            )
+            new_changes = self.commit_changes + (change,)
 
         return CanonState(
             project_id=self.project_id,
             facts=self.facts,
             tombstones=new_tombstones,
             commit_history=self.commit_history,
+            commit_changes=new_changes,
         )
 
     def is_ended(self, subject: EntityId, path: FactPath) -> bool:
@@ -639,6 +800,24 @@ class CanonState:
     def commit_exists(self, commit_ref: CommitId) -> bool:
         """Check if commit exists in history."""
         return commit_ref in self.commit_history
+
+    def get_commit_change(
+        self, commit_ref: CommitId, subject: EntityId, path: str
+    ) -> CommitChange | None:
+        """
+        Get the change record for a specific commit, subject, and path.
+
+        Returns:
+            CommitChange if found, None otherwise
+        """
+        for change in self.commit_changes:
+            if (
+                change.commit_id == commit_ref
+                and change.subject == subject
+                and change.path == path
+            ):
+                return change
+        return None
 
 
 # --- Reference Reducer Implementation ---
@@ -783,11 +962,32 @@ class DeltaReducer:
     def _apply_undo_fact(
         self, canon_state: CanonState, operation: UndoFactOperation
     ) -> CanonState:
-        """Apply UNDO_FACT operation."""
+        """Apply UNDO_FACT operation with proper restoration semantics."""
         # Validate commit reference exists
         if not canon_state.commit_exists(operation.original_commit_ref):
             raise ReducerError(
                 f"Original commit not found: {operation.original_commit_ref}"
+            )
+
+        # Get the commit change record
+        commit_change = canon_state.get_commit_change(
+            operation.original_commit_ref, operation.subject, operation.path.path
+        )
+
+        if commit_change is None:
+            raise ReducerError(
+                f"No change record found for commit {operation.original_commit_ref} "
+                f"on {operation.subject}:{operation.path.path}"
+            )
+
+        # Verify this commit actually modified this specific subject/path
+        if (
+            commit_change.subject != operation.subject
+            or commit_change.path != operation.path.path
+        ):
+            raise ReducerError(
+                f"Commit {operation.original_commit_ref} did not modify "
+                f"{operation.subject}:{operation.path.path}"
             )
 
         # Get current value
@@ -811,14 +1011,22 @@ class DeltaReducer:
                 f"current: {current_value})"
             )
 
-        # For V2-008 domain semantics, UNDO means removing the fact
-        # (In V2-009 with real Canon, this would revert to pre-commit state)
+        # Restore to the state before the commit
         key = (operation.subject, operation.path.path)
-        new_facts = tuple((k, v) for (k, v) in canon_state.facts if k != key)
+
+        if commit_change.existed_before:
+            # Fact existed before: restore to previous value
+            new_facts = tuple((k, v) for (k, v) in canon_state.facts if k != key) + (
+                (key, commit_change.value_before),
+            )
+        else:
+            # Fact didn't exist before: remove it
+            new_facts = tuple((k, v) for (k, v) in canon_state.facts if k != key)
 
         return CanonState(
             project_id=canon_state.project_id,
             facts=new_facts,
             tombstones=canon_state.tombstones,
             commit_history=canon_state.commit_history,
+            commit_changes=canon_state.commit_changes,
         )

@@ -31,6 +31,7 @@ from .character import (
 )
 from .delta import (
     CanonState,
+    CommitChange,
     CommitId,
     DeltaId,
     DeltaReducer,
@@ -134,6 +135,7 @@ __all__ = [
     "Reducer",
     "ReducerError",
     "CanonState",
+    "CommitChange",
     "DeltaReducer",
     "validate_operation",
     "evaluate_precondition",

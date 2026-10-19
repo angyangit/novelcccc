@@ -1,0 +1,59 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-008-acceptance-ae194275
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-008
+revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+status: PASS
+producer: Local acceptance verification + remote CI validation
+executed_at: '2026-10-19T04:46:30Z'
+environment_fingerprint: GitHub Actions ubuntu-latest + local macOS Darwin 24.1.0
+artifacts:
+- ref: validation/execution/V2-008/closure/acceptance-review.md
+  sha256: 09146f8a9f51adc33d59628d4ed3270d765dcc3a1b0944ddece8463adf38b897
+input_evidence_refs:
+- validation/execution/V2-008/closure/code-revalidation.yaml
+- validation/execution/V2-008/closure/test-result.yaml
+- validation/execution/V2-008/closure/ci/ci-pr.yaml
+- validation/execution/V2-008/closure/ci/ci-push.yaml
+- validation/execution/V2-008/closure/ci/ci-main.yaml
+finding_dispositions:
+- finding_id: AR-04
+  responsibility: PARTIAL
+  disposition: PARTIALLY_RESOLVED
+  evidence_refs:
+  - validation/execution/V2-008/closure/code-revalidation.yaml
+  - validation/execution/V2-008/closure/test-result.yaml
+  reason: V2-008 implements typed operations (SET_FACT, END_FACT, UNDO_FACT) with precondition contracts and reducer enforcement per ADR-004. Operations require registry validation and type matching. Unregistered operations rejected. Full resolution requires V2-010 (CanonCommitService with authority validation) and V2-017 (Permit lifecycle with transfer contracts).
+  remaining_work: Authority validation in commit service, Permit transfer contracts, cross-service operation validation
+  next_task: V2-010
+  owner_role: canon-maintainer
+  due_gate: G-P2
+- finding_id: RR-06
+  responsibility: PARTIAL
+  disposition: PARTIALLY_RESOLVED
+  evidence_refs:
+  - validation/execution/V2-008/closure/code-revalidation.yaml
+  - validation/execution/V2-008/closure/test-result.yaml
+  reason: V2-008 establishes machine contracts for NarrativeDelta with JSON Schema Draft-07 and domain validation. Positive cases (valid operations with preconditions) and negative cases (missing evidence, wrong types, unregistered operations) verified in 144 tests. Schema validation separate from business acceptance. Remaining tasks require contracts for Canon persistence (V2-009), commit service (V2-010), and production orchestration (V2-019).
+  remaining_work: Canon repository contracts, commit service contracts, Provider contracts, production validation
+  next_task: V2-009
+  owner_role: canon-maintainer
+  due_gate: G-P2
+check_ids:
+- AT-V2-008-01
+- AT-V2-008-02
+- AT-V2-008-03
+- ADR-004-DECISION-A
+- ADR-004-DECISION-B
+- ADR-004-DECISION-C
+- ADR-004-DECISION-D
+- ADR-004-DECISION-E
+- ADR-004-DECISION-F
+- ADR-004-DECISION-G
+- ADR-004-DECISION-H
+- ADR-004-DECISION-I
+- ADR-004-DECISION-J
+- ADR-004-DECISION-K
+decision: ACCEPTED
+rationale: All ADR-004 acceptance criteria verified at closure candidate ae194275. Local validation passed (144/144 authoritative tests, 989/989 full regression in 7:05). Remote CI validation passed (6/6 gates SUCCESS - PR run 39196985536, push run 39196981974, main run 39199657433). Technical implementation complete - finite operation registry, four-variant precondition algebra, UNDO_FACT with ABA protection, trusted FactPath registry with type spoofing protection, deep immutability, pure domain reducer, JSON Schema version contracts. V2-008 ready for CLOSED status.

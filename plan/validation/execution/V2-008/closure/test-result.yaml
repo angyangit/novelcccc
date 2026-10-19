@@ -1,0 +1,23 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-008-test-result-ae194275
+evidence_type: TEST_RESULT
+subject_id: V2-008
+revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+status: PASS
+producer: pytest 9.1.1
+executed_at: '2026-10-19T04:39:05Z'
+environment_fingerprint: macOS Darwin 24.1.0, Python 3.12.14, pytest 9.1.1, uv 0.12.17
+command: uv run pytest tests/contract/test_v2_008.py -v --tb=short
+exit_code: 0
+artifacts:
+- ref: validation/execution/V2-008/closure/acceptance-review.md
+  sha256: 09146f8a9f51adc33d59628d4ed3270d765dcc3a1b0944ddece8463adf38b897
+input_evidence_refs: []
+finding_dispositions: []
+check_ids:
+- AT-V2-008-01
+- AT-V2-008-02
+- AT-V2-008-03
+decision: VERIFIED
+rationale: 144/144 tests passed for V2-008 authoritative acceptance at closure candidate ae194275. All AT-V2-008 acceptance tests verified - SET_FACT missing evidence rejected, UNKNOWN/NO_CHANGE/UNDO_FACT distinction verified, unregistered operations rejected. Zero test skips, zero failures. Test execution time 0.20s.

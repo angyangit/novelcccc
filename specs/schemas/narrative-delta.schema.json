@@ -78,7 +78,8 @@
         },
         "operation_version": {
           "type": "string",
-          "description": "Semantic version (e.g., '1.0.0')"
+          "const": "1.0.0",
+          "description": "Semantic version (only '1.0.0' supported)"
         },
         "subject": {
           "type": "string",

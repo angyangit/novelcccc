@@ -82,39 +82,40 @@ class GovernanceTests(unittest.TestCase):
             "sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
         }
 
-        # Normalize live historical debt for positive fixture isolation
-        # V2-005/V2-006 are CLOSED with absence records in production.
-        # V2-061 is IN_PROGRESS with execution packet in production.
-        # Change them to OPEN in the base fixture for a truly clean baseline.
-        # Individual tests will set them to CLOSED with absence records as needed.
+        # Normalize all P1 tasks to OPEN for clean positive baseline
+        # Production state (2026-10-19): V2-005/006 have absence records,
+        # V2-061/007/008 are fully CLOSED with complete evidence.
+        # Fixture creates clean baseline by removing all P1 closure state to avoid
+        # dependency validation violations (V2-007 depends on V2-005, V2-008 depends on V2-006/007/061).
+        # Individual tests add CLOSED status with synthetic evidence as needed.
+        P1_TASKS = ("V2-005", "V2-006", "V2-061", "V2-007", "V2-008")
         tasks = self.data["implementation-backlog"]["tasks"]
         for task in tasks:
-            if task["task_id"] in ("V2-005", "V2-006", "V2-061"):
+            if task["task_id"] in P1_TASKS:
                 task["status"] = "OPEN"
                 task["readiness"] = "PLANNED"
                 task["evidence"] = {"code": [], "tests": [], "ci": [], "acceptance": []}
                 task["execution_packet_ref"] = None
 
-        # Remove absence record files and execution packets from the temporary copy
-        for task_id in ("V2-005", "V2-006", "V2-061"):
+        # Remove all P1 execution evidence from the temporary fixture copy
+        for task_id in P1_TASKS:
             absence_dir = self.plan / "validation/execution" / task_id
             if absence_dir.exists():
                 shutil.rmtree(absence_dir)
 
-        # Set test suites to PLANNED (tasks are now OPEN)
+        # Set all P1 test suites to PLANNED (tasks are now OPEN)
         for suite in self.data["test-catalog"]["suites"]:
-            if suite["task_id"] in ("V2-005", "V2-006", "V2-061"):
+            if suite["task_id"] in P1_TASKS:
                 suite["status"] = "PLANNED"
                 suite["execution_evidence"] = []
 
-        # Clear decision records that point to removed execution packets
+        # Clear P1 ADR decision records that point to removed execution packets
         for decision in self.data["decision-register"]["decisions"]:
-            if decision["id"] in ("ADR-001", "ADR-002"):
-                # ADR-001 is in V2-001 (P0, still has packet)
-                # ADR-002 is in V2-061 (removed in fixture)
-                if decision["id"] == "ADR-002":
-                    decision["status"] = "REQUIRED"
-                    decision["decision_record"] = None
+            if decision["id"] in ("ADR-002", "ADR-003", "ADR-004"):
+                # ADR-001 is in V2-001 (P0, not removed)
+                # ADR-002 is in V2-061, ADR-003 in V2-007, ADR-004 in V2-008 (all removed in fixture)
+                decision["status"] = "REQUIRED"
+                decision["decision_record"] = None
 
         # Remove historical closure_refs from findings (they point to excluded validation/closure/)
         # Change CLOSED findings to OPEN since they no longer have closure evidence

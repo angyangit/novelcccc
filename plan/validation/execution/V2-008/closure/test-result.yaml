@@ -12,7 +12,7 @@ command: uv run pytest tests/contract/test_v2_008.py -v --tb=short
 exit_code: 0
 artifacts:
 - ref: validation/execution/V2-008/closure/acceptance-review.md
-  sha256: 06a6a96b3d2206ea4edaab8dec97b931f46d35954c4e2c2e5c8b21d0f3388969
+  sha256: 3432fc769d36817e48e847e6711e061d95de431d8edeff072970666e227baa9c
 input_evidence_refs: []
 finding_dispositions: []
 check_ids:

@@ -6,17 +6,17 @@ subject_id: V2-008
 revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
 status: PASS
 producer: GitHub Actions
-executed_at: '2026-10-19T04:00:00Z'
+executed_at: '2026-10-19T04:33:48Z'
 environment_fingerprint: GitHub Actions ubuntu-latest
 command: github-actions-workflow
 exit_code: 0
 artifacts:
 - ref: validation/execution/V2-008/closure/ci/main-github-actions.txt
-  sha256: 43a9d7a8707ec3ebfe4ae2118676a3cff7777ea84048cc3e58c34f04de2fd9d9
+  sha256: 8203434170323fff36f957e5ca327bce408e2f02dd196b3a220edae2417b5179
 input_evidence_refs:
 - validation/execution/V2-008/closure/code-revalidation.yaml
 pipeline_id: '39199657433'
-job_id: unverified-github-actions-job
+job_id: '117339804533'
 pipeline_url: https://github.com/AY123/AiNoverCC/actions/runs/39199657433
 check_ids:
 - STATIC
@@ -26,4 +26,4 @@ check_ids:
 - SECRET_DEPENDENCY
 - POSTGRES_ENV
 decision: VERIFIED
-rationale: Main CI run 39199657433 for merge commit ae194275 - all 6 gates SUCCESS verified by user. API verification blocked.
+rationale: Main CI run 39199657433 completed 2026-10-19T04:33:48Z for merge commit ae194275 - all 6 gates SUCCESS.

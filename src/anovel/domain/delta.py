@@ -192,6 +192,13 @@ class ExpectValue:
                 self, "expected_value", _deepcopy_value(self.expected_value)
             )
 
+    def __getattribute__(self, name: str):
+        """Return defensive copies of mutable fields to prevent post-creation mutation."""
+        value = object.__getattribute__(self, name)
+        if name == "expected_value" and value is not None:
+            return _deepcopy_value(value)
+        return value
+
 
 @dataclass(frozen=True)
 class ExpectAbsent:
@@ -309,6 +316,14 @@ class SetFactOperation(Operation):
         if self.value is not None and self.value != FactValue.UNKNOWN:
             copied_value = _deepcopy_value(self.value)
             object.__setattr__(self, "value", copied_value)
+
+    def __getattribute__(self, name: str):
+        """Return defensive copies of mutable fields to prevent post-creation mutation."""
+        value = object.__getattribute__(self, name)
+        # Return defensive copy for value field
+        if name == "value" and value is not None and value != FactValue.UNKNOWN:
+            return _deepcopy_value(value)
+        return value
 
     def validate_schema(self) -> None:
         """Validate SET_FACT payload completeness."""
@@ -754,6 +769,13 @@ class CommitChange:
         if self.value_after is not None:
             copied_after = _deepcopy_value(self.value_after)
             object.__setattr__(self, "value_after", copied_after)
+
+    def __getattribute__(self, name: str):
+        """Return defensive copies of mutable fields to prevent post-creation mutation."""
+        value = object.__getattribute__(self, name)
+        if name in ("value_before", "value_after") and value is not None:
+            return _deepcopy_value(value)
+        return value
 
 
 @dataclass(frozen=True)

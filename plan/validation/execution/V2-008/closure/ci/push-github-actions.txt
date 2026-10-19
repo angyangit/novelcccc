@@ -1,0 +1,12 @@
+repository: https://github.com/AY123/AiNoverCC.git
+branch: feature/v2-008-narrative-delta
+workflow: CI
+run_id: 39196981974
+job_name: CI_COMPLETE
+tested_sha: 86bfd1c410e785874d7f452d1ffcac108088bad6
+status: completed
+conclusion: success
+started_at: 2026-10-19T03:42:00Z
+completed_at: 2026-10-19T03:44:00Z
+run_url: https://github.com/AY123/AiNoverCC/actions/runs/39196981974
+note: All 6 gates (STATIC, UNIT, SCHEMA_CONTRACT, ARCH_FITNESS, SECRET_DEPENDENCY, POSTGRES_ENV) passed. User-verified, API verification blocked.

@@ -669,7 +669,7 @@ tasks:
   - 不绕过前置阶段门禁
   - 不引入数据库/Provider 实现依赖
   - Core 不内置公司财务或修炼境界字段
-  status: IN_PROGRESS
+  status: CLOSED
   execution_packet_ref: validation/execution/V2-008/execution-packet.yaml
   owner_role: domain-maintainer
   readiness: READY_TO_START
@@ -677,10 +677,28 @@ tasks:
   required_decisions:
   - ADR-004
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/execution/V2-008/closure/code-revalidation.yaml
+      revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+      status: PASS
+    tests:
+    - ref: validation/execution/V2-008/closure/test-result.yaml
+      revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+      status: PASS
+    ci:
+    - ref: validation/execution/V2-008/closure/ci/ci-pr.yaml
+      revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+      status: PASS
+    - ref: validation/execution/V2-008/closure/ci/ci-push.yaml
+      revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+      status: PASS
+    - ref: validation/execution/V2-008/closure/ci/ci-main.yaml
+      revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+      status: PASS
+    acceptance:
+    - ref: validation/execution/V2-008/closure/acceptance.yaml
+      revision: ae194275eadb8879c67f1c70229a5c03e7bfe6c1
+      status: PASS
   related_findings:
   - AR-04
   - RR-06

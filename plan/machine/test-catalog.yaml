@@ -211,7 +211,7 @@ suites:
 - id: AT-V2-008
   task_id: V2-008
   phase: P1
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/contract/test_v2_008.py
   scenarios:
   - id: AT-V2-008-01
@@ -220,7 +220,8 @@ suites:
     required_assertion: UNKNOWN 与 NO_CHANGE 及撤销明确区分
   - id: AT-V2-008-03
     required_assertion: 未注册操作和错类型载荷不能成为提交提议
-  execution_evidence: []
+  execution_evidence:
+  - validation/execution/V2-008/closure/test-result.yaml
 - id: AT-V2-009
   task_id: V2-009
   phase: P2

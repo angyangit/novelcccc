@@ -10,8 +10,10 @@ Public submodules:
     character: Character aggregate with knowledge, goals, and intents
     events: Event occurrence and timeline semantics
     promises: Promise lifecycle and fulfillment
+    delta: NarrativeDelta finite change language and reducer preconditions
 """
 
+# V2-008 NarrativeDelta
 # V2-005 Entity Identity
 # V2-061 Character
 from .character import (
@@ -26,6 +28,34 @@ from .character import (
     PlannedAction,
     PlannedActionId,
     create_character,
+)
+from .delta import (
+    FACT_PATH_REGISTRY,
+    CanonState,
+    CommitChange,
+    CommitId,
+    DeltaId,
+    DeltaReducer,
+    EndFactOperation,
+    EvidenceRef,
+    ExpectAbsent,
+    ExpectPresent,
+    ExpectUnknown,
+    ExpectValue,
+    FactPath,
+    FactValue,
+    NarrativeDelta,
+    Operation,
+    OperationType,
+    Precondition,
+    Reducer,
+    ReducerError,
+    SetFactOperation,
+    UndoFactOperation,
+    ValidationResult,
+    evaluate_precondition,
+    get_fact_path,
+    validate_operation,
 )
 
 # V2-007 Event Timeline
@@ -86,6 +116,33 @@ from .promises import (
 )
 
 __all__ = [
+    # V2-008 NarrativeDelta
+    "DeltaId",
+    "CommitId",
+    "NarrativeDelta",
+    "Operation",
+    "OperationType",
+    "SetFactOperation",
+    "EndFactOperation",
+    "UndoFactOperation",
+    "Precondition",
+    "ExpectValue",
+    "ExpectAbsent",
+    "ExpectPresent",
+    "ExpectUnknown",
+    "FactPath",
+    "FactValue",
+    "FACT_PATH_REGISTRY",
+    "get_fact_path",
+    "EvidenceRef",
+    "ValidationResult",
+    "Reducer",
+    "ReducerError",
+    "CanonState",
+    "CommitChange",
+    "DeltaReducer",
+    "validate_operation",
+    "evaluate_precondition",
     # V2-005
     "EntityId",
     "ProjectId",

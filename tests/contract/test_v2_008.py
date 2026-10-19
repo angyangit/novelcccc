@@ -3568,6 +3568,13 @@ def deserialize_operation(op_dict):
 
     op_type = op_dict["operation_type"]
 
+    # Validate and preserve operation_version from JSON
+    version = op_dict.get("operation_version")
+    if not version:
+        raise ValueError("Missing operation_version")
+    if version != "1.0.0":
+        raise ValueError(f"Unsupported operation_version: {version}")
+
     # Reconstruct path from trusted registry (not from JSON expected_type)
     path = get_fact_path(op_dict["path"]["path"])
 
@@ -3923,24 +3930,12 @@ def test_real_json_negative_missing_evidence():
 
 
 def test_real_json_negative_invalid_version():
-    """Invalid operation_version rejected by both Python and JSON Schema."""
-    # First verify Python domain rejects it
-    with pytest.raises(ValueError, match="operation_version"):
-        SetFactOperation(
-            scope=ProjectId("proj-001"),
-            subject=EntityId(str(uuid.uuid4())),
-            path=FactPath("age", int),
-            value=30,
-            precondition=ExpectAbsent(),
-            evidence=EvidenceRef("TEXT", "ch1:p1", "a" * 64),
-            operation_version="999.0.0",  # Invalid version
-        )
-
-    # Verify JSON Schema rejects it with const constraint
+    """Invalid operation_version rejected by both Python and JSON Schema (all three operation types)."""
     schema = load_schema()
     validator = Draft7Validator(schema, format_checker=FormatChecker())
 
-    invalid_payload = {
+    # Test SET_FACT with invalid version
+    set_fact_payload = {
         "delta_id": str(uuid.uuid4()),
         "project_id": "proj-001",
         "operations": [
@@ -3965,12 +3960,78 @@ def test_real_json_negative_invalid_version():
         "provenance": {},
     }
 
-    json_string = json.dumps(invalid_payload)
-    loaded_dict = json.loads(json_string)
-
-    # Schema must reject invalid version with const constraint
+    # Schema must reject invalid version
     with pytest.raises(ValidationError):
-        validator.validate(loaded_dict)
+        validator.validate(set_fact_payload)
+
+    # Test END_FACT with invalid version
+    end_fact_payload = {
+        "delta_id": str(uuid.uuid4()),
+        "project_id": "proj-001",
+        "operations": [
+            {
+                "operation_type": "END_FACT",
+                "operation_version": "999.0.0",  # Invalid
+                "subject": str(uuid.uuid4()),
+                "scope": "proj-001",
+                "path": {"path": "age", "expected_type": "int"},
+                "precondition": {"type": "ExpectPresent"},
+                "evidence": {
+                    "source_type": "TEXT",
+                    "source_ref": "ch1:p1",
+                    "content_hash": "a" * 64,
+                },
+            }
+        ],
+        "source_chapter": None,
+        "created_at": datetime.now(UTC).isoformat(),
+        "authority": "test",
+        "provenance": {},
+    }
+
+    with pytest.raises(ValidationError):
+        validator.validate(end_fact_payload)
+
+    # Test UNDO_FACT with invalid version
+    undo_fact_payload = {
+        "delta_id": str(uuid.uuid4()),
+        "project_id": "proj-001",
+        "operations": [
+            {
+                "operation_type": "UNDO_FACT",
+                "operation_version": "999.0.0",  # Invalid
+                "subject": str(uuid.uuid4()),
+                "scope": "proj-001",
+                "path": {"path": "age", "expected_type": "int"},
+                "original_commit_ref": str(uuid.uuid4()),
+                "precondition": {"type": "ExpectValue", "expected_value": 30},
+                "evidence": {
+                    "source_type": "TEXT",
+                    "source_ref": "ch1:p1",
+                    "content_hash": "a" * 64,
+                },
+            }
+        ],
+        "source_chapter": None,
+        "created_at": datetime.now(UTC).isoformat(),
+        "authority": "test",
+        "provenance": {},
+    }
+
+    with pytest.raises(ValidationError):
+        validator.validate(undo_fact_payload)
+
+    # Test Python domain rejection
+    with pytest.raises(ValueError, match="operation_version"):
+        SetFactOperation(
+            scope=ProjectId("proj-001"),
+            subject=EntityId(str(uuid.uuid4())),
+            path=FactPath("age", int),
+            value=30,
+            precondition=ExpectAbsent(),
+            evidence=EvidenceRef("TEXT", "ch1:p1", "a" * 64),
+            operation_version="999.0.0",
+        )
 
 
 """True deep immutability tests - direct nested mutation attempts on domain objects.

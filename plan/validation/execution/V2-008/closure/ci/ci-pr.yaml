@@ -12,11 +12,11 @@ command: github-actions-workflow
 exit_code: 0
 artifacts:
 - ref: validation/execution/V2-008/closure/ci/pr-github-actions.txt
-  sha256: 5e3a75adc4a261afc4e7a6ce6c0938af0ef7c1e83b6f37430463472b395fa07e
+  sha256: 8042e2a7358128004649ff0297b055f0ff380dee53665bd888286b80425032bf
 input_evidence_refs:
 - validation/execution/V2-008/closure/code-revalidation.yaml
 pipeline_id: '39196985536'
-job_id: '117336878148'
+job_id: '117881763563'
 pipeline_url: https://github.com/AY123/AiNoverCC/pull/11/checks
 check_ids:
 - STATIC
@@ -26,4 +26,4 @@ check_ids:
 - SECRET_DEPENDENCY
 - POSTGRES_ENV
 decision: VERIFIED
-rationale: PR #11 CI run 39196985536 completed 2026-10-19T04:00:57Z - all 6 gates SUCCESS. Feature HEAD 86bfd1c validated, applicable to merge commit ae194275.
+rationale: PR #11 CI run 39196985536 completed 2026-10-19T04:00:57Z - all 6 gates SUCCESS. Feature HEAD 86bfd1c validated, applicable to merge commit ae194275. Job ID 117881763563 (STATIC gate) representative; all 6 job IDs documented in artifact.

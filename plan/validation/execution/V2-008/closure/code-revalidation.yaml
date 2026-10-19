@@ -10,7 +10,7 @@ executed_at: '2026-10-19T04:39:05Z'
 environment_fingerprint: macOS Darwin 24.1.0, Python 3.12.14, uv 0.12.17
 artifacts:
 - ref: validation/execution/V2-008/closure/acceptance-review.md
-  sha256: 3432fc769d36817e48e847e6711e061d95de431d8edeff072970666e227baa9c
+  sha256: 09146f8a9f51adc33d59628d4ed3270d765dcc3a1b0944ddece8463adf38b897
 input_evidence_refs: []
 check_ids:
 - CODE-V2-008-DELTA-PY-EXISTS

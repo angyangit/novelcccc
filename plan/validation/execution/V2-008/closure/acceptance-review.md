@@ -187,7 +187,9 @@ V2-008 implements finite change language and reducer preconditions per ADR-004.
 ## Test Coverage
 
 **V2-008 Tests**: 144/144 PASS (0 skipped, 0 failed)
-**Full Regression**: Awaiting completion
+**Full Regression**: 989/989 PASS (7:05, 143 warnings)
+
+**Note**: Full regression executed 2026-10-19T04:39:05Z via `uv run pytest tests/architecture/ tests/contract/ -v --tb=short` on local macOS Darwin 24.1.0, Python 3.12.14. Output archived at /tmp/v2-008-full-test-output.txt. This represents implementer-run verification, not independent CI validation.
 
 **Acceptance Tests**:
 - AT-V2-008-01: SET_FACT missing evidence rejected ✅

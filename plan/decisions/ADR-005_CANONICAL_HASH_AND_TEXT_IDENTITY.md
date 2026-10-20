@@ -86,8 +86,12 @@ assert raw_text_hash("line1\nline2\n") == "2751a3a2f303ad21752038085e2b8c5f98ecf
 3. **时间格式**: ISO 8601 UTC with Z suffix, no milliseconds unless non-zero
    - 格式: `YYYY-MM-DDTHH:MM:SSZ` or `YYYY-MM-DDTHH:MM:SS.sssZ`
    - 示例: `2026-10-20T03:15:30Z`
+   - **验证责任**: 输入 Schema 必须保证时间戳格式正确，规范化哈希不执行运行时解析验证
+   - **测试要求**: 必须包含格式错误时间戳的拒绝测试（在 Schema 验证层）
 4. **列表**: 保持原始顺序，不排序
 5. **字典**: 按键的 UTF-8 字节序排序
+   - **键类型**: JSON 对象键只能是字符串（JSON 规范要求）
+   - **重复键**: 规范化后重复键必须拒绝（已在 `_normalize_unicode` 中检测）
 6. **布尔值**: `true` / `false` (小写)
 7. **Null**: `null`
 8. **字符串**: 保持原样，使用 JSON 转义 (`"`, `\`, control characters)

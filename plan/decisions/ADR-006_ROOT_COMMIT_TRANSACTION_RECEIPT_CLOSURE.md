@@ -361,18 +361,14 @@ CREATE TABLE execution_control (
 
 2. **取消时递增版本**:
    ```sql
-   -- 在独立事务内更新版本
+   -- 在独立事务内更新版本（行已存在时）
    UPDATE execution_control
    SET execution_version = execution_version + 1,
        cancelled_at = NOW()
    WHERE project_id = $1 AND branch_name = $2;
    
-   -- 如果行不存在: 先 INSERT，版本从 1 开始
-   INSERT INTO execution_control (project_id, branch_name, execution_version)
-   VALUES ($1, $2, 1)
-   ON CONFLICT (project_id, branch_name) DO UPDATE
-   SET execution_version = execution_control.execution_version + 1,
-       cancelled_at = NOW();
+   -- 如果 UPDATE 返回 0 行（行不存在），则 INSERT 初始版本
+   -- 注意：初始化与取消是两个独立操作，不使用 UPSERT 避免重复递增
    ```
 
 **次序规则**:
@@ -445,22 +441,23 @@ except ExecutionCancelled:
 
 **版本管理**:
 ```sql
--- 开始新执行
+-- 开始新执行（初始化 execution_control 行）
 INSERT INTO execution_control (project_id, branch_name, execution_version)
 VALUES ($1, $2, 1)
-ON CONFLICT (project_id, branch_name)
-DO NOTHING;
+ON CONFLICT (project_id, branch_name) DO NOTHING;
 
--- 取消执行
+-- 取消执行（递增版本）
 UPDATE execution_control
 SET execution_version = execution_version + 1,
     cancelled_at = NOW()
 WHERE project_id = $1 AND branch_name = $2;
 
--- 提交时验证
+-- 提交时验证（在 commit_to_canon 事务内）
 SELECT execution_version FROM execution_control
-WHERE project_id = $1 AND branch_name = $2;
--- 如果与 Worker 持有的版本不同 → 拒绝提交
+WHERE project_id = $1 AND branch_name = $2
+FOR UPDATE;
+-- 如果版本不匹配 → ExecutionCancelled
+-- 如果行不存在 → ExecutionControlMissing
 ```
 
 ### 7. 最小恢复证据闭包

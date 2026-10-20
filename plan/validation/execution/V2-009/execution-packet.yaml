@@ -1,0 +1,222 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-009
+plan_version: 1.3.1
+repository_revision: 36eb104706274977931bbf6056427dd002480577
+worktree_dirty: true
+plan_manifest_sha256: deccd2232d789082f31e8113d24cd472221b0984a688c14013a668059a8d1cbb
+
+environment:
+  fingerprint: macOS-Darwin-24.1.0-Python-3.9.6-PostgreSQL-17.11
+  runtime_versions:
+    python: 3.9.6
+    os: Darwin 24.1.0
+    postgresql_ci: 17.11-bookworm
+  database_image: postgres:17.11-bookworm@sha256:639ab7ceb90e13123085b741fb31ef493fba25463002f6da665352e7b534b652
+  ci_context: GitHub Actions ubuntu-latest
+
+implementer: Claude Opus 4.7 (AI Agent)
+verifier: Owner (Human)
+owner_role: canon-maintainer
+
+scope: |
+  V2-009 PREPARE: Establish execution packet, verify dependencies, document implementation
+  scope and acceptance criteria for Canon persistence schema and repository.
+
+  In scope:
+  - Create task execution packet with all required bindings
+  - Verify ADR-005 and ADR-006 are ACCEPTED
+  - Document PostgreSQL schema requirements (project/branch scope, canon_commit, canon_event,
+    branch_head, execution_control, artifact_content)
+  - Document CanonRepository minimal interface requirements
+  - Document ADR-005 hash implementation requirements
+  - Bind test scenarios AT-V2-009-01 through AT-V2-009-04
+  - Document implementation sequence for future IMPLEMENT phase
+  - Update implementation-backlog.yaml execution_packet_ref
+  - Regenerate FILE_MANIFEST and pass validation
+
+  Out of scope:
+  - Actual database migration code (requires IMPLEMENT authorization)
+  - CanonRepository implementation code (requires IMPLEMENT authorization)
+  - Hash function implementation code (requires IMPLEMENT authorization)
+  - Integration test implementation (requires IMPLEMENT authorization)
+  - CanonCommitService business logic (deferred to V2-010)
+  - Genesis initialization (deferred to P10)
+  - Paid model calls (not authorized)
+
+action: PREPARE
+
+inputs:
+  - source_ref: machine/implementation-backlog.yaml
+    ref: machine/implementation-backlog.yaml
+    sha256: 4c742568129938be2756db861305e7c7f869a0e2df453932f611f79050c7b33e
+  - source_ref: machine/test-catalog.yaml
+    ref: machine/test-catalog.yaml
+    sha256: 6d85a2a711105f7b48ff3fbdfbcc0391716888088083988e3d1bd5c4ae2e153a
+  - source_ref: machine/decision-register.yaml
+    ref: machine/decision-register.yaml
+    sha256: 416e1b3a392cf1121a608f453e399477154fe3b0a411696e99330d32242fd358
+  - source_ref: machine/ai-execution-policy.yaml
+    ref: machine/ai-execution-policy.yaml
+    sha256: feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171
+  - source_ref: decisions/ADR-005_CANONICAL_HASH_AND_TEXT_IDENTITY.md
+    ref: decisions/ADR-005_CANONICAL_HASH_AND_TEXT_IDENTITY.md
+    sha256: 9ab36abf2383e415557841d0406a1df9863d12b3736b483b9fb581ba345fb07e
+  - source_ref: decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md
+    ref: decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md
+    sha256: 56a889426524eabefee93ccd36848cea4d19dd4b5cd50dd4b5354a3bf73d435e
+  - source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+    ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+    sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
+  - source_ref: 07_PLATFORM_SECURITY_AND_DELIVERY.md
+    ref: 07_PLATFORM_SECURITY_AND_DELIVERY.md
+    sha256: d75bc3e6899809652bb56ceb7b60d9cbdfe9e8c39467bb44ed48772ff32a779b
+  - source_ref: AI_EXECUTION_PROTOCOL.md
+    ref: AI_EXECUTION_PROTOCOL.md
+    sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
+  - source_ref: machine/phase-gates.yaml
+    ref: machine/phase-gates.yaml
+    sha256: 537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f
+
+expected_outputs:
+  - plan/validation/execution/V2-009/execution-packet.yaml
+  - plan/machine/implementation-backlog.yaml
+  - plan/FILE_MANIFEST.json
+  - plan/validation/plan-validation.json
+  - migrations
+  - src/anovel/canon/repository.py
+  - tests/integration/test_v2_009.py
+
+allowed_paths:
+  - plan/validation/execution/V2-009/
+  - plan/machine/
+  - plan/validation/
+  - plan/FILE_MANIFEST.json
+  - migrations
+  - migrations/
+  - src/anovel/canon/
+  - tests/integration/test_v2_009.py
+
+required_decisions:
+  - ADR-005
+  - ADR-006
+
+claims:
+  - id: CLAIM-V2-009-001
+    kind: FACT
+    statement: ADR-005 (Canonical Hash) is ACCEPTED with status field set to ACCEPTED
+    sources:
+      - ref: decisions/ADR-005_CANONICAL_HASH_AND_TEXT_IDENTITY.md
+        sha256: 9ab36abf2383e415557841d0406a1df9863d12b3736b483b9fb581ba345fb07e
+    blocks_actions: []
+    verification_plan: Read ADR-005 line 3 to verify Status field equals ACCEPTED
+
+  - id: CLAIM-V2-009-002
+    kind: FACT
+    statement: ADR-006 (Root Commit Transaction) is ACCEPTED with status field set to ACCEPTED
+    sources:
+      - ref: decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md
+        sha256: 56a889426524eabefee93ccd36848cea4d19dd4b5cd50dd4b5354a3bf73d435e
+    blocks_actions: []
+    verification_plan: Read ADR-006 line 3 to verify Status field equals ACCEPTED
+
+  - id: CLAIM-V2-009-003
+    kind: FACT
+    statement: V2-008 (NarrativeDelta) is CLOSED as prerequisite dependency
+    sources:
+      - ref: machine/implementation-backlog.yaml
+        sha256: 4c742568129938be2756db861305e7c7f869a0e2df453932f611f79050c7b33e
+    blocks_actions: []
+    verification_plan: Verify V2-008 status is CLOSED in implementation-backlog.yaml
+
+  - id: CLAIM-V2-009-004
+    kind: FACT
+    statement: G-P1 gate is satisfied (P1 complete with V2-005 through V2-008 closed)
+    sources:
+      - ref: machine/implementation-backlog.yaml
+        sha256: 4c742568129938be2756db861305e7c7f869a0e2df453932f611f79050c7b33e
+      - ref: machine/phase-gates.yaml
+        sha256: 537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f
+    blocks_actions: []
+    verification_plan: Verify P1 tasks V2-005, V2-006, V2-007, V2-008 all have status CLOSED
+
+  - id: CLAIM-V2-009-005
+    kind: ASSUMPTION
+    statement: No existing migrations/ directory exists; database schema will be created fresh
+    sources: []
+    blocks_actions: []
+    verification_plan: Search repository for migrations/ or alembic/ directories during IMPLEMENT
+
+  - id: CLAIM-V2-009-006
+    kind: ASSUMPTION
+    statement: src/anovel/canon/ module does not yet exist and will be created
+    sources: []
+    blocks_actions: []
+    verification_plan: Verify src/anovel/canon/ does not exist before starting IMPLEMENT
+
+  - id: CLAIM-V2-009-007
+    kind: UNKNOWN
+    statement: Alembic configuration and initialization requirements
+    sources: []
+    blocks_actions:
+      - IMPLEMENT
+    verification_plan: |
+      Before IMPLEMENT authorization: survey existing Python projects for Alembic best practices,
+      verify pyproject.toml dependencies include alembic, determine if alembic.ini is needed or
+      if configuration should be in code. Document findings in IMPLEMENT execution packet.
+
+estimate:
+  range: PREPARE 1-2 hours; IMPLEMENT 8-16 hours (schema + repository + hash + tests)
+  unit: hours
+  assumptions:
+    - 'PREPARE: create execution packet, update backlog, regenerate manifest, validate'
+    - 'IMPLEMENT: requires separate authorization, includes migrations, repository code, hash utilities, integration tests, CI validation'
+  confidence: MEDIUM
+
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 3
+  maximum_runtime: 7200
+
+stop_conditions:
+  - Execution packet passes schema validation
+  - implementation-backlog.yaml updated with execution_packet_ref
+  - FILE_MANIFEST.json regenerated successfully
+  - plan-validation.json shows PASS status
+  - No fatal validation errors
+  - PREPARE PR created and CI passes 6/6
+
+review_notes:
+  - V2-009 establishes PostgreSQL Canon persistence foundation
+  - ADR-005 and ADR-006 provide complete technical specifications
+  - Test scenarios AT-V2-009-01 through 04 define acceptance criteria
+  - Actual implementation (migrations, repository code, tests) requires separate IMPLEMENT authorization
+  - No paid model calls authorized for this task
+  - PREPARE phase documents scope and verifies dependencies only
+
+handoff:
+  current_step: Creating V2-009 execution packet
+  completed_steps:
+    - Verified main at 36eb104 with PR #15 merged
+    - Verified ADR-005 and ADR-006 status ACCEPTED
+    - Verified G-P1 gate satisfied (V2-008 CLOSED)
+    - Created prepare/v2-009-canon-persistence branch
+    - Collected input file SHA256 hashes
+    - Documented environment fingerprint
+  pending_items:
+    - Update implementation-backlog.yaml execution_packet_ref
+    - Regenerate FILE_MANIFEST.json
+    - Run validate_plan.py --check
+    - Commit and push PREPARE branch
+    - Create PREPARE PR
+    - Verify CI 6/6 SUCCESS
+    - Request Owner IMPLEMENT authorization
+  next_action: PREPARE
+  last_check:
+    status: NOT_RUN
+    artifacts: []
+    missing_artifact_reason: PREPARE in progress
+
+change_review: null

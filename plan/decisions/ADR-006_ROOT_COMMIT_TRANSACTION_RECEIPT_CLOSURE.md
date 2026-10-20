@@ -1,6 +1,6 @@
 # ADR-006: 根提交、短事务、收据与保留闭包
 
-**Status**: REQUIRED  
+**Status**: ACCEPTED  
 **Decision Due**: V2-009  
 **Owner**: canon-maintainer  
 **Related Tasks**: V2-009, V2-010, V2-011, V2-012

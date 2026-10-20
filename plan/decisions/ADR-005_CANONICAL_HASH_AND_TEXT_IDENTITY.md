@@ -1,6 +1,6 @@
 # ADR-005: 规范化字节哈希与原始正文身份
 
-**Status**: REQUIRED  
+**Status**: ACCEPTED  
 **Decision Due**: V2-009  
 **Owner**: canon-maintainer  
 **Related Tasks**: V2-009, V2-010

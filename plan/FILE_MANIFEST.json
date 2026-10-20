@@ -1362,12 +1362,12 @@
   {
     "path": "decisions/ADR-005_CANONICAL_HASH_AND_TEXT_IDENTITY.md",
     "bytes": 9774,
-    "sha256": "b2e72e62d78cce8c88471ba0a854bb846be356c93569c5dbce0e4b37856d78e4"
+    "sha256": "9ab36abf2383e415557841d0406a1df9863d12b3736b483b9fb581ba345fb07e"
   },
   {
     "path": "decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md",
     "bytes": 21871,
-    "sha256": "0d8bc678baacbcd873d32b1513191b3b7bb81556aef5d5ed38d99db2b0f07886"
+    "sha256": "56a889426524eabefee93ccd36848cea4d19dd4b5cd50dd4b5354a3bf73d435e"
   },
   {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",
@@ -1401,8 +1401,8 @@
   },
   {
     "path": "machine/decision-register.yaml",
-    "bytes": 5410,
-    "sha256": "95528902c6d877e6a113443bd91cc2d78245a24850636b07c94f4735da422853"
+    "bytes": 5536,
+    "sha256": "416e1b3a392cf1121a608f453e399477154fe3b0a411696e99330d32242fd358"
   },
   {
     "path": "machine/external-practice-register.yaml",

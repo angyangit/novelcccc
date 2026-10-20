@@ -1521,8 +1521,8 @@
   },
   {
     "path": "scripts/test_governance.py",
-    "bytes": 43571,
-    "sha256": "1d08c531cfc8e180f6b12b04143e8503eab51b139468089c14ef7ee224b80d2f"
+    "bytes": 43676,
+    "sha256": "a5e0b571eb57dcdffd29c7f9edc8f6e4fe3f8f6b131cdaa20750b2f65ee47813"
   },
   {
     "path": "scripts/validate_plan.py",

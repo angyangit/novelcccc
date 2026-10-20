@@ -45,18 +45,18 @@ decisions:
   verification_refs: []
 - id: ADR-005
   title: 规范化字节 哈希与原始正文身份
-  status: REQUIRED
+  status: ACCEPTED
   owner_role: canon-maintainer
   related_tasks:
   - V2-009
   - V2-010
   decision_due_task: V2-009
   timing: before_interface_implementation
-  decision_record: null
+  decision_record: validation/decisions/owner-acceptance-ead6d37/adr-005-decision.yaml
   verification_refs: []
 - id: ADR-006
   title: 根提交 短事务 收据与保留闭包
-  status: REQUIRED
+  status: ACCEPTED
   owner_role: canon-maintainer
   related_tasks:
   - V2-009
@@ -65,7 +65,7 @@ decisions:
   - V2-012
   decision_due_task: V2-009
   timing: before_interface_implementation
-  decision_record: null
+  decision_record: validation/decisions/owner-acceptance-ead6d37/adr-006-decision.yaml
   verification_refs: []
   required_refinements:
   - 补充取消/提交次序、执行权限撤销与最小恢复证据闭包

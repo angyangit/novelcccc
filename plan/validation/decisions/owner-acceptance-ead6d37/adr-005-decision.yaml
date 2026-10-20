@@ -1,0 +1,21 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: ADR-005-20261020-owner-approved-ead6d37
+evidence_type: ADR_DECISION
+subject_id: ADR-005
+revision: ead6d3777b0b2f56cb22cdd0a0f7e8388976391b
+status: PASS
+producer: ANovelOS Owner - explicit approval of PR #15 candidate ead6d3777b0b2f56cb22cdd0a0f7e8388976391b
+executed_at: '2026-10-20T06:03:41.123Z'
+environment_fingerprint: Architecture governance decision; GitHub PR #15 push run 39376925054 and pull request run 39376930976 each six mandatory gates SUCCESS at approved candidate
+artifacts:
+- ref: decisions/ADR-005_CANONICAL_HASH_AND_TEXT_IDENTITY.md
+  sha256: 9ab36abf2383e415557841d0406a1df9863d12b3736b483b9fb581ba345fb07e
+input_evidence_refs: []
+decision: ACCEPTED
+rationale: |
+  The ANovelOS Owner explicitly accepted ADR-005 for approved candidate PR #15 HEAD ead6d3777b0b2f56cb22cdd0a0f7e8388976391b, after successful candidate CI on both push and pull_request (six checks each).
+  Decision scope: deterministic UTF-8 raw text SHA-256 and NFC canonical structured hash, Unicode/number/time boundaries and test vectors.
+  The only change to the approved ADR document in this ratification commit is its Status metadata REQUIRED to ACCEPTED; the substantive technical text remains byte-for-byte identical to approved candidate ead6d3777b0b2f56cb22cdd0a0f7e8388976391b.
+  Acceptance establishes the implementation contract, not a claim that the future V2-009 database migrations, concurrency tests or CanonRepository have been implemented or verified.
+  V2-009 IMPLEMENT remains separately Owner-controlled and is not authorized by this ratification.

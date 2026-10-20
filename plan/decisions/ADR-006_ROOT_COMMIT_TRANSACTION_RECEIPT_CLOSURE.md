@@ -46,36 +46,43 @@ CREATE TABLE canon_commit (
     -- Project scope foreign key
     FOREIGN KEY (project_id) REFERENCES project(id),
     
-    -- Parent commit must be in same project/branch (scope isolation)
-    FOREIGN KEY (project_id, branch_name, parent_commit_id) 
-        REFERENCES canon_commit(project_id, branch_name, commit_id),
-    
     -- Idempotency: same key on same branch
     UNIQUE (project_id, branch_name, idempotency_key)
 );
+
+-- UNIQUE constraint for composite FK targets (required by PostgreSQL)
+-- Must be created BEFORE adding composite FKs
+CREATE UNIQUE INDEX idx_commit_scope_identity 
+    ON canon_commit(project_id, branch_name, commit_id);
 
 -- Root uniqueness: only one NULL parent per project/branch (Partial UNIQUE Index)
 CREATE UNIQUE INDEX unique_root_per_branch 
     ON canon_commit (project_id, branch_name)
     WHERE parent_commit_id IS NULL;
 
-CREATE INDEX idx_commit_branch_head ON canon_commit(project_id, branch_name, created_at DESC);
+-- NOW add parent scope FK (references idx_commit_scope_identity)
+ALTER TABLE canon_commit
+    ADD CONSTRAINT fk_parent_scope
+    FOREIGN KEY (project_id, branch_name, parent_commit_id) 
+    REFERENCES canon_commit(project_id, branch_name, commit_id);
 
--- Support scope isolation FK
-CREATE UNIQUE INDEX idx_commit_scope_identity 
-    ON canon_commit(project_id, branch_name, commit_id);
+CREATE INDEX idx_commit_branch_head ON canon_commit(project_id, branch_name, created_at DESC);
 ```
 
 **创建根提交流程**:
 1. 客户端提供 `project_id`, `branch_name`, `idempotency_key`, `payload`
-2. 服务在事务内尝试插入 `parent_commit_id = NULL` 的 commit
-3. UNIQUE constraint 违反 → 检查是否幂等重试 (相同 key + hash)
-4. 如是幂等 → 返回原 receipt；如不是 → 报告冲突
-
-**作用域隔离**:
-- 复合外键强制 parent 必须在同一 project/branch
-- 跨 project 引用在数据库层被拒绝
-- 跨 branch 引用在数据库层被拒绝
+2. 服务在 SERIALIZABLE 事务内:
+   - 检查幂等性（已存在？）
+   - 尝试插入 `parent_commit_id = NULL` 的 commit
+   - Partial UNIQUE Index 违反 → 检查幂等（相同 key + hash → 返回原收据）
+   - **Root HEAD 初始化**: 使用 INSERT (不是 UPDATE)
+     ```sql
+     INSERT INTO branch_head (project_id, branch_name, head_commit_id)
+     VALUES ($project_id, $branch_name, $commit_id)
+     ON CONFLICT (project_id, branch_name) DO NOTHING;
+     ```
+   - 检查插入行数: 0 = 已存在 root (另一个并发 root 胜出), 1 = 成功
+3. 并发 root commits: Partial UNIQUE Index + branch_head PK 保证唯一性
 
 **测试权限**: 
 - 测试环境: 允许删除整个 project 重建
@@ -116,14 +123,27 @@ async def commit_to_canon(
                 raise ConflictError("Same idempotency key, different payload")
         
         # 1. Check execution version (fencing) - only if NOT idempotent retry
-        current_version = await get_execution_version(project_id, branch_name)
-        if execution_version < current_version:
-            raise ExecutionCancelled("Execution was cancelled")
+        # Lock execution_control row to prevent concurrent cancellation
+        control = await db.fetch_one("""
+            SELECT execution_version FROM execution_control
+            WHERE project_id = $1 AND branch_name = $2
+            FOR UPDATE
+        """, project_id, branch_name)
         
-        # 2. CAS: Verify HEAD matches expected parent
-        current_head = await get_branch_head(project_id, branch_name)
-        if current_head != parent_commit_id:
-            raise HeadMovedError(f"Expected parent {parent_commit_id}, found {current_head}")
+        if control is None:
+            raise ExecutionControlMissing("Execution control row must exist before commit")
+        
+        if control.execution_version != execution_version:
+            # Version mismatch: execution was cancelled or version incorrect
+            raise ExecutionCancelled(
+                f"Execution version mismatch: expected {execution_version}, found {control.execution_version}"
+            )
+        
+        # 2. CAS: Verify HEAD matches expected parent (for non-root commits)
+        if parent_commit_id is not None:
+            current_head = await get_branch_head(project_id, branch_name)
+            if current_head != parent_commit_id:
+                raise HeadMovedError(f"Expected parent {parent_commit_id}, found {current_head}")
         
         # 3. Write commit
         commit_id = gen_uuid()
@@ -138,16 +158,26 @@ async def commit_to_canon(
             permit_ref=permit_ref
         )
         
-        # 4. Update HEAD pointer (CAS via WHERE clause)
-        rows_updated = await update_branch_head_cas(
-            project_id, 
-            branch_name, 
-            new_head=commit_id,
-            expected_parent=parent_commit_id
-        )
-        if rows_updated == 0:
-            # CAS failed: another commit won
-            raise HeadMovedError("HEAD changed during commit")
+        # 4. Update or Initialize HEAD
+        if parent_commit_id is None:
+            # Root commit: INSERT branch_head
+            rows = await db.execute("""
+                INSERT INTO branch_head (project_id, branch_name, head_commit_id)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (project_id, branch_name) DO NOTHING
+            """, project_id, branch_name, commit_id)
+            if rows == 0:
+                # Another concurrent root commit won
+                raise RootAlreadyExistsError("Root commit already exists for this branch")
+        else:
+            # Non-root commit: UPDATE with CAS
+            rows = await update_branch_head_cas(
+                project_id, branch_name, 
+                new_head=commit_id,
+                expected_parent=parent_commit_id
+            )
+            if rows == 0:
+                raise HeadMovedError("HEAD changed during commit (CAS failed)")
         
         # 5. Write events
         events = expand_changeset_to_events(changeset)
@@ -171,10 +201,10 @@ async def update_branch_head_cas(
     project_id: UUID,
     branch_name: str,
     new_head: UUID,
-    expected_parent: UUID | None
+    expected_parent: UUID
 ) -> int:
     """
-    Update HEAD with CAS check.
+    Update HEAD with CAS check (for non-root commits).
     
     Returns:
         Number of rows updated (0 = CAS failed, 1 = success)
@@ -240,18 +270,10 @@ CREATE TABLE branch_head (
     PRIMARY KEY (project_id, branch_name),
     
     -- HEAD must reference commit in same project/branch (scope isolation)
+    -- References idx_commit_scope_identity UNIQUE index
     FOREIGN KEY (project_id, branch_name, head_commit_id)
         REFERENCES canon_commit(project_id, branch_name, commit_id)
 );
-
--- Update HEAD只在parent匹配时成功 (CAS)
-UPDATE branch_head
-SET head_commit_id = $new_commit_id, updated_at = NOW()
-WHERE project_id = $project_id
-  AND branch_name = $branch_name
-  AND head_commit_id = $expected_parent_commit_id;
-
--- Check affected rows: 0 = CAS失败, 1 = 成功
 ```
 
 **并发场景**:
@@ -312,7 +334,7 @@ class CommitReceipt:
 
 **决策**: **Commit-Wins with Fencing**
 
-提交和取消不是对等竞争，而是通过执行权限版本 (execution version) 实现 fencing：
+提交和取消通过 execution_version 实现 fencing，在 SERIALIZABLE 事务内原子检查和更新 execution_control 行。
 
 ```sql
 CREATE TABLE execution_control (
@@ -320,44 +342,76 @@ CREATE TABLE execution_control (
     branch_name VARCHAR(255) NOT NULL,
     execution_version INT NOT NULL DEFAULT 1,
     cancelled_at TIMESTAMPTZ,
-    
     PRIMARY KEY (project_id, branch_name)
 );
 ```
+
+**原子协议**:
+
+1. **提交时检查版本**:
+   ```sql
+   -- 在 SERIALIZABLE 事务内，执行版本必须精确匹配
+   SELECT execution_version FROM execution_control
+   WHERE project_id = $1 AND branch_name = $2
+   FOR UPDATE;  -- 锁定行，防止并发取消
+   
+   -- 如果 execution_version != expected_version: 执行已被取消
+   -- 如果行不存在: 拒绝提交（需要先初始化）
+   ```
+
+2. **取消时递增版本**:
+   ```sql
+   -- 在独立事务内更新版本
+   UPDATE execution_control
+   SET execution_version = execution_version + 1,
+       cancelled_at = NOW()
+   WHERE project_id = $1 AND branch_name = $2;
+   
+   -- 如果行不存在: 先 INSERT，版本从 1 开始
+   INSERT INTO execution_control (project_id, branch_name, execution_version)
+   VALUES ($1, $2, 1)
+   ON CONFLICT (project_id, branch_name) DO UPDATE
+   SET execution_version = execution_control.execution_version + 1,
+       cancelled_at = NOW();
+   ```
 
 **次序规则**:
 
 1. **取消先到达**:
    ```python
    await cancel_execution(project_id, branch_name)
-   # → execution_version += 1
+   # → execution_version: 1 → 2
    
    # Worker later attempts commit with old version
    await commit_to_canon(..., execution_version=1)
-   # → ExecutionCancelled: "Execution was cancelled"
+   # → SELECT execution_version FOR UPDATE → 发现版本 = 2
+   # → 1 != 2, raise ExecutionCancelled
    ```
 
 2. **提交先成功**:
    ```python
-   # Worker commits successfully
+   # Worker commits successfully (locks execution_control row with FOR UPDATE)
    receipt = await commit_to_canon(..., execution_version=1)
-   # → 成功，HEAD 推进
+   # → SELECT ... FOR UPDATE (version = 1, matches)
+   # → 成功，HEAD 推进，事务提交，释放锁
    
-   # User then requests cancel
+   # User then requests cancel (在提交事务完成后)
    await cancel_execution(project_id, branch_name)
-   # → execution_version += 1, 但不能撤销已成功的提交
-   # → 返回: "Commit already succeeded, cancel has no effect"
+   # → execution_version: 1 → 2
+   # → 但不能撤销已成功的提交
+   # → 返回: "Commit already succeeded, cancel affects future executions only"
    ```
 
 3. **并发到达**:
-   - SERIALIZABLE 隔离级别保证全序
-   - 提交事务先获得锁 → 成功，取消无效
-   - 取消事务先获得锁 → 版本递增，提交被拒绝
+   - 提交事务先获得 FOR UPDATE 锁 → 版本匹配，提交成功，取消无效
+   - 取消先更新版本 → 提交事务读到新版本，版本不匹配，提交被拒绝
+   - SERIALIZABLE + FOR UPDATE 保证全序
 
 **关键约束**:
 - 取消不能回滚已成功的提交（Canon 是追加日志）
-- 已取消的执行不能产生新提交（fencing 防护）
-- 幂等重试恢复原收据（响应丢失不影响语义）
+- 已取消的执行不能产生新提交（版本精确匹配检查）
+- 幂等重试恢复原收据（检查在 fencing 之前）
+- 缺少 execution_control 行时拒绝提交（安全默认）
 
 **UI 状态**:
 - 取消请求处理中: "Cancellation pending..."
@@ -436,6 +490,9 @@ CREATE TABLE execution_control (
     PRIMARY KEY (project_id, branch_name)
 );
 
+-- UNIQUE constraint for (project_id, commit_id) - MUST exist before composite FKs
+CREATE UNIQUE INDEX idx_commit_project_identity ON canon_commit(project_id, commit_id);
+
 -- 5. 权威事件流
 CREATE TABLE canon_event (
     event_id UUID PRIMARY KEY,
@@ -445,12 +502,14 @@ CREATE TABLE canon_event (
     entity_id UUID NOT NULL,
     event_data JSONB NOT NULL,
     sequence_number INT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    
-    -- Scope isolation: event must belong to commit's project
-    FOREIGN KEY (project_id, commit_id) 
-        REFERENCES canon_commit(project_id, commit_id)
+    created_at TIMESTAMPTZ NOT NULL
 );
+
+-- NOW add scope isolation FK (references idx_commit_project_identity UNIQUE index)
+ALTER TABLE canon_event
+    ADD CONSTRAINT fk_event_commit_scope
+    FOREIGN KEY (project_id, commit_id) 
+    REFERENCES canon_commit(project_id, commit_id);
 
 CREATE INDEX idx_event_commit ON canon_event(commit_id, sequence_number);
 
@@ -462,15 +521,14 @@ CREATE TABLE artifact_content (
     raw_text TEXT NOT NULL,
     raw_text_hash VARCHAR(64) NOT NULL,
     canonical_hash VARCHAR(64) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    
-    -- Scope isolation: artifact must belong to commit's project
-    FOREIGN KEY (project_id, commit_id)
-        REFERENCES canon_commit(project_id, commit_id)
+    created_at TIMESTAMPTZ NOT NULL
 );
 
--- Support composite FK for events and artifacts
-CREATE INDEX idx_commit_project_identity ON canon_commit(project_id, commit_id);
+-- NOW add scope isolation FK (references idx_commit_project_identity UNIQUE index)
+ALTER TABLE artifact_content
+    ADD CONSTRAINT fk_artifact_commit_scope
+    FOREIGN KEY (project_id, commit_id)
+    REFERENCES canon_commit(project_id, commit_id);
 ```
 
 **可重建的投影** (可从事件流重建，允许延迟/失败重试):

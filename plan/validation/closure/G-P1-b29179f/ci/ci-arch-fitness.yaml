@@ -1,0 +1,21 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: P1-ci-arch-fitness-b29179f
+evidence_type: CI_RUN
+subject_id: G-P1
+revision: b29179f975588641da816da8059b70af7f5db976
+status: PASS
+producer: GitHub Actions CI run #83 job 118443762347 ARCH_FITNESS
+executed_at: '2026-10-20T03:49:52Z'
+environment_fingerprint: GitHub Actions ubuntu-latest; Python 3.12.14; uv 0.12.17; candidate b29179f975588641da816da8059b70af7f5db976
+artifacts:
+- ref: validation/closure/G-P1-b29179f/ci/ci-run83-snapshot.json
+  sha256: 0acf9b33f6b9737e0743c16017c3c61a53dcd68b6b41e536be9d636466dcc089
+input_evidence_refs: []
+check_ids:
+- ARCH_FITNESS
+command: 'uv run pytest tests/architecture/test_dependency_boundaries.py tests/architecture/test_change_review.py tests/architecture/test_weakening_checks.py -v --tb=short --junitxml=dist/ci/arch/junit.xml'
+exit_code: 0
+pipeline_id: '39366279648'
+job_id: '118443762347'
+pipeline_url: https://github.com/AY123/AiNoverCC/actions/runs/39366279648

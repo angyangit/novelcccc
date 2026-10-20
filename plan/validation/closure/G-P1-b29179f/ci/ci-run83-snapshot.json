@@ -1,0 +1,445 @@
+{
+  "source": "GitHub Actions REST API",
+  "retrieved_for_stage": "G-P1 candidate verification",
+  "repository": "AY123/AiNoverCC",
+  "subject_revision": "b29179f975588641da816da8059b70af7f5db976",
+  "workflow": {
+    "id": 39366279648,
+    "name": "CI",
+    "event": "push",
+    "head_sha": "b29179f975588641da816da8059b70af7f5db976",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/AY123/AiNoverCC/actions/runs/39366279648",
+    "created_at": "2026-10-20T03:49:14Z",
+    "updated_at": "2026-10-20T03:52:03Z"
+  },
+  "jobs": [
+    {
+      "id": 118443762042,
+      "name": "STATIC",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-20T03:49:17Z",
+      "completed_at": "2026-10-20T03:49:41Z",
+      "html_url": "https://github.com/AY123/AiNoverCC/actions/runs/39366279648/job/118443762042",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install uv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run format check",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run lint check",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run type check",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "STATIC gate result",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 118443762239,
+      "name": "UNIT",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-20T03:49:17Z",
+      "completed_at": "2026-10-20T03:52:03Z",
+      "html_url": "https://github.com/AY123/AiNoverCC/actions/runs/39366279648/job/118443762239",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install uv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run unit tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upload test results",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 118443762261,
+      "name": "POSTGRES_ENV",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-20T03:49:17Z",
+      "completed_at": "2026-10-20T03:50:23Z",
+      "html_url": "https://github.com/AY123/AiNoverCC/actions/runs/39366279648/job/118443762261",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install uv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Wait for PostgreSQL",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check PostgreSQL connection",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run PostgreSQL integration tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "POSTGRES_ENV gate result",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 118443762269,
+      "name": "SCHEMA_CONTRACT",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-20T03:49:18Z",
+      "completed_at": "2026-10-20T03:49:43Z",
+      "html_url": "https://github.com/AY123/AiNoverCC/actions/runs/39366279648/job/118443762269",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install uv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run plan validation",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run governance tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "SCHEMA_CONTRACT gate result",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 118443762347,
+      "name": "ARCH_FITNESS",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-20T03:49:17Z",
+      "completed_at": "2026-10-20T03:49:52Z",
+      "html_url": "https://github.com/AY123/AiNoverCC/actions/runs/39366279648/job/118443762347",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install uv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run architecture fitness tests",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upload test results",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 118443762356,
+      "name": "SECRET_DEPENDENCY",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-20T03:49:18Z",
+      "completed_at": "2026-10-20T03:50:06Z",
+      "html_url": "https://github.com/AY123/AiNoverCC/actions/runs/39366279648/job/118443762356",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install uv",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install dependencies",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install gitleaks",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run secret scanning",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run supplementary checks",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check dependency integrity",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run dependency audit",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "SECRET_DEPENDENCY gate result",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Upload security results",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Set up Python",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Checkout",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

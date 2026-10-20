@@ -1,0 +1,26 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: M1-milestone-decision-b29179f
+evidence_type: MILESTONE_DECISION
+subject_id: M1
+revision: b29179f975588641da816da8059b70af7f5db976
+status: PASS
+producer: ANovelOS Owner-authorized G-P1/M1 Stage B closure
+executed_at: '2026-10-20T04:14:33.598Z'
+environment_fingerprint: GitHub Actions ubuntu-latest; Python 3.12.14; uv 0.12.17; candidate b29179f975588641da816da8059b70af7f5db976
+artifacts:
+- ref: machine/milestones.yaml
+  sha256: ba50ad1d3b03c9dc17ae9e04c653a72a70a0530cd654080b56a62ceb86f835ca
+input_evidence_refs:
+- validation/closure/G-P1-b29179f/P1-phase-decision.yaml
+- docs/reports/V2-005_FINAL_CLOSURE_REPORT.md
+- docs/reports/V2-005_FINAL_RATIFICATION.md
+- docs/archive/v2-005-remediation/V2-006_FINAL_CLOSURE_CANDIDATE.md
+- docs/reports/V2-006_IMPLEMENTATION_AUTHORIZATION.md
+- validation/execution/V2-061/closure/acceptance-green-ci.yaml
+- validation/execution/V2-007/closure/acceptance.yaml
+- validation/execution/V2-008/closure/acceptance.yaml
+decision: VERIFIED
+rationale: |
+  M1 Narrative Kernel required tasks V2-005/V2-006/V2-061/V2-007/V2-008 CLOSED with acceptance evidence.
+  M1 is closed against verified P1 candidate b29179f975588641da816da8059b70af7f5db976; its decision revision is not the closure-only commit D.

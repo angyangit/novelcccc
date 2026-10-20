@@ -49,7 +49,7 @@ phases:
   name: Narrative Kernel
   entry_gate: G-P0
   exit_gate: G-P1
-  status: NOT_VERIFIED
+  status: VERIFIED
   tasks:
   - V2-005
   - V2-006
@@ -60,7 +60,8 @@ phases:
   - 实体及作用域正反例通过
   - 知识时序与操作类型一致
   - 未决基础 Schema 决策已落实
-  evidence_refs: []
+  evidence_refs:
+  - validation/closure/G-P1-b29179f/P1-phase-decision.yaml
   task_refinement: PLANNED
 - id: P2
   name: Canon Kernel

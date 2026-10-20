@@ -1366,8 +1366,8 @@
   },
   {
     "path": "generated/MILESTONE_MAP.md",
-    "bytes": 950,
-    "sha256": "c948e2cd300be6cf1429541d2d3ade2d360b731375f2f65dac86f8abc0ff0f70"
+    "bytes": 946,
+    "sha256": "1086043371937a76cbac3234504dec074560ed256e736f0b2a6f51aef80f520e"
   },
   {
     "path": "generated/PHASE_TASK_REGISTRY.md",
@@ -1421,13 +1421,13 @@
   },
   {
     "path": "machine/milestones.yaml",
-    "bytes": 2823,
-    "sha256": "600564189f249801bc1ea6927a7259802474d2605cff6348c80bf4f39d468ad6"
+    "bytes": 2879,
+    "sha256": "ba50ad1d3b03c9dc17ae9e04c653a72a70a0530cd654080b56a62ceb86f835ca"
   },
   {
     "path": "machine/phase-gates.yaml",
-    "bytes": 5698,
-    "sha256": "32a9b314e4729f6f776254d34d6477256440ca88affd9c1ab272ecc3c439e213"
+    "bytes": 5750,
+    "sha256": "537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f"
   },
   {
     "path": "machine/remediation-register.yaml",

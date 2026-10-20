@@ -1,0 +1,41 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: P1-phase-decision-b29179f
+evidence_type: PHASE_DECISION
+subject_id: P1
+revision: b29179f975588641da816da8059b70af7f5db976
+status: PASS
+producer: ANovelOS Owner-authorized G-P1 Stage B closure
+executed_at: '2026-10-20T04:14:33.598Z'
+environment_fingerprint: GitHub Actions ubuntu-latest; Python 3.12.14; uv 0.12.17; candidate b29179f975588641da816da8059b70af7f5db976
+artifacts:
+- ref: machine/phase-gates.yaml
+  sha256: 537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f
+input_evidence_refs:
+- docs/reports/V2-005_FINAL_CLOSURE_REPORT.md
+- docs/reports/V2-005_FINAL_RATIFICATION.md
+- docs/archive/v2-005-remediation/V2-006_FINAL_CLOSURE_CANDIDATE.md
+- docs/reports/V2-006_IMPLEMENTATION_AUTHORIZATION.md
+- validation/execution/V2-061/closure/acceptance-green-ci.yaml
+- validation/execution/V2-007/closure/acceptance.yaml
+- validation/execution/V2-008/closure/acceptance.yaml
+- validation/closure/G-P1-b29179f/ci/ci-static.yaml
+- validation/closure/G-P1-b29179f/ci/ci-unit.yaml
+- validation/closure/G-P1-b29179f/ci/ci-postgres-env.yaml
+- validation/closure/G-P1-b29179f/ci/ci-schema-contract.yaml
+- validation/closure/G-P1-b29179f/ci/ci-arch-fitness.yaml
+- validation/closure/G-P1-b29179f/ci/ci-secret-dependency.yaml
+ci_evidence_refs:
+- validation/closure/G-P1-b29179f/ci/ci-static.yaml
+- validation/closure/G-P1-b29179f/ci/ci-unit.yaml
+- validation/closure/G-P1-b29179f/ci/ci-postgres-env.yaml
+- validation/closure/G-P1-b29179f/ci/ci-schema-contract.yaml
+- validation/closure/G-P1-b29179f/ci/ci-arch-fitness.yaml
+- validation/closure/G-P1-b29179f/ci/ci-secret-dependency.yaml
+decision: VERIFIED
+rationale: |
+  G-P1 candidate b29179f975588641da816da8059b70af7f5db976 verified: five P1 tasks CLOSED and their registered acceptance evidence preserved.
+  P1 exit criteria and ADR-002/003/004 accepted; GitHub Actions push run #83 on C2 passed all six P1-applicable hard CI gates.
+  Historical V2-005/006 raw evidence remains subject to existing legacy compatibility; no evidence is fabricated.
+  Cross-phase findings remain tracked according to existing task acceptance dispositions, not falsely closed here.
+  This is Stage B closure-only metadata; the decision revision identifies candidate C2 and not closure commit D.

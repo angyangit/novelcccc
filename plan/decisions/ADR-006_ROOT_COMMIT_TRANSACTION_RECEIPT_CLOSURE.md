@@ -96,28 +96,36 @@ async def commit_to_canon(
     permit_ref: str,
     execution_version: int
 ) -> CommitReceipt:
+    """
+    Commit to canon with idempotency, CAS, and fencing.
+    
+    Retry logic: caller must retry on SQLSTATE 40001 with SAME idempotency_key
+    """
     async with db.transaction(isolation_level="SERIALIZABLE"):
-        # 1. Check execution version (fencing)
-        current_version = await get_execution_version(project_id, branch_name)
-        if execution_version < current_version:
-            raise ExecutionCancelled("Execution was cancelled")
-        
-        # 2. Check idempotency (same key?)
+        # CRITICAL: Check idempotency FIRST (before fencing check)
+        # Reason: If commit already succeeded, return receipt even if execution was cancelled later
         existing = await find_commit_by_key(project_id, branch_name, idempotency_key)
         payload_hash = canonical_hash(changeset)
         
         if existing:
             if existing.payload_hash == payload_hash:
-                return existing.receipt  # Idempotent retry
+                # Idempotent retry: same key + same payload
+                return existing.receipt  # Return original receipt
             else:
-                raise ConflictError("Same key, different payload")
+                # Conflict: same key + different payload
+                raise ConflictError("Same idempotency key, different payload")
         
-        # 3. CAS: Verify HEAD
+        # 1. Check execution version (fencing) - only if NOT idempotent retry
+        current_version = await get_execution_version(project_id, branch_name)
+        if execution_version < current_version:
+            raise ExecutionCancelled("Execution was cancelled")
+        
+        # 2. CAS: Verify HEAD matches expected parent
         current_head = await get_branch_head(project_id, branch_name)
         if current_head != parent_commit_id:
-            raise HeadMovedError(f"Expected {parent_commit_id}, found {current_head}")
+            raise HeadMovedError(f"Expected parent {parent_commit_id}, found {current_head}")
         
-        # 4. Write commit
+        # 3. Write commit
         commit_id = gen_uuid()
         await insert_commit(
             commit_id=commit_id,
@@ -130,27 +138,84 @@ async def commit_to_canon(
             permit_ref=permit_ref
         )
         
-        # 5. Update HEAD pointer (atomic with commit)
-        await update_branch_head(project_id, branch_name, commit_id)
+        # 4. Update HEAD pointer (CAS via WHERE clause)
+        rows_updated = await update_branch_head_cas(
+            project_id, 
+            branch_name, 
+            new_head=commit_id,
+            expected_parent=parent_commit_id
+        )
+        if rows_updated == 0:
+            # CAS failed: another commit won
+            raise HeadMovedError("HEAD changed during commit")
         
-        # 6. Write events (derived from changeset)
+        # 5. Write events
         events = expand_changeset_to_events(changeset)
-        await insert_events(commit_id, events)
+        await insert_events(commit_id, project_id, events)
         
-        # 7. Generate receipt
+        # 6. Generate receipt
         receipt = CommitReceipt(
             commit_id=commit_id,
             project_id=project_id,
             branch_name=branch_name,
             parent_commit_id=parent_commit_id,
             timestamp=now(),
-            event_count=len(events)
+            event_count=len(events),
+            idempotency_key=idempotency_key,
+            payload_hash=payload_hash
         )
         
-        # 8. Mark projection triggers (可选，不阻塞提交)
-        await mark_projection_pending(commit_id)
-        
         return receipt
+
+async def update_branch_head_cas(
+    project_id: UUID,
+    branch_name: str,
+    new_head: UUID,
+    expected_parent: UUID | None
+) -> int:
+    """
+    Update HEAD with CAS check.
+    
+    Returns:
+        Number of rows updated (0 = CAS failed, 1 = success)
+    """
+    result = await db.execute("""
+        UPDATE branch_head
+        SET head_commit_id = $1, updated_at = NOW()
+        WHERE project_id = $2
+          AND branch_name = $3
+          AND head_commit_id = $4
+    """, new_head, project_id, branch_name, expected_parent)
+    
+    return result.rowcount
+
+# Transaction retry wrapper
+MAX_RETRIES = 3
+
+async def commit_with_retry(
+    project_id: UUID,
+    branch_name: str,
+    parent_commit_id: UUID | None,
+    idempotency_key: str,
+    changeset: ChangeSet,
+    permit_ref: str,
+    execution_version: int
+) -> CommitReceipt:
+    """Retry on SERIALIZABLE conflict (SQLSTATE 40001)."""
+    for attempt in range(MAX_RETRIES):
+        try:
+            return await commit_to_canon(
+                project_id, branch_name, parent_commit_id,
+                idempotency_key, changeset, permit_ref, execution_version
+            )
+        except SerializationError as e:
+            if e.sqlstate == '40001' and attempt < MAX_RETRIES - 1:
+                # Retry with SAME idempotency_key
+                await asyncio.sleep(0.1 * (2 ** attempt))  # Exponential backoff
+                continue
+            raise
+    
+    raise MaxRetriesExceeded("Transaction retry limit exceeded")
 ```
 
 **事务外操作** (不持有数据库锁):
@@ -375,28 +440,37 @@ CREATE TABLE execution_control (
 CREATE TABLE canon_event (
     event_id UUID PRIMARY KEY,
     commit_id UUID NOT NULL,
-    project_id UUID NOT NULL,  -- Denormalized for scope queries
+    project_id UUID NOT NULL,  -- Denormalized for scope verification
     event_type VARCHAR(100) NOT NULL,
     entity_id UUID NOT NULL,
     event_data JSONB NOT NULL,
     sequence_number INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     
-    FOREIGN KEY (commit_id) REFERENCES canon_commit(commit_id)
+    -- Scope isolation: event must belong to commit's project
+    FOREIGN KEY (project_id, commit_id) 
+        REFERENCES canon_commit(project_id, commit_id)
 );
+
+CREATE INDEX idx_event_commit ON canon_event(commit_id, sequence_number);
 
 -- 6. 原始正文（如适用，P2最小可选）
 CREATE TABLE artifact_content (
     artifact_id UUID PRIMARY KEY,
     commit_id UUID NOT NULL,
-    project_id UUID NOT NULL,
+    project_id UUID NOT NULL,  -- Denormalized for scope verification
     raw_text TEXT NOT NULL,
     raw_text_hash VARCHAR(64) NOT NULL,
     canonical_hash VARCHAR(64) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
     
-    FOREIGN KEY (commit_id) REFERENCES canon_commit(commit_id)
+    -- Scope isolation: artifact must belong to commit's project
+    FOREIGN KEY (project_id, commit_id)
+        REFERENCES canon_commit(project_id, commit_id)
 );
+
+-- Support composite FK for events and artifacts
+CREATE INDEX idx_commit_project_identity ON canon_commit(project_id, commit_id);
 ```
 
 **可重建的投影** (可从事件流重建，允许延迟/失败重试):
@@ -408,7 +482,19 @@ CREATE TABLE artifact_content (
 **恢复流程**:
 ```python
 async def recover_commit(commit_id: UUID) -> bool:
-    """验证提交完整性并重建投影"""
+    """
+    验证提交完整性并重建投影 (V2-009 范围)
+    
+    V2-009 恢复能力:
+    - ✓ 提交记录和 ChangeSet
+    - ✓ 事件流
+    - ✓ 幂等键和 payload hash
+    - ✓ Permit 引用 (字符串)
+    - ✗ Policy binding 详情 (V2-010+)
+    - ✗ Permit evidence 详情 (V2-010+)
+    
+    V2-010+ 将添加 commit_policy_binding 和 commit_permit_evidence 表
+    """
     # 1. 读取提交记录
     commit = await load_commit(commit_id)
     
@@ -419,23 +505,30 @@ async def recover_commit(commit_id: UUID) -> bool:
     events = await load_events(commit_id)
     assert events_match_changeset(events, commit.changeset)
     
-    # 4. 验证政策绑定存在
-    policies = await load_policy_bindings(commit_id)
-    assert len(policies) > 0
+    # 4. 验证 permit 引用存在 (V2-009: 仅字符串引用)
+    assert commit.permit_ref is not None
+    # Note: permit 证据详情由 V2-010 commit_permit_evidence 表提供
     
-    # 5. 验证许可证据
-    permit = await load_permit_evidence(commit_id)
-    assert permit.check_results is not None
-    
-    # 6. 重建投影（幂等）
+    # 5. 重建投影（幂等）
     await rebuild_projections_from_events(events)
     
     return True
 ```
 
+**V2-009 不包含**:
+- `commit_policy_binding`: 政策版本绑定 (V2-010)
+- `commit_permit_evidence`: 许可检查快照 (V2-010)
+
+**V2-009 提供**:
+- 提交幂等性和收据恢复
+- 事件流完整性
+- Permit 引用 (字符串，用于外部查询)
+- 基础投影重建
+
 **保留期限**:
 - 权威数据: 永久保留（除非项目删除）
-- 许可证据: 至少保留到项目完成 + 1年
+- Permit 引用: 永久保留 (V2-009)
+- Permit 证据快照: V2-010+ 添加
 - 原始正文: 永久保留
 - 投影: 可按需重建，无固定期限
 

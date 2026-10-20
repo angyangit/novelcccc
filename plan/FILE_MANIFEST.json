@@ -1360,6 +1360,16 @@
     "sha256": "48d7d965d18438529822cac8e398da1262c4e7c87139f8cbe6509a5c381f04ef"
   },
   {
+    "path": "decisions/ADR-005_CANONICAL_HASH_AND_TEXT_IDENTITY.md",
+    "bytes": 9384,
+    "sha256": "ab88d4657a2d0bc014d2a0efdbed393a30288d7f060e0b420d559a1b96db9ccb"
+  },
+  {
+    "path": "decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md",
+    "bytes": 18949,
+    "sha256": "db61fe6006fcd96bc9d70d16c625e163c3a28b27c7b895593fdc9bada0cfed08"
+  },
+  {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",
     "bytes": 3286,
     "sha256": "c5f816a2050dacad720ff5a5600e0d89d52b19052d09dcd7d9af98299058eb4d"

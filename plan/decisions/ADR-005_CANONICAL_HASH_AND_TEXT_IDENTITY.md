@@ -101,6 +101,7 @@ assert raw_text_hash("line1\nline2\n") == "2751a3a2f303ad21752038085e2b8c5f98ecf
 ```python
 import hashlib
 import json
+import math
 import unicodedata
 from typing import Any
 
@@ -113,7 +114,13 @@ def canonical_hash(obj: Any) -> str:
     
     Returns:
         Hex-encoded SHA-256 digest (64 characters)
+    
+    Raises:
+        ValueError: If obj contains NaN or Infinity
     """
+    # Validate no NaN/Infinity
+    _validate_no_nan_infinity(obj)
+    
     # Normalize Unicode strings recursively
     normalized = _normalize_unicode(obj)
     
@@ -128,12 +135,31 @@ def canonical_hash(obj: Any) -> str:
     # Hash UTF-8 bytes
     return hashlib.sha256(canonical_json.encode('utf-8')).hexdigest()
 
+def _validate_no_nan_infinity(obj: Any) -> None:
+    """Reject NaN and Infinity values."""
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            raise ValueError(f"NaN and Infinity are not allowed: {obj}")
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            _validate_no_nan_infinity(v)
+    elif isinstance(obj, list):
+        for item in obj:
+            _validate_no_nan_infinity(item)
+
 def _normalize_unicode(obj: Any) -> Any:
     """Recursively apply NFC normalization to all strings."""
     if isinstance(obj, str):
         return unicodedata.normalize('NFC', obj)
     elif isinstance(obj, dict):
-        return {_normalize_unicode(k): _normalize_unicode(v) for k, v in obj.items()}
+        # Normalize keys AND check for collisions after normalization
+        normalized_dict = {}
+        for k, v in obj.items():
+            normalized_key = _normalize_unicode(k)
+            if normalized_key in normalized_dict:
+                raise ValueError(f"Key collision after Unicode normalization: {k}")
+            normalized_dict[normalized_key] = _normalize_unicode(v)
+        return normalized_dict
     elif isinstance(obj, list):
         return [_normalize_unicode(item) for item in obj]
     else:

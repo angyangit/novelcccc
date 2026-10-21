@@ -210,6 +210,10 @@ jobs:
         run: |
           uv run python scripts/check_postgres.py
 
+      - name: Run PostgreSQL integration tests
+        run: |
+          uv run pytest tests/integration/test_postgres_ci_service.py -v --tb=short
+
       - name: Run Alembic migrations
         run: |
           echo "Running Alembic migrations..."
@@ -219,10 +223,6 @@ jobs:
         run: |
           echo "Running V2-009 Canon persistence integration tests..."
           uv run pytest tests/integration/test_v2_009.py -v --tb=short
-
-      - name: Run PostgreSQL integration tests
-        run: |
-          uv run pytest tests/integration/test_postgres_ci_service.py -v --tb=short
 
       - name: POSTGRES_ENV gate result
         run: echo "POSTGRES_ENV gate PASS"

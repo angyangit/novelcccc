@@ -92,6 +92,10 @@ jobs:
         run: |
           uv run pytest tests/contract/test_plan_governance.py -v --tb=short
 
+      - name: Validate CommitReceipt JSON Schema
+        run: |
+          uv run pytest tests/integration/test_commit_receipt_schema.py -v --tb=short
+
       - name: SCHEMA_CONTRACT gate result
         run: echo "SCHEMA_CONTRACT gate PASS"
 
@@ -228,6 +232,10 @@ jobs:
         run: |
           echo "Running V2-010 CanonCommitService integration tests..."
           uv run pytest tests/integration/test_v2_010.py -v --tb=short
+
+      - name: Verify PostgreSQL transaction isolation
+        run: |
+          uv run pytest tests/integration/test_isolation_level.py -v --tb=short
 
       - name: POSTGRES_ENV gate result
         run: echo "POSTGRES_ENV gate PASS"

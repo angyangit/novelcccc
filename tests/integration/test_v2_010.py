@@ -1235,9 +1235,9 @@ def test_at_v2_010_11_concurrent_writes_race():
     - Only ONE can succeed (single transaction protocol)
     - The other gets precondition or HEAD CAS failure
     - No contradictory state in database
+    - Uses Barrier for proper synchronization
     """
     import threading
-    import time
 
     with postgres() as (env, project):
         run_migration(env, "upgrade")
@@ -1289,12 +1289,15 @@ def test_at_v2_010_11_concurrent_writes_race():
 
             receipt_setup = service.commit_narrative_delta(request_setup)
 
-            # Now two writers will try to update age concurrently
+            # Now two writers will try to update age concurrently with synchronization
             verifier.add_permit("permit-writer-a", "novel-project", "main", 1)
             verifier.add_permit("permit-writer-b", "novel-project", "main", 1)
 
             results = {"a": None, "b": None}
             errors = {"a": None, "b": None}
+
+            # Barrier ensures both threads start transaction at same time
+            barrier = threading.Barrier(2)
 
             def writer_a():
                 try:
@@ -1327,6 +1330,9 @@ def test_at_v2_010_11_concurrent_writes_race():
                         narrative_delta=delta_a,
                         permit=permit_a,
                     )
+
+                    # Wait for both threads to be ready
+                    barrier.wait(timeout=5)
 
                     results["a"] = service_a.commit_narrative_delta(request_a)
                     repo_a.close()
@@ -1365,6 +1371,9 @@ def test_at_v2_010_11_concurrent_writes_race():
                         permit=permit_b,
                     )
 
+                    # Wait for both threads to be ready
+                    barrier.wait(timeout=5)
+
                     results["b"] = service_b.commit_narrative_delta(request_b)
                     repo_b.close()
                 except Exception as e:
@@ -1380,12 +1389,23 @@ def test_at_v2_010_11_concurrent_writes_race():
             thread_a.join(timeout=10)
             thread_b.join(timeout=10)
 
+            # Verify threads completed
+            assert not thread_a.is_alive(), "Thread A timed out"
+            assert not thread_b.is_alive(), "Thread B timed out"
+
             # Exactly one should succeed
             successes = sum(1 for r in results.values() if r is not None)
             failures = sum(1 for e in errors.values() if e is not None)
 
-            assert successes == 1, f"Expected exactly 1 success, got {successes}"
-            assert failures == 1, f"Expected exactly 1 failure, got {failures}"
+            assert successes == 1, f"Expected exactly 1 success, got {successes}. Results: {results}, Errors: {errors}"
+            assert failures == 1, f"Expected exactly 1 failure, got {failures}. Errors: {errors}"
+
+            # Verify the failure is for the right reason (precondition or CAS)
+            failed_error = errors["a"] if errors["a"] else errors["b"]
+            assert failed_error is not None
+            error_str = str(failed_error).lower()
+            assert "precondition" in error_str or "mismatch" in error_str or "cas" in error_str, \
+                f"Expected precondition or CAS failure, got: {failed_error}"
 
             # Verify final state
             with repo.transaction() as session:
@@ -1399,7 +1419,7 @@ def test_at_v2_010_11_concurrent_writes_race():
                 )
                 assert result.scalar() == 3
 
-                # Only 3 events
+                # Only 2 events (setup + ONE writer)
                 result = session.execute(
                     text("""
                         SELECT COUNT(*) FROM canon_event
@@ -1407,14 +1427,22 @@ def test_at_v2_010_11_concurrent_writes_race():
                     """),
                     {"project_id": "novel-project"},
                 )
-                assert result.scalar() == 2  # setup + ONE writer
+                assert result.scalar() == 2
 
                 # HEAD points to exactly one winner
                 head = repo.get_branch_head(session, "novel-project", "main")
-                assert head in [
-                    results["a"].commit_id if results["a"] else None,
-                    results["b"].commit_id if results["b"] else None,
-                ]
+                winner_commit_id = results["a"].commit_id if results["a"] else results["b"].commit_id
+                assert head == winner_commit_id
+
+                # Verify age is either 26 or 27 (not both, not 25)
+                # This requires reconstructing state, but we can verify commit content
+                winner_commit = repo.get_commit(session, "novel-project", "main", winner_commit_id)
+                import json
+                changeset = winner_commit["changeset"]
+                if isinstance(changeset, str):
+                    changeset = json.loads(changeset)
+                age_value = changeset["operations"][0]["value"]
+                assert age_value in (26, 27), f"Expected age 26 or 27, got {age_value}"
 
         finally:
             repo.close()

@@ -458,7 +458,7 @@ class CanonCommitService:
         # Reverse to get root-to-HEAD order
         commit_chain.reverse()
 
-        # Apply commits in order
+        # Apply commits in order with domain constraint enforcement
         for commit_id in commit_chain:
             commit = self.repository.get_commit(
                 session, project_id, branch_name, commit_id
@@ -495,33 +495,74 @@ class CanonCommitService:
                 commit_changes=canon_state.commit_changes,
             )
 
-            # Apply delta through reducer (validates and updates state)
-            # This preserves CommitChange records for UNDO_FACT
+            # Apply operations using proper domain logic with CommitChange tracking
+            # For historical reconstruction, we trust the stored operations were valid
+            # when originally committed, but still enforce domain constraints
             try:
                 for op in delta.operations:
                     if isinstance(op, SetFactOperation):
-                        old_value, existed_before = canon_state.get_value(
-                            op.subject, op.path
-                        )
+                        # Check domain constraints without re-validating preconditions
+                        # (preconditions were valid at commit time, state has changed since)
+                        if canon_state.is_ended(op.subject, op.path):
+                            raise CanonRepositoryError(
+                                f"Historical replay: cannot SET_FACT on ended fact {op.path.path}"
+                            )
+                        # Apply with CommitChange tracking
                         canon_state = canon_state.set_value(
                             op.subject, op.path, op.value, CommitId(commit_id)
                         )
+
                     elif isinstance(op, EndFactOperation):
+                        # Verify fact exists before ending
+                        current_value, path_exists = canon_state.get_value(
+                            op.subject, op.path
+                        )
+                        if not path_exists:
+                            raise CanonRepositoryError(
+                                f"Historical replay: cannot END_FACT on non-existent fact {op.path.path}"
+                            )
+                        if canon_state.is_ended(op.subject, op.path):
+                            raise CanonRepositoryError(
+                                f"Historical replay: fact already ended {op.path.path}"
+                            )
+                        # Apply with CommitChange tracking
                         canon_state = canon_state.end_fact(
                             op.subject, op.path, CommitId(commit_id)
                         )
+
                     elif isinstance(op, UndoFactOperation):
-                        # UNDO_FACT requires full reducer semantics
-                        # For historical reconstruction, we cannot validate preconditions
-                        # Just restore to value_before from CommitChange
+                        # UNDO_FACT: Restore to state before original commit
+                        # Verify original commit exists in history
+                        if not canon_state.commit_exists(op.original_commit_ref):
+                            raise CanonRepositoryError(
+                                f"Historical replay: original commit not found {op.original_commit_ref}"
+                            )
+
+                        # Get the CommitChange record
                         change = canon_state.get_commit_change(
                             op.original_commit_ref, op.subject, op.path.path
                         )
                         if change is None:
                             raise CanonRepositoryError(
-                                f"Cannot reconstruct UNDO_FACT: no CommitChange for "
+                                f"Historical replay: no CommitChange for UNDO_FACT "
                                 f"{op.original_commit_ref}:{op.subject}:{op.path.path}"
                             )
+
+                        # Verify project scope
+                        if change.project_id != canon_state.project_id:
+                            raise CanonRepositoryError(
+                                "Historical replay: cannot undo commit from different project"
+                            )
+
+                        # Check for subsequent modifications (ABA protection)
+                        if canon_state.has_subsequent_modifications(
+                            op.original_commit_ref, op.subject, op.path.path
+                        ):
+                            raise CanonRepositoryError(
+                                f"Historical replay: cannot undo {op.original_commit_ref}, "
+                                f"fact has been modified by subsequent commits"
+                            )
+
                         # Restore to value_before
                         key = (op.subject, op.path.path)
                         if change.existed_before:
@@ -539,6 +580,7 @@ class CanonCommitService:
                             commit_history=canon_state.commit_history,
                             commit_changes=canon_state.commit_changes,
                         )
+
             except Exception as e:
                 raise CanonRepositoryError(
                     f"Failed to reconstruct state at commit {commit_id}: {e}"

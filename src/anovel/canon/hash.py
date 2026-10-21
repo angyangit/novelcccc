@@ -73,7 +73,9 @@ def _normalize_for_canonical_hash(obj: Any) -> Any:
         normalized_dict = {}
         for k, v in obj.items():
             if not isinstance(k, str):
-                raise TypeError(f"JSON object keys must be strings, got {type(k).__name__}")
+                raise TypeError(
+                    f"JSON object keys must be strings, got {type(k).__name__}"
+                )
             normalized_key = unicodedata.normalize("NFC", k)
             if normalized_key in normalized_dict:
                 raise ValueError(
@@ -92,6 +94,4 @@ def _normalize_for_canonical_hash(obj: Any) -> Any:
     elif isinstance(obj, (int, bool, type(None))):
         return obj
     else:
-        raise TypeError(
-            f"Object of type {type(obj).__name__} is not JSON-serializable"
-        )
+        raise TypeError(f"Object of type {type(obj).__name__} is not JSON-serializable")

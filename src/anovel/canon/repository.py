@@ -311,7 +311,7 @@ class CanonRepository:
                         "expected_head": expected_head_commit_id,
                     },
                 )
-                return result.rowcount > 0
+                return result.rowcount > 0  # type: ignore[attr-defined]
             except IntegrityError as e:
                 error_msg = str(e.orig) if hasattr(e, "orig") else str(e)
                 if "fk_branch_head_commit" in error_msg:
@@ -488,8 +488,14 @@ class CanonRepository:
         payload_hash: str,
         changeset: dict[str, Any],
         permit_ref: str | None = None,
-    ) -> None:
-        """Create commit with execution version fencing.
+    ) -> dict[str, Any]:
+        """Create commit with execution version fencing and idempotent recovery.
+
+        Implements ADR-006 idempotent commit semantics:
+        1. Check for existing commit with same idempotency key
+        2. If exists with same payload hash, return original receipt
+        3. If exists with different payload hash, reject as conflict
+        4. If not exists, validate execution version and create commit
 
         Args:
             session: Active database session
@@ -503,12 +509,49 @@ class CanonRepository:
             changeset: Commit changeset data
             permit_ref: Optional execution permit reference
 
+        Returns:
+            Commit receipt with commit_id, committed_at, and idempotency_key
+
         Raises:
             ExecutionVersionMismatchError: If execution version does not match
+            IdempotencyConflictError: If same key with different payload exists
             RootCommitExistsError: If root already exists
-            IdempotencyConflictError: If idempotency key conflicts
             ProjectScopeViolationError: If parent not found or scope violation
         """
+        # Step 1: Check for existing commit with same idempotency key
+        existing = session.execute(
+            text("""
+                SELECT commit_id, payload_hash, committed_at
+                FROM canon_commit
+                WHERE project_id = :project_id
+                  AND branch_name = :branch_name
+                  AND idempotency_key = :idempotency_key
+            """),
+            {
+                "project_id": project_id,
+                "branch_name": branch_name,
+                "idempotency_key": idempotency_key,
+            },
+        ).fetchone()
+
+        if existing:
+            existing_commit_id, existing_payload_hash, existing_committed_at = existing
+            # Step 2: Same key + same payload = idempotent retry, return original receipt
+            if existing_payload_hash == payload_hash:
+                return {
+                    "commit_id": existing_commit_id,
+                    "committed_at": existing_committed_at,
+                    "idempotency_key": idempotency_key,
+                    "recovered": True,
+                }
+            # Step 3: Same key + different payload = conflict
+            else:
+                raise IdempotencyConflictError(
+                    f"Idempotency key {idempotency_key} already used with different payload: "
+                    f"existing hash {existing_payload_hash}, new hash {payload_hash}"
+                )
+
+        # Step 4: No existing commit, validate execution version and create
         # Lock and verify execution version
         current_version = self.get_execution_version(
             session, project_id, branch_name, lock=True
@@ -546,6 +589,24 @@ class CanonRepository:
                 changeset,
                 permit_ref,
             )
+
+        # Return receipt for new commit
+        committed_at = session.execute(
+            text("""
+                SELECT committed_at FROM canon_commit
+                WHERE project_id = :project_id
+                  AND branch_name = :branch_name
+                  AND commit_id = :commit_id
+            """),
+            {"project_id": project_id, "branch_name": branch_name, "commit_id": commit_id},
+        ).scalar()
+
+        return {
+            "commit_id": commit_id,
+            "committed_at": committed_at,
+            "idempotency_key": idempotency_key,
+            "recovered": False,
+        }
 
     def close(self) -> None:
         """Close database connection and dispose of connection pool."""

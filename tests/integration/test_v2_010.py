@@ -564,3 +564,144 @@ def test_at_v2_010_09_service_restart_recovery():
 
         finally:
             repo2.close()
+
+
+def test_at_v2_010_10_invalid_precondition_rejection():
+    """AT-V2-010-10: Invalid precondition causes commit rejection.
+
+    Verifies:
+    - Create character with age=25
+    - Update age to 26 (valid: precondition ExpectValue(25))
+    - Try to update age to 27 with ExpectValue(25) → REJECT
+    - Verify database unchanged (no new commit, no new event, HEAD unchanged)
+    """
+    with postgres() as (env, project):
+        run_migration(env, "upgrade")
+
+        repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
+        verifier = TestPermitVerifier()
+        service = CanonCommitService(repo, verifier)
+
+        try:
+            with repo.transaction() as session:
+                repo.create_project(session, "novel-project")
+                repo.init_execution_control(session, "novel-project", "main")
+                repo.create_root_commit(
+                    session,
+                    "novel-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
+                )
+                repo.update_branch_head_cas(
+                    session, "novel-project", "main", "commit-root", None
+                )
+
+            # Commit 1: Create character with age=25
+            delta1 = create_narrative_delta(
+                project_id="novel-project",
+                operations=[
+                    create_set_fact("char-linzhou", "novel-project", "name", "林舟"),
+                    create_set_fact("char-linzhou", "novel-project", "age", 25),
+                ],
+            )
+
+            verifier.add_permit("permit-test", "novel-project", "main", 1)
+            permit = ExecutionPermit(
+                permit_id="permit-test",
+                project_id="novel-project",
+                branch_name="main",
+                execution_version=1,
+                issued_at=datetime.now(),
+            )
+
+            request1 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",
+                idempotency_key="idem-create-linzhou",
+                narrative_delta=delta1,
+                permit=permit,
+            )
+
+            receipt1 = service.commit_narrative_delta(request1)
+            assert receipt1.commit_id is not None
+
+            # Commit 2: Update age to 26 (valid precondition)
+            delta2 = create_narrative_delta(
+                project_id="novel-project",
+                operations=[
+                    create_set_fact(
+                        "char-linzhou", "novel-project", "age", 26, ExpectValue(25)
+                    ),
+                ],
+            )
+
+            request2 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id=receipt1.commit_id,
+                idempotency_key="idem-update-age-26",
+                narrative_delta=delta2,
+                permit=permit,
+            )
+
+            receipt2 = service.commit_narrative_delta(request2)
+            assert receipt2.commit_id is not None
+
+            # Get HEAD before invalid attempt
+            with repo.transaction() as session:
+                head_before = repo.get_branch_head(session, "novel-project", "main")
+                assert head_before == receipt2.commit_id
+
+            # Commit 3: Try to update age to 27 with WRONG precondition (expects 25 but current is 26)
+            delta3 = create_narrative_delta(
+                project_id="novel-project",
+                operations=[
+                    create_set_fact(
+                        "char-linzhou", "novel-project", "age", 27, ExpectValue(25)
+                    ),
+                ],
+            )
+
+            request3 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id=receipt2.commit_id,
+                idempotency_key="idem-update-age-27-invalid",
+                narrative_delta=delta3,
+                permit=permit,
+            )
+
+            # This should raise InvalidDeltaError
+            with pytest.raises(InvalidDeltaError) as exc_info:
+                service.commit_narrative_delta(request3)
+
+            assert "precondition" in str(exc_info.value).lower()
+
+            # Verify database unchanged
+            with repo.transaction() as session:
+                head_after = repo.get_branch_head(session, "novel-project", "main")
+                assert head_after == receipt2.commit_id  # HEAD unchanged
+
+                # Verify no commit with idempotency_key "idem-update-age-27-invalid"
+                result = session.execute(
+                    text("""
+                        SELECT commit_id FROM canon_commit
+                        WHERE project_id = :project_id
+                          AND branch_name = :branch_name
+                          AND idempotency_key = :idempotency_key
+                    """),
+                    {
+                        "project_id": "novel-project",
+                        "branch_name": "main",
+                        "idempotency_key": "idem-update-age-27-invalid",
+                    },
+                )
+                assert result.fetchone() is None  # No commit created
+
+        finally:
+            repo.close()
+

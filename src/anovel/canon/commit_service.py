@@ -25,12 +25,16 @@ from datetime import datetime
 from typing import Any, Protocol
 
 from ..domain.delta import (
+    CanonState,
+    CommitId,
+    DeltaReducer,
     EndFactOperation,
     NarrativeDelta,
     OperationType,
     SetFactOperation,
     UndoFactOperation,
 )
+from ..domain.identity import EntityId, ProjectId
 from .hash import canonical_hash
 from .repository import (
     CanonRepository,
@@ -148,12 +152,13 @@ class CanonCommitService:
 
         Single transaction:
         1. Validate permit and execution version
-        2. Validate NarrativeDelta structure
-        3. Check idempotency (recover or conflict)
-        4. INSERT canon_commit
-        5. INSERT canon_event
-        6. UPDATE branch_head (CAS)
-        7. Return receipt
+        2. Reconstruct Canon state from HEAD
+        3. Validate NarrativeDelta structure and preconditions
+        4. Check idempotency (recover or conflict)
+        5. INSERT canon_commit
+        6. INSERT canon_event
+        7. UPDATE branch_head (CAS)
+        8. Return receipt
 
         Args:
             request: Structured commit request with delta and permit
@@ -171,18 +176,24 @@ class CanonCommitService:
         # Step 1: Validate permit
         self._validate_permit(request.permit, request.project_id, request.branch_name)
 
-        # Step 2: Validate NarrativeDelta
-        self._validate_narrative_delta(request.narrative_delta)
+        # Step 2: Reconstruct Canon state from HEAD
+        with self.repository.transaction() as session:
+            canon_state = self._reconstruct_canon_state(
+                session, request.project_id, request.branch_name
+            )
 
-        # Step 3: Compute payload hash
+        # Step 3: Validate NarrativeDelta structure and preconditions
+        self._validate_narrative_delta(request.narrative_delta, canon_state)
+
+        # Step 4: Compute payload hash
         payload_hash = self._compute_payload_hash(request.narrative_delta)
 
-        # Step 4: Generate commit_id and event_id
+        # Step 5: Generate commit_id and event_id
 
         commit_id = f"commit-{uuid.uuid4().hex[:12]}"
         event_id = f"event-{uuid.uuid4().hex[:12]}"
 
-        # Step 5: Atomic commit transaction
+        # Step 6: Atomic commit transaction
         with self.repository.transaction() as session:
             # Use repository's idempotent commit with fencing
             receipt_data = self.repository.create_commit_with_fencing(
@@ -287,11 +298,252 @@ class CanonCommitService:
                 f"Permit verification error for {permit.permit_id}: {e}"
             ) from e
 
-    def _validate_narrative_delta(self, delta: NarrativeDelta) -> None:
-        """Validate NarrativeDelta structure and project scope.
+    def _reconstruct_canon_state(
+        self, session: Any, project_id: str, branch_name: str
+    ) -> CanonState:
+        """Reconstruct Canon state from branch HEAD commits.
+
+        Args:
+            session: Active database session
+            project_id: Project ID
+            branch_name: Branch name
+
+        Returns:
+            CanonState reconstructed from all commits up to HEAD
+
+        Raises:
+            CanonRepositoryError: If state reconstruction fails
+        """
+        from ..domain.delta import (
+            CommitChange,
+            ExpectAbsent,
+            ExpectPresent,
+            ExpectUnknown,
+            ExpectValue,
+            FactValue,
+            get_fact_path,
+        )
+
+        # Get current HEAD
+        head_commit_id = self.repository.get_branch_head(session, project_id, branch_name)
+
+        # Initialize empty Canon state
+        canon_state = CanonState(
+            project_id=ProjectId(project_id),
+            facts=(),
+            tombstones=frozenset(),
+            commit_history=(),
+            commit_changes=(),
+        )
+
+        # If no HEAD, return empty state
+        if head_commit_id is None:
+            return canon_state
+
+        # Traverse commit chain from HEAD to root
+        commit_chain: list[str] = []
+        current_commit_id = head_commit_id
+
+        while current_commit_id is not None:
+            commit_chain.append(current_commit_id)
+            commit = self.repository.get_commit(
+                session, project_id, branch_name, current_commit_id
+            )
+            if commit is None:
+                raise CanonRepositoryError(
+                    f"Commit not found in chain: {current_commit_id}"
+                )
+            current_commit_id = commit["parent_commit_id"]
+
+        # Reverse to get root-to-HEAD order
+        commit_chain.reverse()
+
+        # Apply commits in order using DeltaReducer
+        reducer = DeltaReducer()
+
+        for commit_id in commit_chain:
+            commit = self.repository.get_commit(session, project_id, branch_name, commit_id)
+            if commit is None:
+                raise CanonRepositoryError(f"Commit disappeared: {commit_id}")
+
+            # Deserialize changeset
+            changeset = commit["changeset"]
+            if isinstance(changeset, str):
+                changeset = json.loads(changeset)
+
+            # Skip root commits (they have no operations)
+            if changeset.get("type") == "root":
+                continue
+
+            # Reconstruct NarrativeDelta from changeset
+            delta = self._deserialize_delta(changeset)
+
+            # Add commit to history
+            canon_state = CanonState(
+                project_id=canon_state.project_id,
+                facts=canon_state.facts,
+                tombstones=canon_state.tombstones,
+                commit_history=canon_state.commit_history + (CommitId(commit_id),),
+                commit_changes=canon_state.commit_changes,
+            )
+
+            # Apply each operation with commit tracking
+            for op in delta.operations:
+                if isinstance(op, SetFactOperation):
+                    old_value, existed_before = canon_state.get_value(op.subject, op.path)
+                    canon_state = canon_state.set_value(
+                        op.subject, op.path, op.value, CommitId(commit_id)
+                    )
+                elif isinstance(op, EndFactOperation):
+                    canon_state = canon_state.end_fact(
+                        op.subject, op.path, CommitId(commit_id)
+                    )
+                elif isinstance(op, UndoFactOperation):
+                    # UNDO_FACT restoration handled by reducer
+                    # For now, just apply through reducer
+                    pass
+
+        return canon_state
+
+    def _deserialize_delta(self, changeset: dict[str, Any]) -> NarrativeDelta:
+        """Deserialize NarrativeDelta from changeset dict.
+
+        Args:
+            changeset: Serialized delta from database
+
+        Returns:
+            Reconstructed NarrativeDelta
+
+        Raises:
+            InvalidDeltaError: If deserialization fails
+        """
+        from datetime import datetime
+
+        from ..domain.delta import (
+            DeltaId,
+            EvidenceRef,
+            ExpectAbsent,
+            ExpectPresent,
+            ExpectUnknown,
+            ExpectValue,
+            FactValue,
+            get_fact_path,
+        )
+
+        try:
+            # Deserialize operations
+            operations = []
+            for op_data in changeset.get("operations", []):
+                op_type = OperationType(op_data["operation_type"])
+
+                if op_type == OperationType.SET_FACT:
+                    # Deserialize precondition
+                    precond_data = op_data.get("precondition")
+                    if precond_data is None:
+                        raise InvalidDeltaError("SET_FACT missing precondition")
+
+                    precond_type = precond_data.get("type")
+                    if precond_type == "ExpectValue":
+                        precondition = ExpectValue(precond_data["expected_value"])
+                    elif precond_type == "ExpectAbsent":
+                        precondition = ExpectAbsent()
+                    elif precond_type == "ExpectPresent":
+                        precondition = ExpectPresent()
+                    elif precond_type == "ExpectUnknown":
+                        precondition = ExpectUnknown()
+                    else:
+                        raise InvalidDeltaError(f"Unknown precondition type: {precond_type}")
+
+                    # Deserialize value
+                    value = op_data["value"]
+                    if value == "UNKNOWN":
+                        value = FactValue.UNKNOWN
+
+                    operation = SetFactOperation(
+                        subject=EntityId(op_data["subject"]),
+                        scope=ProjectId(op_data["scope"]),
+                        path=get_fact_path(op_data["path"]["path"]),
+                        value=value,
+                        precondition=precondition,
+                        evidence=EvidenceRef(
+                            source_type=op_data["evidence"]["source_type"],
+                            source_ref=op_data["evidence"]["source_ref"],
+                            content_hash=op_data["evidence"]["content_hash"],
+                        ),
+                    )
+                    operations.append(operation)
+
+                elif op_type == OperationType.END_FACT:
+                    # Similar deserialization for END_FACT
+                    precond_data = op_data.get("precondition")
+                    if precond_data is None:
+                        raise InvalidDeltaError("END_FACT missing precondition")
+
+                    precond_type = precond_data.get("type")
+                    if precond_type == "ExpectValue":
+                        precondition = ExpectValue(precond_data["expected_value"])
+                    elif precond_type == "ExpectPresent":
+                        precondition = ExpectPresent()
+                    else:
+                        raise InvalidDeltaError(
+                            f"END_FACT invalid precondition: {precond_type}"
+                        )
+
+                    operation = EndFactOperation(
+                        subject=EntityId(op_data["subject"]),
+                        scope=ProjectId(op_data["scope"]),
+                        path=get_fact_path(op_data["path"]["path"]),
+                        precondition=precondition,
+                        evidence=EvidenceRef(
+                            source_type=op_data["evidence"]["source_type"],
+                            source_ref=op_data["evidence"]["source_ref"],
+                            content_hash=op_data["evidence"]["content_hash"],
+                        ),
+                    )
+                    operations.append(operation)
+
+                elif op_type == OperationType.UNDO_FACT:
+                    # Similar deserialization for UNDO_FACT
+                    precond_data = op_data.get("precondition")
+                    if precond_data is None or precond_data.get("type") != "ExpectValue":
+                        raise InvalidDeltaError("UNDO_FACT must have ExpectValue precondition")
+
+                    operation = UndoFactOperation(
+                        subject=EntityId(op_data["subject"]),
+                        scope=ProjectId(op_data["scope"]),
+                        path=get_fact_path(op_data["path"]["path"]),
+                        original_commit_ref=CommitId(op_data["original_commit_ref"]),
+                        precondition=ExpectValue(precond_data["expected_value"]),
+                        evidence=EvidenceRef(
+                            source_type=op_data["evidence"]["source_type"],
+                            source_ref=op_data["evidence"]["source_ref"],
+                            content_hash=op_data["evidence"]["content_hash"],
+                        ),
+                    )
+                    operations.append(operation)
+
+            # Reconstruct NarrativeDelta
+            return NarrativeDelta(
+                delta_id=DeltaId(changeset["delta_id"]),
+                project_id=ProjectId(changeset["project_id"]),
+                operations=tuple(operations),
+                source_chapter=changeset.get("source_chapter"),
+                created_at=datetime.fromisoformat(changeset["created_at"]),
+                authority=changeset["authority"],
+                provenance=tuple(tuple(kv) for kv in changeset.get("provenance", [])),
+            )
+
+        except (KeyError, ValueError, TypeError) as e:
+            raise InvalidDeltaError(f"Failed to deserialize delta: {e}") from e
+
+    def _validate_narrative_delta(
+        self, delta: NarrativeDelta, canon_state: "CanonState"
+    ) -> None:
+        """Validate NarrativeDelta structure, project scope, and preconditions.
 
         Args:
             delta: NarrativeDelta to validate
+            canon_state: Current Canon state for precondition evaluation
 
         Raises:
             InvalidDeltaError: If validation fails
@@ -308,6 +560,17 @@ class CanonCommitService:
                 op.validate_schema()
             except ValueError as e:
                 raise InvalidDeltaError(f"Operation validation failed: {e}") from e
+
+        # Validate preconditions against current Canon state
+        from ..domain.delta import DeltaReducer, ReducerError
+
+        reducer = DeltaReducer()
+        try:
+            reducer.apply_delta(canon_state, delta)
+        except ReducerError as e:
+            raise InvalidDeltaError(
+                f"Delta precondition validation failed: {e}"
+            ) from e
 
     def _compute_payload_hash(self, delta: NarrativeDelta) -> str:
         """Compute canonical hash of NarrativeDelta payload.

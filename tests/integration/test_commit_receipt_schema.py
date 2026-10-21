@@ -1,11 +1,40 @@
 """Test CommitReceipt JSON Schema validation."""
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 
 import jsonschema
 import pytest
+
+
+# Enforce RFC 3339 without relying on jsonschema's optional format extras.
+# Restrict dates to ISO calendar syntax and require an explicit UTC offset.
+_RFC3339_TIMESTAMP = re.compile(
+    r"^\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])"
+    r"T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d"
+    r"(?:\\.\\d+)?(?:Z|[+-](?:[01]\\d|2[0-3]):[0-5]\\d)$"
+)
+
+
+def strict_format_checker():
+    """Return a FormatChecker that always validates RFC 3339 date-time."""
+    checker = jsonschema.FormatChecker()
+
+    @checker.checks("date-time")
+    def is_rfc3339(value):
+        if not isinstance(value, str):
+            return True  # The JSON Schema 'type' keyword handles non-strings.
+        if _RFC3339_TIMESTAMP.fullmatch(value) is None:
+            return False
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return False
+        return parsed.tzinfo is not None and parsed.utcoffset() is not None
+
+    return checker
 
 
 def load_schema():
@@ -30,7 +59,7 @@ def test_commit_receipt_schema_valid_new():
     }
 
     # Should not raise
-    jsonschema.validate(receipt, schema, format_checker=jsonschema.FormatChecker())
+    jsonschema.validate(receipt, schema, format_checker=strict_format_checker())
 
 
 def test_commit_receipt_schema_valid_recovered():
@@ -48,7 +77,7 @@ def test_commit_receipt_schema_valid_recovered():
     }
 
     # Should not raise
-    jsonschema.validate(receipt, schema, format_checker=jsonschema.FormatChecker())
+    jsonschema.validate(receipt, schema, format_checker=strict_format_checker())
 
 
 def test_commit_receipt_schema_missing_required():
@@ -66,7 +95,7 @@ def test_commit_receipt_schema_missing_required():
     }
 
     with pytest.raises(jsonschema.ValidationError) as exc_info:
-        jsonschema.validate(receipt, schema, format_checker=jsonschema.FormatChecker())
+        jsonschema.validate(receipt, schema, format_checker=strict_format_checker())
     assert "'commit_id' is a required property" in str(exc_info.value)
 
 
@@ -85,7 +114,7 @@ def test_commit_receipt_schema_invalid_commit_id():
     }
 
     with pytest.raises(jsonschema.ValidationError) as exc_info:
-        jsonschema.validate(receipt, schema, format_checker=jsonschema.FormatChecker())
+        jsonschema.validate(receipt, schema, format_checker=strict_format_checker())
     assert "does not match" in str(exc_info.value)
 
 
@@ -104,17 +133,12 @@ def test_commit_receipt_schema_invalid_payload_hash():
     }
 
     with pytest.raises(jsonschema.ValidationError) as exc_info:
-        jsonschema.validate(receipt, schema, format_checker=jsonschema.FormatChecker())
+        jsonschema.validate(receipt, schema, format_checker=strict_format_checker())
     assert "does not match" in str(exc_info.value)
 
 
 def test_commit_receipt_schema_invalid_datetime():
-    """Test invalid datetime format fails validation.
-
-    Note: datetime format validation requires rfc3339-validator package.
-    This test verifies the schema structure, actual datetime validation
-    depends on FormatChecker having the validator installed.
-    """
+    """Invalid RFC 3339 timestamps must be rejected, never silently accepted."""
     schema = load_schema()
 
     receipt = {
@@ -122,21 +146,22 @@ def test_commit_receipt_schema_invalid_datetime():
         "project_id": "novel-project",
         "branch_name": "main",
         "idempotency_key": "idem-key-123",
-        "committed_at": "not-a-datetime",
+        "committed_at": "2026-10-21T10:30:00Z",
         "payload_hash": "a" * 64,
-        "recovered": False
+        "recovered": False,
     }
 
-    # datetime format validation requires rfc3339-validator to be installed
-    # We verify the schema structure is correct
-    try:
-        jsonschema.validate(receipt, schema, format_checker=jsonschema.FormatChecker())
-        # If no error, format checker doesn't have datetime validator installed
-        # This is acceptable - the schema structure is still correct
-        pass
-    except jsonschema.ValidationError as e:
-        # If error is raised, it should be about datetime format
-        assert "date-time" in str(e) or "format" in str(e)
+    checker = strict_format_checker()
+    for bad_timestamp in (
+        "not-a-datetime",
+        "2026-02-30T12:00:00Z",
+        "2026-10-21T10:30:00",  # No time-zone offset
+        "2026-10-21 10:30:00Z",  # A space is not RFC 3339 'T'
+    ):
+        receipt["committed_at"] = bad_timestamp
+        with pytest.raises(jsonschema.ValidationError) as exc_info:
+            jsonschema.validate(receipt, schema, format_checker=checker)
+        assert exc_info.value.validator == "format"
 
 
 def test_commit_receipt_schema_no_additional_properties():
@@ -155,5 +180,5 @@ def test_commit_receipt_schema_no_additional_properties():
     }
 
     with pytest.raises(jsonschema.ValidationError) as exc_info:
-        jsonschema.validate(receipt, schema, format_checker=jsonschema.FormatChecker())
+        jsonschema.validate(receipt, schema, format_checker=strict_format_checker())
     assert "Additional properties are not allowed" in str(exc_info.value)

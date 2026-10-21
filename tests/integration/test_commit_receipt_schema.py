@@ -12,9 +12,9 @@ import pytest
 # Enforce RFC 3339 without relying on jsonschema's optional format extras.
 # Restrict dates to ISO calendar syntax and require an explicit UTC offset.
 _RFC3339_TIMESTAMP = re.compile(
-    r"^\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])"
-    r"T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d"
-    r"(?:\\.\\d+)?(?:Z|[+-](?:[01]\\d|2[0-3]):[0-5]\\d)$"
+    r"^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])"
+    r"T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d"
+    r"(?:\.\d+)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$"
 )
 
 

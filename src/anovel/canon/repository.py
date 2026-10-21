@@ -598,7 +598,11 @@ class CanonRepository:
                   AND branch_name = :branch_name
                   AND commit_id = :commit_id
             """),
-            {"project_id": project_id, "branch_name": branch_name, "commit_id": commit_id},
+            {
+                "project_id": project_id,
+                "branch_name": branch_name,
+                "commit_id": commit_id,
+            },
         ).scalar()
 
         return {

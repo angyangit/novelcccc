@@ -99,7 +99,7 @@ Use `--write-views` only when machine sources were intentionally changed and gen
 
 ## P2 Implementation and Evidence Status
 
-**Context**: The machine state in `plan/machine/implementation-backlog.yaml` is designed to track formal closure evidence, not implementation merge status. When implementation proceeds without complete closure evidence registration, a gap emerges between GitHub reality and machine state.
+**Context**: Task status in `plan/machine/implementation-backlog.yaml` is a governed lifecycle state, not a live index of merged commits. For V2-009/V2-010, GitHub confirms merged implementation, while the machine still records OPEN because formal closure conditions have not been established. V2-010 also has original acceptance assertions that remain unproven; these are not merely missing paperwork.
 
 **Current P2 Status (as of 2026-10-21)**:
 
@@ -129,7 +129,7 @@ Use `--write-views` only when machine sources were intentionally changed and gen
 **Machine Status**: `status: OPEN` (no execution packet or closure evidence)
 - Reason: Implementation bypassed formal execution protocol entirely
 - Missing: Execution packet, typed evidence records, closure directory
-- Gap: Larger protocol deviation than V2-009
+- Gap: No implementation-time execution packet is recorded in the current repository; do not manufacture a backdated record to fill this history.
 
 **Original Acceptance Coverage**: 
 - Criterion 1 (Permit rejection): ✅ FULL (AT-V2-010-01)
@@ -144,7 +144,7 @@ Use `--write-views` only when machine sources were intentionally changed and gen
 
 **Status**: OPEN, not started, no implementation authorization
 
-**Note on V2-011 Scope**: V2-010 already implements V2-011's stated acceptance criteria (idempotent recovery, idempotency conflict, concurrent CAS). If V2-011 proceeds, scope clarification needed to avoid redundant implementation.
+**Note on V2-011 Scope**: V2-010 demonstrably overlaps V2-011 (idempotent recovery, conflicting-key rejection, single-winner concurrent writes). This does not itself establish full coverage of V2-011's original acceptance assertions, especially explicit lost-response recovery; verify the gaps before any separate, authorized V2-011 implementation. Do not expand scope to idempotency-key expiration without an accepted requirement.
 
 ### P2 Gate
 
@@ -155,8 +155,8 @@ Use `--write-views` only when machine sources were intentionally changed and gen
 - V2-012: Not started
 
 **Interpretation Guidance for AI Agents**:
-- `OPEN` status in machine does NOT mean "not implemented"
-- `OPEN` means "formal closure evidence incomplete per protocol"
+- For V2-009/V2-010, machine `OPEN` does NOT mean their merged implementations are absent.
+- `OPEN` is a formal task lifecycle status: closure requirements remain unfulfilled or unverified, potentially including both evidence gaps and substantive acceptance gaps.
 - Check both machine state AND GitHub history for complete picture
 - Implementation merge and formal task closure are separate states
 

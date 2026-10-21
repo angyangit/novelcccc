@@ -224,6 +224,11 @@ jobs:
           echo "Running V2-009 Canon persistence integration tests..."
           uv run pytest tests/integration/test_v2_009.py -v --tb=short
 
+      - name: Run V2-010 CanonCommitService tests
+        run: |
+          echo "Running V2-010 CanonCommitService integration tests..."
+          uv run pytest tests/integration/test_v2_010.py -v --tb=short
+
       - name: POSTGRES_ENV gate result
         run: echo "POSTGRES_ENV gate PASS"
 

@@ -11,24 +11,30 @@ Public API:
     CanonCommitService: Main service class
     CommitReceipt: Commit receipt with recovery information
     CommitRequest: Structured commit request
+    PermitVerifier: Permit verification interface
     NoPermitError: Raised when valid permit missing
     InvalidDeltaError: Raised when NarrativeDelta validation fails
 
 Contract: V2-010 per ADR-006 and 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS
 """
 
+import json
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, Protocol
 
-from ..domain.delta import NarrativeDelta
-from ..domain.identity import ProjectId
+from ..domain.delta import (
+    EndFactOperation,
+    NarrativeDelta,
+    OperationType,
+    SetFactOperation,
+    UndoFactOperation,
+)
 from .hash import canonical_hash
 from .repository import (
     CanonRepository,
     CanonRepositoryError,
-    ExecutionVersionMismatchError,
-    IdempotencyConflictError,
 )
 
 
@@ -44,12 +50,39 @@ class InvalidDeltaError(Exception):
     pass
 
 
+class PermitVerifier(Protocol):
+    """Protocol for verifying execution permits.
+
+    Implementations must validate permit authenticity, scope, and validity.
+    Must fail-closed: reject when verification uncertain or unavailable.
+    """
+
+    def verify_permit(
+        self, permit_id: str, project_id: str, branch_name: str, execution_version: int
+    ) -> bool:
+        """Verify permit is valid for given scope.
+
+        Args:
+            permit_id: Permit identifier to verify
+            project_id: Target project ID
+            branch_name: Target branch name
+            execution_version: Expected execution version
+
+        Returns:
+            True if permit is valid for the given scope
+
+        Raises:
+            NoPermitError: If permit verification fails or is unavailable
+        """
+        ...
+
+
 @dataclass(frozen=True)
 class ExecutionPermit:
     """Execution permit authorizing Canon commits.
 
-    For V2-010 minimal implementation, represents verified authorization.
-    Full permit issuance and verification deferred to future work.
+    NOTE: This dataclass is for structured permit representation only.
+    Validity must be verified through PermitVerifier, not self-asserted.
     """
 
     permit_id: str
@@ -57,7 +90,6 @@ class ExecutionPermit:
     branch_name: str
     execution_version: int
     issued_at: datetime
-    valid: bool = True
 
 
 @dataclass(frozen=True)
@@ -89,7 +121,7 @@ class CanonCommitService:
     """Unified business service for Canon narrative commits.
 
     Single authoritative entry point for all Canon commits. Enforces:
-    - Execution permit validation
+    - Execution permit validation via PermitVerifier
     - NarrativeDelta business validation
     - Atomic commit + event + HEAD transaction
     - Idempotent receipt recovery
@@ -98,13 +130,15 @@ class CanonCommitService:
     Reuses CanonRepository for all PostgreSQL operations.
     """
 
-    def __init__(self, repository: CanonRepository):
-        """Initialize service with Canon repository.
+    def __init__(self, repository: CanonRepository, permit_verifier: PermitVerifier):
+        """Initialize service with Canon repository and permit verifier.
 
         Args:
             repository: CanonRepository instance for database operations
+            permit_verifier: PermitVerifier for validating execution permits
         """
         self.repository = repository
+        self.permit_verifier = permit_verifier
 
     def commit_narrative_delta(
         self,
@@ -144,7 +178,6 @@ class CanonCommitService:
         payload_hash = self._compute_payload_hash(request.narrative_delta)
 
         # Step 4: Generate commit_id and event_id
-        import uuid
 
         commit_id = f"commit-{uuid.uuid4().hex[:12]}"
         event_id = f"event-{uuid.uuid4().hex[:12]}"
@@ -217,7 +250,7 @@ class CanonCommitService:
     def _validate_permit(
         self, permit: ExecutionPermit, project_id: str, branch_name: str
     ) -> None:
-        """Validate execution permit.
+        """Validate execution permit via PermitVerifier.
 
         Args:
             permit: Execution permit to validate
@@ -225,11 +258,9 @@ class CanonCommitService:
             branch_name: Target branch name
 
         Raises:
-            NoPermitError: If permit invalid
+            NoPermitError: If permit invalid or verification fails
         """
-        if not permit.valid:
-            raise NoPermitError(f"Permit {permit.permit_id} is not valid")
-
+        # Verify permit scope matches request
         if permit.project_id != project_id:
             raise NoPermitError(
                 f"Permit project mismatch: permit for {permit.project_id}, "
@@ -242,8 +273,22 @@ class CanonCommitService:
                 f"commit for {branch_name}"
             )
 
+        # Verify permit through verifier (fail-closed)
+        try:
+            is_valid = self.permit_verifier.verify_permit(
+                permit.permit_id, project_id, branch_name, permit.execution_version
+            )
+            if not is_valid:
+                raise NoPermitError(f"Permit {permit.permit_id} verification failed")
+        except NoPermitError:
+            raise
+        except Exception as e:
+            raise NoPermitError(
+                f"Permit verification error for {permit.permit_id}: {e}"
+            ) from e
+
     def _validate_narrative_delta(self, delta: NarrativeDelta) -> None:
-        """Validate NarrativeDelta structure.
+        """Validate NarrativeDelta structure and project scope.
 
         Args:
             delta: NarrativeDelta to validate
@@ -251,17 +296,18 @@ class CanonCommitService:
         Raises:
             InvalidDeltaError: If validation fails
         """
-        if not delta.operations:
-            raise InvalidDeltaError("NarrativeDelta must have at least one operation")
-
         # Validate all operations are registered types
-        from ..domain.delta import OperationType
-
         for op in delta.operations:
             if op.operation_type not in OperationType:
                 raise InvalidDeltaError(
                     f"Unregistered operation type: {op.operation_type}"
                 )
+
+            # Validate operation schema completeness
+            try:
+                op.validate_schema()
+            except ValueError as e:
+                raise InvalidDeltaError(f"Operation validation failed: {e}") from e
 
     def _compute_payload_hash(self, delta: NarrativeDelta) -> str:
         """Compute canonical hash of NarrativeDelta payload.
@@ -277,27 +323,167 @@ class CanonCommitService:
         return canonical_hash(payload_dict)
 
     def _serialize_delta(self, delta: NarrativeDelta) -> dict[str, Any]:
-        """Serialize NarrativeDelta to dict.
+        """Serialize NarrativeDelta to complete, deterministic dict.
+
+        Preserves all novel facts, operation details, and metadata.
+        Must be reversible for state reconstruction.
 
         Args:
             delta: NarrativeDelta to serialize
 
         Returns:
-            Dictionary representation
+            Dictionary with complete delta representation
         """
         return {
             "delta_id": str(delta.delta_id),
             "project_id": str(delta.project_id),
+            "source_chapter": delta.source_chapter,
             "created_at": delta.created_at.isoformat(),
-            "description": delta.description,
-            "operations": [
-                {
-                    "operation_type": op.operation_type.value,
-                    "operation_version": op.operation_version,
-                }
-                for op in delta.operations
-            ],
+            "authority": delta.authority,
+            "provenance": [list(kv) for kv in delta.provenance],
+            "operations": [self._serialize_operation(op) for op in delta.operations],
         }
+
+    def _serialize_operation(self, op: Any) -> dict[str, Any]:
+        """Serialize operation with all required fields.
+
+        Args:
+            op: Operation to serialize (SetFactOperation, EndFactOperation, or UndoFactOperation)
+
+        Returns:
+            Dictionary with complete operation data
+        """
+        base = {
+            "operation_type": op.operation_type.value,
+            "operation_version": op.operation_version,
+        }
+
+        if isinstance(op, SetFactOperation):
+            # Serialize SetFactOperation with all fields
+            base.update(
+                {
+                    "subject": str(op.subject) if op.subject else None,
+                    "scope": str(op.scope) if op.scope else None,
+                    "path": {
+                        "path": op.path.path if op.path else None,
+                        "expected_type": op.path.expected_type.__name__
+                        if op.path
+                        else None,
+                    },
+                    "value": self._serialize_value(op.value),
+                    "precondition": self._serialize_precondition(op.precondition),
+                    "evidence": {
+                        "source_type": op.evidence.source_type if op.evidence else None,
+                        "source_ref": op.evidence.source_ref if op.evidence else None,
+                        "content_hash": op.evidence.content_hash
+                        if op.evidence
+                        else None,
+                    },
+                }
+            )
+        elif isinstance(op, EndFactOperation):
+            base.update(
+                {
+                    "subject": str(op.subject) if op.subject else None,
+                    "scope": str(op.scope) if op.scope else None,
+                    "path": {
+                        "path": op.path.path if op.path else None,
+                        "expected_type": op.path.expected_type.__name__
+                        if op.path
+                        else None,
+                    },
+                    "precondition": self._serialize_precondition(op.precondition),
+                    "evidence": {
+                        "source_type": op.evidence.source_type if op.evidence else None,
+                        "source_ref": op.evidence.source_ref if op.evidence else None,
+                        "content_hash": op.evidence.content_hash
+                        if op.evidence
+                        else None,
+                    },
+                }
+            )
+        elif isinstance(op, UndoFactOperation):
+            base.update(
+                {
+                    "subject": str(op.subject) if op.subject else None,
+                    "scope": str(op.scope) if op.scope else None,
+                    "path": {
+                        "path": op.path.path if op.path else None,
+                        "expected_type": op.path.expected_type.__name__
+                        if op.path
+                        else None,
+                    },
+                    "original_commit_ref": str(op.original_commit_ref)
+                    if hasattr(op, "original_commit_ref") and op.original_commit_ref
+                    else None,
+                    "evidence": {
+                        "source_type": op.evidence.source_type if op.evidence else None,
+                        "source_ref": op.evidence.source_ref if op.evidence else None,
+                        "content_hash": op.evidence.content_hash
+                        if op.evidence
+                        else None,
+                    },
+                }
+            )
+
+        return base
+
+    def _serialize_value(self, value: Any) -> Any:
+        """Serialize fact value, handling special types.
+
+        Args:
+            value: Value to serialize
+
+        Returns:
+            JSON-serializable value
+        """
+        from ..domain.delta import FactValue
+
+        if value is None:
+            return None
+        if isinstance(value, FactValue):
+            return value.value
+        if isinstance(value, (str, int, float, bool)):
+            return value
+        if isinstance(value, list):
+            return [self._serialize_value(v) for v in value]
+        if isinstance(value, dict):
+            return {k: self._serialize_value(v) for k, v in value.items()}
+        # For other types, convert to string
+        return str(value)
+
+    def _serialize_precondition(self, precondition: Any) -> dict[str, Any] | None:
+        """Serialize precondition variant.
+
+        Args:
+            precondition: Precondition to serialize
+
+        Returns:
+            Dictionary with precondition type and data
+        """
+        if precondition is None:
+            return None
+
+        from ..domain.delta import (
+            ExpectAbsent,
+            ExpectPresent,
+            ExpectUnknown,
+            ExpectValue,
+        )
+
+        if isinstance(precondition, ExpectValue):
+            return {
+                "type": "ExpectValue",
+                "expected_value": self._serialize_value(precondition.expected_value),
+            }
+        elif isinstance(precondition, ExpectAbsent):
+            return {"type": "ExpectAbsent"}
+        elif isinstance(precondition, ExpectPresent):
+            return {"type": "ExpectPresent"}
+        elif isinstance(precondition, ExpectUnknown):
+            return {"type": "ExpectUnknown"}
+        else:
+            return {"type": "Unknown"}
 
     def _create_canon_event(
         self,
@@ -320,7 +506,6 @@ class CanonCommitService:
             event_type: Event type
             event_data: Event data
         """
-        import json
 
         from sqlalchemy import text
 

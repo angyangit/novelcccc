@@ -539,13 +539,13 @@ def test_at_v2_009_05_concurrent_cancel_commit_race():
 
     Verifies:
     - Cancel and commit compete with real concurrent transactions
-    - Winner depends on database lock acquisition order
-    - Cancel-first: commit blocked by version mismatch
-    - Commit-first: cancel cannot undo successful commit
+    - Two legal outcomes: cancel-wins OR commit-wins
+    - Cancel-wins: commit fails with ExecutionVersionMismatchError, no commit persisted
+    - Commit-wins: commit succeeds, cancel increments version afterward, commit persists
+    - Database state must match one of these two linearizations
     - No partial state from concurrent operations
     """
     import threading
-    import time
 
     with postgres() as (env, project):
         run_migration(env, "upgrade")
@@ -569,7 +569,7 @@ def test_at_v2_009_05_concurrent_cancel_commit_race():
                     session, "race-project", "main", "commit-root", None
                 )
 
-            # Test 1: Cancel wins (acquires lock first)
+            # Unbiased concurrent race: let database decide winner
             cancel_result = {"version": None, "error": None}
             commit_result = {"receipt": None, "error": None}
             barrier = threading.Barrier(2)
@@ -579,7 +579,6 @@ def test_at_v2_009_05_concurrent_cancel_commit_race():
                     repo_thread = CanonRepository(env["ANOVELOS_TEST_DSN"])
                     with repo_thread.transaction() as session:
                         barrier.wait()  # Synchronize start
-                        time.sleep(0.001)  # Tiny delay for cancel to win
                         version = repo_thread.cancel_execution(
                             session, "race-project", "main"
                         )
@@ -589,7 +588,7 @@ def test_at_v2_009_05_concurrent_cancel_commit_race():
                 finally:
                     repo_thread.close()
 
-            def commit_with_old_version():
+            def commit_with_version_1():
                 try:
                     repo_thread = CanonRepository(env["ANOVELOS_TEST_DSN"])
                     with repo_thread.transaction() as session:
@@ -598,11 +597,11 @@ def test_at_v2_009_05_concurrent_cancel_commit_race():
                             session,
                             "race-project",
                             "main",
-                            "commit-2",
+                            "commit-race",
                             "commit-root",
-                            expected_execution_version=1,  # Will be stale if cancel wins
-                            idempotency_key="idem-cancel-race",
-                            payload_hash="hash-cancel-race",
+                            expected_execution_version=1,
+                            idempotency_key="idem-race",
+                            payload_hash="hash-race",
                             changeset={"type": "race-test"},
                         )
                         commit_result["receipt"] = receipt
@@ -612,97 +611,60 @@ def test_at_v2_009_05_concurrent_cancel_commit_race():
                     repo_thread.close()
 
             t1 = threading.Thread(target=cancel_execution)
-            t2 = threading.Thread(target=commit_with_old_version)
+            t2 = threading.Thread(target=commit_with_version_1)
             t1.start()
             t2.start()
-            t1.join()
-            t2.join()
+            t1.join(timeout=5.0)
+            t2.join(timeout=5.0)
 
-            # If cancel won, version should be 2 and commit should have failed
-            if cancel_result["version"] == 2:
-                assert isinstance(
-                    commit_result["error"], ExecutionVersionMismatchError
-                )
-                # Verify no commit was created
-                with repo.transaction() as session:
-                    result = session.execute(
-                        text("""
-                            SELECT COUNT(*) FROM canon_commit
-                            WHERE project_id = 'race-project'
-                              AND branch_name = 'main'
-                              AND idempotency_key = 'idem-cancel-race'
-                        """)
-                    )
-                    assert result.scalar() == 0
+            # Both threads must complete (no exceptions leaked, no hangs)
+            assert not t1.is_alive(), "Cancel thread timed out"
+            assert not t2.is_alive(), "Commit thread timed out"
 
-            # Test 2: Commit wins (different idempotency key for clean slate)
+            # Check database state to determine which linearization occurred
             with repo.transaction() as session:
-                # Reset version to known state
-                current_version = repo.get_execution_version(
+                final_version = repo.get_execution_version(
                     session, "race-project", "main"
                 )
+                commit_exists = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_commit
+                        WHERE project_id = 'race-project'
+                          AND branch_name = 'main'
+                          AND idempotency_key = 'idem-race'
+                    """)
+                ).scalar()
 
-            commit_first_result = {"receipt": None, "error": None}
-            cancel_after_result = {"version": None, "error": None}
-            barrier2 = threading.Barrier(2)
+            # Legal outcome A: Cancel won the lock first
+            if commit_result["error"] is not None:
+                assert isinstance(
+                    commit_result["error"], ExecutionVersionMismatchError
+                ), f"Commit failed with unexpected error: {commit_result['error']}"
+                assert commit_result["receipt"] is None
+                assert cancel_result["error"] is None
+                assert cancel_result["version"] == 2
+                assert commit_exists == 0, "Cancel-wins: commit must not exist"
+                assert final_version == 2
 
-            def commit_first():
-                try:
-                    repo_thread = CanonRepository(env["ANOVELOS_TEST_DSN"])
-                    with repo_thread.transaction() as session:
-                        barrier2.wait()
-                        # No sleep - let commit win
-                        receipt = repo_thread.create_commit_with_fencing(
-                            session,
-                            "race-project",
-                            "main",
-                            "commit-3",
-                            "commit-root",
-                            expected_execution_version=current_version,
-                            idempotency_key="idem-commit-wins",
-                            payload_hash="hash-commit-wins",
-                            changeset={"type": "commit-first"},
-                        )
-                        commit_first_result["receipt"] = receipt
-                except Exception as e:
-                    commit_first_result["error"] = e
-                finally:
-                    repo_thread.close()
+            # Legal outcome B: Commit won the lock first
+            elif commit_result["receipt"] is not None:
+                assert commit_result["error"] is None
+                assert commit_result["receipt"]["commit_id"] == "commit-race"
+                assert commit_result["receipt"]["recovered"] is False
+                assert cancel_result["error"] is None
+                assert cancel_result["version"] == 2
+                assert commit_exists == 1, "Commit-wins: commit must exist"
+                assert final_version == 2
+                # Verify commit persisted with correct data
+                commit = repo.get_commit(session, "race-project", "main", "commit-race")
+                assert commit is not None
+                assert commit["idempotency_key"] == "idem-race"
 
-            def cancel_after():
-                try:
-                    repo_thread = CanonRepository(env["ANOVELOS_TEST_DSN"])
-                    with repo_thread.transaction() as session:
-                        barrier2.wait()
-                        time.sleep(0.01)  # Let commit win
-                        version = repo_thread.cancel_execution(
-                            session, "race-project", "main"
-                        )
-                        cancel_after_result["version"] = version
-                except Exception as e:
-                    cancel_after_result["error"] = e
-                finally:
-                    repo_thread.close()
-
-            t3 = threading.Thread(target=commit_first)
-            t4 = threading.Thread(target=cancel_after)
-            t3.start()
-            t4.start()
-            t3.join()
-            t4.join()
-
-            # If commit won, it should have succeeded
-            if commit_first_result["receipt"] is not None:
-                assert commit_first_result["receipt"]["commit_id"] == "commit-3"
-                # Cancel should have incremented version after commit
-                assert cancel_after_result["version"] == current_version + 1
-                # Commit should still exist (cancel doesn't undo successful commits)
-                with repo.transaction() as session:
-                    commit = repo.get_commit(
-                        session, "race-project", "main", "commit-3"
-                    )
-                    assert commit is not None
-                    assert commit["idempotency_key"] == "idem-commit-wins"
+            else:
+                raise AssertionError(
+                    f"Invalid race outcome: commit_result={commit_result}, "
+                    f"cancel_result={cancel_result}, commit_exists={commit_exists}"
+                )
 
         finally:
             repo.close()

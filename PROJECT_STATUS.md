@@ -97,6 +97,82 @@ Use `--write-views` only when machine sources were intentionally changed and gen
 
 ---
 
+## P2 Implementation and Evidence Status
+
+**Context**: Task status in `plan/machine/implementation-backlog.yaml` is a governed lifecycle state, not a live index of merged commits. For V2-009/V2-010, GitHub confirms merged implementation, while the machine still records OPEN because formal closure conditions have not been established. V2-010 also has original acceptance assertions that remain unproven; these are not merely missing paperwork.
+
+**Current P2 Status (as of 2026-10-21)**:
+
+### V2-009 Canon Persistence
+
+**Implementation**: ✅ MERGED to main
+- Merge SHA: `cde9b44` (PR #18)
+- Files: migrations/, src/anovel/canon/repository.py, tests/integration/test_v2_009.py
+- CI: Tests pass in GitHub Actions POSTGRES_ENV gate
+- Execution packet: EXISTS at `plan/validation/execution/V2-009/execution-packet.yaml`
+
+**Machine Status**: `status: OPEN` (formal closure evidence incomplete)
+- Reason: No `plan/validation/execution/V2-009/closure/` directory
+- Missing: Typed CODE/TEST_RESULT/CI_RUN/ACCEPTANCE_RECORD evidence per schema
+- Gap: Implementation merged without following formal closure protocol
+
+**Original Acceptance Coverage**: All 4 criteria have test coverage (AT-V2-009-01 through 05)
+
+### V2-010 CanonCommitService
+
+**Implementation**: ✅ MERGED to main
+- Merge SHA: `f136353` (PR #19)
+- Files: src/anovel/canon/commit_service.py (975 lines), tests/integration/test_v2_010.py (1,449 lines), test_commit_receipt_schema.py, test_isolation_level.py, commit-receipt.schema.json
+- CI: Tests pass in GitHub Actions POSTGRES_ENV gate
+- Execution packet: DOES NOT EXIST (`execution_packet_ref: null`)
+
+**Machine Status**: `status: OPEN` (no execution packet or closure evidence)
+- Reason: Implementation bypassed formal execution protocol entirely
+- Missing: Execution packet, typed evidence records, closure directory
+- Gap: No implementation-time execution packet is recorded in the current repository; do not manufacture a backdated record to fill this history.
+
+**Original Acceptance Coverage**: 
+- Criterion 1 (Permit rejection): ✅ FULL (AT-V2-010-01)
+- Criterion 2 (Transaction atomicity): ⚠️ PARTIAL (AT-V2-010-03, 04 test atomicity and rollback, but not explicit failure injection)
+- Criterion 3 (Long-term evidence locatability): ❌ NOT_PROVEN (no test for historical artifact retrieval)
+- Criterion 4 (Edit rejection + rebuild): ❌ NOT_PROVEN (system has immutable commits, but not explicitly tested)
+- Criterion 5 (Cancel/commit ordering): ⚠️ PARTIAL (AT-V2-010-05, 09 cover idempotent recovery and restart, but not cancel-first scenarios)
+
+**Additional Tests Beyond Original Criteria**: AT-V2-010-06 through 11 (idempotency conflict, character persistence, preconditions, concurrent race)
+
+### V2-011 and V2-012
+
+**Status**: OPEN, not started, no implementation authorization
+
+**Note on V2-011 Scope**: V2-010 demonstrably overlaps V2-011 (idempotent recovery, conflicting-key rejection, single-winner concurrent writes). This does not itself establish full coverage of V2-011's original acceptance assertions, especially explicit lost-response recovery; verify the gaps before any separate, authorized V2-011 implementation. Do not expand scope to idempotency-key expiration without an accepted requirement.
+
+### P2 Gate
+
+**Phase Status**: `NOT_VERIFIED` (correct - phase incomplete)
+- V2-009: Implementation merged, evidence incomplete
+- V2-010: Implementation merged, evidence incomplete
+- V2-011: Not started
+- V2-012: Not started
+
+**Interpretation Guidance for AI Agents**:
+- For V2-009/V2-010, machine `OPEN` does NOT mean their merged implementations are absent.
+- `OPEN` is a formal task lifecycle status: closure requirements remain unfulfilled or unverified, potentially including both evidence gaps and substantive acceptance gaps.
+- Check both machine state AND GitHub history for complete picture
+- Implementation merge and formal task closure are separate states
+
+### Production Readiness Notes
+
+**PermitVerifier**: Current implementation is `TestPermitVerifier` for integration testing only. Production deployment requires:
+- Trusted permit authority infrastructure
+- Cryptographic signature verification
+- Expiration and revocation mechanisms
+- Audit logging
+- Rate limiting
+
+This is a documented limitation, not an evidence gap. See `.github/PR_V2_010_DESCRIPTION.md` lines 122-134.
+
+---
+
 ## Authority References
 
 Machine sources:

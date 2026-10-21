@@ -17,6 +17,7 @@ dev = [
     "jsonschema>=4,<5",
     "SQLAlchemy>=2,<3",
     "psycopg[binary]>=3,<4",
+    "alembic>=1.13,<2",
     "ruff>=0.8,<1",
     "mypy>=1.11,<2",
     "types-PyYAML>=6,<7",

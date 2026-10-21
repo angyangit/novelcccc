@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ainovelos.org/schemas/commit-receipt.schema.json",
+  "title": "CanonCommitReceipt",
+  "description": "Receipt for Canon narrative delta commits with idempotent recovery information",
+  "type": "object",
+  "required": [
+    "commit_id",
+    "project_id",
+    "branch_name",
+    "idempotency_key",
+    "committed_at",
+    "payload_hash",
+    "recovered"
+  ],
+  "properties": {
+    "commit_id": {
+      "type": "string",
+      "pattern": "^commit-[0-9a-f]{12}$",
+      "description": "Unique commit identifier (commit-<12 hex chars>)"
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Project scope identifier"
+    },
+    "branch_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Branch name within project"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Idempotency key for retry safety"
+    },
+    "committed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when commit was created (ISO 8601)"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 hash of commit payload (64 hex chars)"
+    },
+    "recovered": {
+      "type": "boolean",
+      "description": "True if this is an idempotent recovery of existing commit, false if new"
+    }
+  },
+  "additionalProperties": false
+}

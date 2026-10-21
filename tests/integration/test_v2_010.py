@@ -705,3 +705,717 @@ def test_at_v2_010_10_invalid_precondition_rejection():
         finally:
             repo.close()
 
+
+def test_at_v2_010_02_valid_permit_and_delta_succeeds():
+    """AT-V2-010-02: Valid permit and legal NarrativeDelta commits successfully.
+
+    Verifies:
+    - Valid permit passes verification
+    - Legal NarrativeDelta with proper operations
+    - Commit created with all fields preserved
+    - Event created
+    - HEAD advanced
+    """
+    with postgres() as (env, project):
+        run_migration(env, "upgrade")
+
+        repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
+        verifier = TestPermitVerifier()
+        service = CanonCommitService(repo, verifier)
+
+        try:
+            with repo.transaction() as session:
+                repo.create_project(session, "novel-project")
+                repo.init_execution_control(session, "novel-project", "main")
+                repo.create_root_commit(
+                    session,
+                    "novel-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
+                )
+                repo.update_branch_head_cas(
+                    session, "novel-project", "main", "commit-root", None
+                )
+
+            # Create valid permit
+            verifier.add_permit("permit-valid", "novel-project", "main", 1)
+            permit = ExecutionPermit(
+                permit_id="permit-valid",
+                project_id="novel-project",
+                branch_name="main",
+                execution_version=1,
+                issued_at=datetime.now(),
+            )
+
+            # Create valid delta
+            delta = create_narrative_delta(
+                "novel-project",
+                [
+                    create_set_fact("char-alice", "novel-project", "name", "Alice"),
+                    create_set_fact("char-alice", "novel-project", "age", 30),
+                ],
+            )
+
+            request = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",
+                idempotency_key="idem-valid-commit",
+                narrative_delta=delta,
+                permit=permit,
+            )
+
+            # Commit should succeed
+            receipt = service.commit_narrative_delta(request)
+            assert receipt.commit_id is not None
+            assert receipt.recovered is False
+
+            # Verify commit exists
+            with repo.transaction() as session:
+                commit = repo.get_commit(
+                    session, "novel-project", "main", receipt.commit_id
+                )
+                assert commit is not None
+                assert commit["idempotency_key"] == "idem-valid-commit"
+
+                # Verify event exists
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_event
+                        WHERE project_id = :project_id
+                          AND branch_name = :branch_name
+                          AND commit_id = :commit_id
+                    """),
+                    {
+                        "project_id": "novel-project",
+                        "branch_name": "main",
+                        "commit_id": receipt.commit_id,
+                    },
+                )
+                assert result.scalar() == 1
+
+                # Verify HEAD advanced
+                head = repo.get_branch_head(session, "novel-project", "main")
+                assert head == receipt.commit_id
+
+        finally:
+            repo.close()
+
+
+def test_at_v2_010_03_atomic_commit_event_head():
+    """AT-V2-010-03: Commit + Event + HEAD are atomic.
+
+    Verifies:
+    - All three operations succeed together
+    - If any fails, all rollback (tested via HEAD CAS failure)
+    """
+    with postgres() as (env, project):
+        run_migration(env, "upgrade")
+
+        repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
+        verifier = TestPermitVerifier()
+        service = CanonCommitService(repo, verifier)
+
+        try:
+            with repo.transaction() as session:
+                repo.create_project(session, "novel-project")
+                repo.init_execution_control(session, "novel-project", "main")
+                repo.create_root_commit(
+                    session,
+                    "novel-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
+                )
+                repo.update_branch_head_cas(
+                    session, "novel-project", "main", "commit-root", None
+                )
+
+            verifier.add_permit("permit-atomic", "novel-project", "main", 1)
+            permit = ExecutionPermit(
+                permit_id="permit-atomic",
+                project_id="novel-project",
+                branch_name="main",
+                execution_version=1,
+                issued_at=datetime.now(),
+            )
+
+            # First commit succeeds
+            delta1 = create_narrative_delta(
+                "novel-project",
+                [create_set_fact("char-bob", "novel-project", "name", "Bob")],
+            )
+
+            request1 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",
+                idempotency_key="idem-atomic-1",
+                narrative_delta=delta1,
+                permit=permit,
+            )
+
+            receipt1 = service.commit_narrative_delta(request1)
+            assert receipt1.commit_id is not None
+
+            # Second commit with WRONG parent (should fail HEAD CAS)
+            delta2 = create_narrative_delta(
+                "novel-project",
+                [create_set_fact("char-charlie", "novel-project", "name", "Charlie")],
+            )
+
+            request2 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",  # Wrong! HEAD is now receipt1.commit_id
+                idempotency_key="idem-atomic-2",
+                narrative_delta=delta2,
+                permit=permit,
+            )
+
+            # Should fail with CanonRepositoryError (parent mismatch or HEAD CAS failed)
+            with pytest.raises(CanonRepositoryError) as exc_info:
+                service.commit_narrative_delta(request2)
+            assert "mismatch" in str(exc_info.value).lower() or "CAS" in str(
+                exc_info.value
+            )
+
+            # Verify no partial write: commit should not exist
+            with repo.transaction() as session:
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_commit
+                        WHERE project_id = :project_id
+                          AND branch_name = :branch_name
+                          AND idempotency_key = :idempotency_key
+                    """),
+                    {
+                        "project_id": "novel-project",
+                        "branch_name": "main",
+                        "idempotency_key": "idem-atomic-2",
+                    },
+                )
+                assert result.scalar() == 0
+
+                # Verify no event created
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_event
+                        WHERE project_id = :project_id
+                          AND branch_name = :branch_name
+                          AND event_type = 'NARRATIVE_COMMIT'
+                    """),
+                    {
+                        "project_id": "novel-project",
+                        "branch_name": "main",
+                    },
+                )
+                assert result.scalar() == 1  # Only first commit's event
+
+                # Verify HEAD unchanged
+                head = repo.get_branch_head(session, "novel-project", "main")
+                assert head == receipt1.commit_id
+
+        finally:
+            repo.close()
+
+
+def test_at_v2_010_04_cas_conflict_rollback():
+    """AT-V2-010-04: CAS conflict triggers full rollback.
+
+    Verifies:
+    - Concurrent modification detected via HEAD CAS
+    - No partial writes left in database
+    """
+    with postgres() as (env, project):
+        run_migration(env, "upgrade")
+
+        repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
+        verifier = TestPermitVerifier()
+        service = CanonCommitService(repo, verifier)
+
+        try:
+            with repo.transaction() as session:
+                repo.create_project(session, "novel-project")
+                repo.init_execution_control(session, "novel-project", "main")
+                repo.create_root_commit(
+                    session,
+                    "novel-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
+                )
+                repo.update_branch_head_cas(
+                    session, "novel-project", "main", "commit-root", None
+                )
+
+            verifier.add_permit("permit-cas", "novel-project", "main", 1)
+            permit = ExecutionPermit(
+                permit_id="permit-cas",
+                project_id="novel-project",
+                branch_name="main",
+                execution_version=1,
+                issued_at=datetime.now(),
+            )
+
+            # First commit
+            delta1 = create_narrative_delta(
+                "novel-project",
+                [create_set_fact("char-dave", "novel-project", "age", 40)],
+            )
+
+            request1 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",
+                idempotency_key="idem-cas-1",
+                narrative_delta=delta1,
+                permit=permit,
+            )
+
+            receipt1 = service.commit_narrative_delta(request1)
+
+            # Attempt commit with stale parent
+            delta2 = create_narrative_delta(
+                "novel-project",
+                [create_set_fact("char-eve", "novel-project", "age", 35)],
+            )
+
+            request2 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",  # Stale
+                idempotency_key="idem-cas-2",
+                narrative_delta=delta2,
+                permit=permit,
+            )
+
+            # Should fail
+            with pytest.raises(CanonRepositoryError):
+                service.commit_narrative_delta(request2)
+
+            # Verify clean rollback: no commit, no event
+            with repo.transaction() as session:
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_commit
+                        WHERE idempotency_key = :key
+                    """),
+                    {"key": "idem-cas-2"},
+                )
+                assert result.scalar() == 0
+
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_event
+                        WHERE project_id = :project_id
+                    """),
+                    {"project_id": "novel-project"},
+                )
+                assert result.scalar() == 1  # Only first commit
+
+        finally:
+            repo.close()
+
+
+def test_at_v2_010_05_idempotent_recovery_after_state_change():
+    """AT-V2-010-05: Idempotent receipt recovery works even after state changes.
+
+    Verifies:
+    - Original commit succeeds
+    - State changes (new commits)
+    - Retry with same key+payload recovers original receipt
+    - Does NOT re-validate with new state
+    """
+    with postgres() as (env, project):
+        run_migration(env, "upgrade")
+
+        repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
+        verifier = TestPermitVerifier()
+        service = CanonCommitService(repo, verifier)
+
+        try:
+            with repo.transaction() as session:
+                repo.create_project(session, "novel-project")
+                repo.init_execution_control(session, "novel-project", "main")
+                repo.create_root_commit(
+                    session,
+                    "novel-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
+                )
+                repo.update_branch_head_cas(
+                    session, "novel-project", "main", "commit-root", None
+                )
+
+            verifier.add_permit("permit-idem", "novel-project", "main", 1)
+            permit = ExecutionPermit(
+                permit_id="permit-idem",
+                project_id="novel-project",
+                branch_name="main",
+                execution_version=1,
+                issued_at=datetime.now(),
+            )
+
+            # First commit: age 25 -> 26
+            delta1 = create_narrative_delta(
+                "novel-project",
+                [
+                    create_set_fact("char-frank", "novel-project", "age", 25),
+                ],
+            )
+
+            request1 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",
+                idempotency_key="idem-first",
+                narrative_delta=delta1,
+                permit=permit,
+            )
+
+            receipt1 = service.commit_narrative_delta(request1)
+            original_commit_id = receipt1.commit_id
+            original_timestamp = receipt1.committed_at
+
+            # Second commit: age 25 -> 26 with ExpectValue(25)
+            delta2 = create_narrative_delta(
+                "novel-project",
+                [
+                    create_set_fact(
+                        "char-frank", "novel-project", "age", 26, ExpectValue(25)
+                    ),
+                ],
+            )
+
+            request2 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id=receipt1.commit_id,
+                idempotency_key="idem-second",
+                narrative_delta=delta2,
+                permit=permit,
+            )
+
+            receipt2 = service.commit_narrative_delta(request2)
+
+            # Now age is 26. Retry request2 with same key+payload
+            # This should recover the original receipt WITHOUT re-validating
+            # (If it re-validated, ExpectValue(25) would fail because age is now 26)
+            request2_retry = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id=receipt1.commit_id,  # Same as original
+                idempotency_key="idem-second",  # Same key
+                narrative_delta=delta2,  # Same payload
+                permit=permit,
+            )
+
+            receipt2_retry = service.commit_narrative_delta(request2_retry)
+
+            # Verify recovery
+            assert receipt2_retry.commit_id == receipt2.commit_id
+            assert receipt2_retry.recovered is True
+            assert receipt2_retry.committed_at == receipt2.committed_at
+
+            # Verify no duplicate commit
+            with repo.transaction() as session:
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_commit
+                        WHERE idempotency_key = :key
+                    """),
+                    {"key": "idem-second"},
+                )
+                assert result.scalar() == 1
+
+        finally:
+            repo.close()
+
+
+def test_at_v2_010_06_same_key_different_payload_rejects():
+    """AT-V2-010-06: Same key with different payload is rejected.
+
+    Verifies:
+    - First commit succeeds
+    - Retry with same key but different payload raises IdempotencyConflictError
+    """
+    with postgres() as (env, project):
+        run_migration(env, "upgrade")
+
+        repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
+        verifier = TestPermitVerifier()
+        service = CanonCommitService(repo, verifier)
+
+        try:
+            with repo.transaction() as session:
+                repo.create_project(session, "novel-project")
+                repo.init_execution_control(session, "novel-project", "main")
+                repo.create_root_commit(
+                    session,
+                    "novel-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
+                )
+                repo.update_branch_head_cas(
+                    session, "novel-project", "main", "commit-root", None
+                )
+
+            verifier.add_permit("permit-conflict", "novel-project", "main", 1)
+            permit = ExecutionPermit(
+                permit_id="permit-conflict",
+                project_id="novel-project",
+                branch_name="main",
+                execution_version=1,
+                issued_at=datetime.now(),
+            )
+
+            # First commit
+            delta1 = create_narrative_delta(
+                "novel-project",
+                [create_set_fact("char-grace", "novel-project", "age", 28)],
+            )
+
+            request1 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",
+                idempotency_key="idem-conflict-key",
+                narrative_delta=delta1,
+                permit=permit,
+            )
+
+            receipt1 = service.commit_narrative_delta(request1)
+
+            # Second commit with SAME key but DIFFERENT payload
+            delta2 = create_narrative_delta(
+                "novel-project",
+                [create_set_fact("char-grace", "novel-project", "age", 29)],  # Different!
+            )
+
+            request2 = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id=receipt1.commit_id,
+                idempotency_key="idem-conflict-key",  # Same key!
+                narrative_delta=delta2,
+                permit=permit,
+            )
+
+            # Should raise IdempotencyConflictError
+            from anovel.canon.repository import IdempotencyConflictError
+
+            with pytest.raises(IdempotencyConflictError) as exc_info:
+                service.commit_narrative_delta(request2)
+            assert "different payload" in str(exc_info.value)
+
+        finally:
+            repo.close()
+
+
+def test_at_v2_010_11_concurrent_writes_race():
+    """AT-V2-010-11: Concurrent writes with same precondition - only one succeeds.
+
+    Verifies:
+    - Two writers both read age=25
+    - Both try to update with ExpectValue(25)
+    - Only ONE can succeed (single transaction protocol)
+    - The other gets precondition or HEAD CAS failure
+    - No contradictory state in database
+    """
+    import threading
+    import time
+
+    with postgres() as (env, project):
+        run_migration(env, "upgrade")
+
+        repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
+        verifier = TestPermitVerifier()
+        service = CanonCommitService(repo, verifier)
+
+        try:
+            with repo.transaction() as session:
+                repo.create_project(session, "novel-project")
+                repo.init_execution_control(session, "novel-project", "main")
+                repo.create_root_commit(
+                    session,
+                    "novel-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
+                )
+                repo.update_branch_head_cas(
+                    session, "novel-project", "main", "commit-root", None
+                )
+
+            # Create character with age=25
+            verifier.add_permit("permit-setup", "novel-project", "main", 1)
+            permit_setup = ExecutionPermit(
+                permit_id="permit-setup",
+                project_id="novel-project",
+                branch_name="main",
+                execution_version=1,
+                issued_at=datetime.now(),
+            )
+
+            delta_setup = create_narrative_delta(
+                "novel-project",
+                [create_set_fact("char-henry", "novel-project", "age", 25)],
+            )
+
+            request_setup = CommitRequest(
+                project_id="novel-project",
+                branch_name="main",
+                parent_commit_id="commit-root",
+                idempotency_key="idem-setup",
+                narrative_delta=delta_setup,
+                permit=permit_setup,
+            )
+
+            receipt_setup = service.commit_narrative_delta(request_setup)
+
+            # Now two writers will try to update age concurrently
+            verifier.add_permit("permit-writer-a", "novel-project", "main", 1)
+            verifier.add_permit("permit-writer-b", "novel-project", "main", 1)
+
+            results = {"a": None, "b": None}
+            errors = {"a": None, "b": None}
+
+            def writer_a():
+                try:
+                    # Create new service instance for this thread
+                    repo_a = CanonRepository(env["ANOVELOS_TEST_DSN"])
+                    service_a = CanonCommitService(repo_a, verifier)
+
+                    permit_a = ExecutionPermit(
+                        permit_id="permit-writer-a",
+                        project_id="novel-project",
+                        branch_name="main",
+                        execution_version=1,
+                        issued_at=datetime.now(),
+                    )
+
+                    delta_a = create_narrative_delta(
+                        "novel-project",
+                        [
+                            create_set_fact(
+                                "char-henry", "novel-project", "age", 26, ExpectValue(25)
+                            )
+                        ],
+                    )
+
+                    request_a = CommitRequest(
+                        project_id="novel-project",
+                        branch_name="main",
+                        parent_commit_id=receipt_setup.commit_id,
+                        idempotency_key="idem-writer-a",
+                        narrative_delta=delta_a,
+                        permit=permit_a,
+                    )
+
+                    results["a"] = service_a.commit_narrative_delta(request_a)
+                    repo_a.close()
+                except Exception as e:
+                    errors["a"] = e
+
+            def writer_b():
+                try:
+                    # Create new service instance for this thread
+                    repo_b = CanonRepository(env["ANOVELOS_TEST_DSN"])
+                    service_b = CanonCommitService(repo_b, verifier)
+
+                    permit_b = ExecutionPermit(
+                        permit_id="permit-writer-b",
+                        project_id="novel-project",
+                        branch_name="main",
+                        execution_version=1,
+                        issued_at=datetime.now(),
+                    )
+
+                    delta_b = create_narrative_delta(
+                        "novel-project",
+                        [
+                            create_set_fact(
+                                "char-henry", "novel-project", "age", 27, ExpectValue(25)
+                            )
+                        ],
+                    )
+
+                    request_b = CommitRequest(
+                        project_id="novel-project",
+                        branch_name="main",
+                        parent_commit_id=receipt_setup.commit_id,
+                        idempotency_key="idem-writer-b",
+                        narrative_delta=delta_b,
+                        permit=permit_b,
+                    )
+
+                    results["b"] = service_b.commit_narrative_delta(request_b)
+                    repo_b.close()
+                except Exception as e:
+                    errors["b"] = e
+
+            # Start both threads
+            thread_a = threading.Thread(target=writer_a)
+            thread_b = threading.Thread(target=writer_b)
+
+            thread_a.start()
+            thread_b.start()
+
+            thread_a.join(timeout=10)
+            thread_b.join(timeout=10)
+
+            # Exactly one should succeed
+            successes = sum(1 for r in results.values() if r is not None)
+            failures = sum(1 for e in errors.values() if e is not None)
+
+            assert successes == 1, f"Expected exactly 1 success, got {successes}"
+            assert failures == 1, f"Expected exactly 1 failure, got {failures}"
+
+            # Verify final state
+            with repo.transaction() as session:
+                # Only 3 commits total: root + setup + ONE of the writers
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_commit
+                        WHERE project_id = :project_id
+                    """),
+                    {"project_id": "novel-project"},
+                )
+                assert result.scalar() == 3
+
+                # Only 3 events
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_event
+                        WHERE project_id = :project_id
+                    """),
+                    {"project_id": "novel-project"},
+                )
+                assert result.scalar() == 2  # setup + ONE writer
+
+                # HEAD points to exactly one winner
+                head = repo.get_branch_head(session, "novel-project", "main")
+                assert head in [
+                    results["a"].commit_id if results["a"] else None,
+                    results["b"].commit_id if results["b"] else None,
+                ]
+
+        finally:
+            repo.close()
+

@@ -5,33 +5,32 @@ AT-V2-009-02: Cross-project relationship rejection
 AT-V2-009-03: Concurrent root commit uniqueness
 AT-V2-009-04: Atomic cancel/commit ordering, permit fencing, recovery boundaries
 """
-import os
+
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-
-from anovel.canon.hash import raw_text_hash, canonical_hash
-from anovel.canon.repository import (
-    CanonRepository,
-    RootCommitExistsError,
-    IdempotencyConflictError,
-    ProjectScopeViolationError,
-    CASUpdateFailedError
-)
 
 # Import postgres fixture from same directory
 from test_postgres_environment import postgres
 
+from anovel.canon.hash import canonical_hash, raw_text_hash
+from anovel.canon.repository import (
+    CanonRepository,
+    IdempotencyConflictError,
+    ProjectScopeViolationError,
+    RootCommitExistsError,
+)
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def run_migration(env: Dict[str, str], command: str = "upgrade") -> None:
+def run_migration(env: dict[str, str], command: str = "upgrade") -> None:
     """Run Alembic migration command."""
     result = subprocess.run(
         ["uv", "run", "alembic", command, "head"],
@@ -39,7 +38,7 @@ def run_migration(env: Dict[str, str], command: str = "upgrade") -> None:
         cwd=ROOT,
         text=True,
         capture_output=True,
-        timeout=60
+        timeout=60,
     )
     if result.returncode != 0:
         pytest.fail(f"Migration {command} failed: {result.stdout}\n{result.stderr}")
@@ -63,20 +62,22 @@ def test_at_v2_009_01_empty_database_migration_and_scope_fk():
         repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
         try:
             with repo.transaction() as session:
-                result = session.execute(text("""
+                result = session.execute(
+                    text("""
                     SELECT table_name FROM information_schema.tables
                     WHERE table_schema = 'public'
                     ORDER BY table_name
-                """))
+                """)
+                )
                 tables = [row[0] for row in result.fetchall()]
                 assert tables == [
-                    'alembic_version',
-                    'artifact_content',
-                    'branch_head',
-                    'canon_commit',
-                    'canon_event',
-                    'execution_control',
-                    'project'
+                    "alembic_version",
+                    "artifact_content",
+                    "branch_head",
+                    "canon_commit",
+                    "canon_event",
+                    "execution_control",
+                    "project",
                 ]
 
                 # Verify project scope boundary works
@@ -90,18 +91,20 @@ def test_at_v2_009_01_empty_database_migration_and_scope_fk():
                     commit_id="commit-root-1",
                     idempotency_key="idem-root-1",
                     payload_hash=canonical_hash({"initial": "state"}),
-                    changeset={"type": "root", "data": {}}
+                    changeset={"type": "root", "data": {}},
                 )
 
                 # Verify foreign key constraint enforces project scope
-                with pytest.raises(Exception):  # IntegrityError wrapped
-                    session.execute(text("""
+                with pytest.raises(IntegrityError):
+                    session.execute(
+                        text("""
                         INSERT INTO canon_commit
                         (project_id, branch_name, commit_id, parent_commit_id,
                          idempotency_key, payload_hash, changeset)
                         VALUES ('nonexistent-project', 'main', 'commit-1', NULL,
                                 'idem-1', 'hash-1', '{}')
-                    """))
+                    """)
+                    )
         finally:
             repo.close()
 
@@ -126,12 +129,22 @@ def test_at_v2_009_02_cross_project_relationship_rejection():
 
                 # Create root commits for both
                 repo.create_root_commit(
-                    session, "project-a", "main", "commit-a-root",
-                    "idem-a-root", "hash-a", {"type": "root"}
+                    session,
+                    "project-a",
+                    "main",
+                    "commit-a-root",
+                    "idem-a-root",
+                    "hash-a",
+                    {"type": "root"},
                 )
                 repo.create_root_commit(
-                    session, "project-b", "main", "commit-b-root",
-                    "idem-b-root", "hash-b", {"type": "root"}
+                    session,
+                    "project-b",
+                    "main",
+                    "commit-b-root",
+                    "idem-b-root",
+                    "hash-b",
+                    {"type": "root"},
                 )
 
             # Attempt cross-project parent reference (should fail)
@@ -145,14 +158,19 @@ def test_at_v2_009_02_cross_project_relationship_rejection():
                         parent_commit_id="commit-b-root",  # Wrong project!
                         idempotency_key="idem-a-2",
                         payload_hash="hash-a-2",
-                        changeset={"type": "update"}
+                        changeset={"type": "update"},
                     )
 
             # Attempt cross-branch parent reference within same project (should fail)
             with repo.transaction() as session:
                 repo.create_root_commit(
-                    session, "project-a", "dev", "commit-a-dev-root",
-                    "idem-a-dev-root", "hash-a-dev", {"type": "root"}
+                    session,
+                    "project-a",
+                    "dev",
+                    "commit-a-dev-root",
+                    "idem-a-dev-root",
+                    "hash-a-dev",
+                    {"type": "root"},
                 )
 
             with pytest.raises(ProjectScopeViolationError):
@@ -165,7 +183,7 @@ def test_at_v2_009_02_cross_project_relationship_rejection():
                         parent_commit_id="commit-a-root",  # Wrong branch!
                         idempotency_key="idem-a-dev-2",
                         payload_hash="hash-a-dev-2",
-                        changeset={"type": "update"}
+                        changeset={"type": "update"},
                     )
         finally:
             repo.close()
@@ -176,9 +194,13 @@ def test_at_v2_009_03_concurrent_root_commit_uniqueness():
 
     Verifies:
     - Partial UNIQUE index prevents duplicate root commits per project/branch
-    - Multiple non-root commits allowed (parent_commit_id IS NOT NULL)
-    - Idempotency key prevents duplicate commits with same key
+    - True concurrent transactions compete for root
+    - Database ensures exactly one root succeeds
+    - Failed transaction leaves no residual data
     """
+    import threading
+    import time
+
     with postgres() as (env, project):
         run_migration(env, "upgrade")
 
@@ -186,44 +208,95 @@ def test_at_v2_009_03_concurrent_root_commit_uniqueness():
         try:
             with repo.transaction() as session:
                 repo.create_project(session, "test-project")
-                repo.create_root_commit(
-                    session, "test-project", "main", "commit-root-1",
-                    "idem-root-1", "hash-1", {"type": "root"}
-                )
 
-            # Attempt second root commit (should fail)
-            with pytest.raises(RootCommitExistsError):
-                with repo.transaction() as session:
-                    repo.create_root_commit(
-                        session, "test-project", "main", "commit-root-2",
-                        "idem-root-2", "hash-2", {"type": "root"}
-                    )
+            # Concurrent root commit attempt
+            results = {"success": [], "failed": []}
+            lock = threading.Lock()
+
+            def attempt_root(commit_num: int):
+                try:
+                    repo_thread = CanonRepository(env["ANOVELOS_TEST_DSN"])
+                    with repo_thread.transaction() as session:
+                        # Small delay to increase concurrency likelihood
+                        time.sleep(0.01)
+                        repo_thread.create_root_commit(
+                            session,
+                            "test-project",
+                            "main",
+                            f"commit-root-{commit_num}",
+                            f"idem-root-{commit_num}",
+                            f"hash-{commit_num}",
+                            {"type": "root", "num": commit_num},
+                        )
+                    with lock:
+                        results["success"].append(commit_num)
+                except (RootCommitExistsError, IntegrityError):
+                    with lock:
+                        results["failed"].append(commit_num)
+                finally:
+                    repo_thread.close()
+
+            # Launch 5 concurrent threads trying to create root
+            threads = [threading.Thread(target=attempt_root, args=(i,)) for i in range(5)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+
+            # Exactly one should succeed
+            assert len(results["success"]) == 1, f"Expected 1 success, got {len(results['success'])}: {results}"
+            assert len(results["failed"]) == 4, f"Expected 4 failures, got {len(results['failed'])}: {results}"
+
+            # Verify only one root exists in database
+            with repo.transaction() as session:
+                result = session.execute(
+                    text("""
+                        SELECT COUNT(*) FROM canon_commit
+                        WHERE project_id = 'test-project'
+                          AND branch_name = 'main'
+                          AND parent_commit_id IS NULL
+                    """)
+                )
+                assert result.scalar() == 1
 
             # But root on different branch should succeed
             with repo.transaction() as session:
                 repo.create_root_commit(
-                    session, "test-project", "dev", "commit-dev-root",
-                    "idem-dev-root", "hash-dev", {"type": "root"}
+                    session,
+                    "test-project",
+                    "dev",
+                    "commit-dev-root",
+                    "idem-dev-root",
+                    "hash-dev",
+                    {"type": "root"},
                 )
 
             # Non-root commits should succeed
             with repo.transaction() as session:
+                winner_id = f"commit-root-{results['success'][0]}"
                 repo.create_commit(
-                    session, "test-project", "main", "commit-2",
-                    "commit-root-1", "idem-2", "hash-2", {"type": "update"}
-                )
-                repo.create_commit(
-                    session, "test-project", "main", "commit-3",
-                    "commit-2", "idem-3", "hash-3", {"type": "update"}
+                    session,
+                    "test-project",
+                    "main",
+                    "commit-2",
+                    winner_id,
+                    "idem-2",
+                    "hash-2",
+                    {"type": "update"},
                 )
 
             # Idempotency key conflict should fail
             with pytest.raises(IdempotencyConflictError):
                 with repo.transaction() as session:
                     repo.create_commit(
-                        session, "test-project", "main", "commit-4",
-                        "commit-3", "idem-2",  # Duplicate key!
-                        "hash-4", {"type": "update"}
+                        session,
+                        "test-project",
+                        "main",
+                        "commit-3",
+                        "commit-2",
+                        "idem-2",  # Duplicate key!
+                        "hash-3",
+                        {"type": "update"},
                     )
         finally:
             repo.close()
@@ -235,42 +308,62 @@ def test_at_v2_009_04_atomic_cancel_commit_ordering():
     Verifies:
     - Transaction rollback on error (atomicity)
     - CAS semantics for branch HEAD updates
-    - Concurrent modification detection
+    - Execution version fencing prevents stale commits
+    - Cancel increments version, blocking old commits
     - Idempotent retry after rollback
     """
+    from anovel.canon.repository import ExecutionVersionMismatchError
+
     with postgres() as (env, project):
         run_migration(env, "upgrade")
 
         repo = CanonRepository(env["ANOVELOS_TEST_DSN"])
         try:
             # Test transaction rollback
-            with pytest.raises(Exception):
+            with pytest.raises(RuntimeError, match="Simulated failure"):
                 with repo.transaction() as session:
                     repo.create_project(session, "test-project")
                     repo.create_root_commit(
-                        session, "test-project", "main", "commit-root",
-                        "idem-root", "hash-root", {"type": "root"}
+                        session,
+                        "test-project",
+                        "main",
+                        "commit-root",
+                        "idem-root",
+                        "hash-root",
+                        {"type": "root"},
                     )
                     raise RuntimeError("Simulated failure")
 
             # Verify rollback - project should not exist
             with repo.transaction() as session:
                 result = session.execute(
-                    text("SELECT COUNT(*) FROM project WHERE project_id = 'test-project'")
+                    text(
+                        "SELECT COUNT(*) FROM project WHERE project_id = 'test-project'"
+                    )
                 )
                 assert result.scalar() == 0
 
-            # Now commit successfully
+            # Now commit successfully with execution control
             with repo.transaction() as session:
                 repo.create_project(session, "test-project")
+                repo.init_execution_control(session, "test-project", "main")
                 repo.create_root_commit(
-                    session, "test-project", "main", "commit-root",
-                    "idem-root", "hash-root", {"type": "root"}
+                    session,
+                    "test-project",
+                    "main",
+                    "commit-root",
+                    "idem-root",
+                    "hash-root",
+                    {"type": "root"},
                 )
 
                 # Initialize branch HEAD
                 success = repo.update_branch_head_cas(
-                    session, "test-project", "main", "commit-root", expected_head_commit_id=None
+                    session,
+                    "test-project",
+                    "main",
+                    "commit-root",
+                    expected_head_commit_id=None,
                 )
                 assert success
 
@@ -278,27 +371,62 @@ def test_at_v2_009_04_atomic_cancel_commit_ordering():
             with repo.transaction() as session:
                 head = repo.get_branch_head(session, "test-project", "main")
                 assert head == "commit-root"
+                version = repo.get_execution_version(session, "test-project", "main")
+                assert version == 1
 
-            # Create second commit
+            # Test execution fencing: cancel increments version
             with repo.transaction() as session:
-                repo.create_commit(
-                    session, "test-project", "main", "commit-2",
-                    "commit-root", "idem-2", "hash-2", {"type": "update"}
+                new_version = repo.cancel_execution(session, "test-project", "main")
+                assert new_version == 2
+
+            # Attempt commit with old version should fail
+            with pytest.raises(ExecutionVersionMismatchError, match="expected 1, found 2"):
+                with repo.transaction() as session:
+                    repo.create_commit_with_fencing(
+                        session,
+                        "test-project",
+                        "main",
+                        "commit-2",
+                        "commit-root",
+                        expected_execution_version=1,  # Stale!
+                        idempotency_key="idem-2",
+                        payload_hash="hash-2",
+                        changeset={"type": "update"},
+                    )
+
+            # Commit with correct version should succeed
+            with repo.transaction() as session:
+                repo.create_commit_with_fencing(
+                    session,
+                    "test-project",
+                    "main",
+                    "commit-2",
+                    "commit-root",
+                    expected_execution_version=2,  # Current version
+                    idempotency_key="idem-2",
+                    payload_hash="hash-2",
+                    changeset={"type": "update"},
                 )
 
             # CAS update with correct expected HEAD should succeed
             with repo.transaction() as session:
                 success = repo.update_branch_head_cas(
-                    session, "test-project", "main", "commit-2",
-                    expected_head_commit_id="commit-root"
+                    session,
+                    "test-project",
+                    "main",
+                    "commit-2",
+                    expected_head_commit_id="commit-root",
                 )
                 assert success
 
             # CAS update with wrong expected HEAD should fail
             with repo.transaction() as session:
                 success = repo.update_branch_head_cas(
-                    session, "test-project", "main", "commit-3",
-                    expected_head_commit_id="commit-root"  # Outdated!
+                    session,
+                    "test-project",
+                    "main",
+                    "commit-3",
+                    expected_head_commit_id="commit-root",  # Outdated!
                 )
                 assert not success
 
@@ -311,8 +439,14 @@ def test_at_v2_009_04_atomic_cancel_commit_ordering():
             try:
                 with repo.transaction() as session:
                     repo.create_commit(
-                        session, "test-project", "main", "commit-3",
-                        "commit-2", "idem-3", "hash-3", {"type": "update"}
+                        session,
+                        "test-project",
+                        "main",
+                        "commit-3",
+                        "commit-2",
+                        "idem-3",
+                        "hash-3",
+                        {"type": "update"},
                     )
                     raise RuntimeError("Simulated failure")
             except RuntimeError:
@@ -321,8 +455,14 @@ def test_at_v2_009_04_atomic_cancel_commit_ordering():
             # Retry with same idempotency key should succeed
             with repo.transaction() as session:
                 repo.create_commit(
-                    session, "test-project", "main", "commit-3",
-                    "commit-2", "idem-3", "hash-3", {"type": "update"}
+                    session,
+                    "test-project",
+                    "main",
+                    "commit-3",
+                    "commit-2",
+                    "idem-3",
+                    "hash-3",
+                    {"type": "update"},
                 )
 
             # Verify commit exists
@@ -341,14 +481,20 @@ def test_adr_005_hash_functions():
     Tests raw_text_hash and canonical_hash against known test vectors.
     """
     # Test raw_text_hash
-    assert raw_text_hash("hello") == "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
-    assert raw_text_hash("") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    assert (
+        raw_text_hash("hello")
+        == "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+    )
+    assert (
+        raw_text_hash("")
+        == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    )
 
     # Test canonical_hash with simple values
     assert canonical_hash("hello") == raw_text_hash('"hello"')
-    assert canonical_hash(42) == raw_text_hash('42')
-    assert canonical_hash(True) == raw_text_hash('true')
-    assert canonical_hash(None) == raw_text_hash('null')
+    assert canonical_hash(42) == raw_text_hash("42")
+    assert canonical_hash(True) == raw_text_hash("true")
+    assert canonical_hash(None) == raw_text_hash("null")
 
     # Test canonical_hash with dict (sorted keys)
     obj = {"b": 2, "a": 1}
@@ -360,20 +506,48 @@ def test_adr_005_hash_functions():
     expected_nested = '{"list":[3,2,1],"outer":{"a":1,"b":2}}'
     assert canonical_hash(nested) == raw_text_hash(expected_nested)
 
-    # Test NFC normalization
-    # "café" with combining accent (U+0065 U+0301) vs precomposed (U+00E9)
-    nfc_normalized = canonical_hash({"key": "café"})  # Python strings are NFC by default
-    assert isinstance(nfc_normalized, str)
-    assert len(nfc_normalized) == 64
+    # Test NFC normalization - equivalent strings produce same hash
+    # "café" with precomposed é (U+00E9)
+    cafe_precomposed = {"key": "café"}
+    # "café" with combining accent (e + U+0301)
+    cafe_combining = {"key": "café"}
+    # After NFC normalization, both should produce the same hash
+    assert canonical_hash(cafe_precomposed) == canonical_hash(cafe_combining)
 
     # Test NaN rejection
     with pytest.raises(ValueError, match="NaN or Infinity"):
-        canonical_hash(float('nan'))
+        canonical_hash(float("nan"))
 
     # Test Infinity rejection
     with pytest.raises(ValueError, match="NaN or Infinity"):
-        canonical_hash(float('inf'))
+        canonical_hash(float("inf"))
 
     # Test negative Infinity rejection
     with pytest.raises(ValueError, match="NaN or Infinity"):
-        canonical_hash(float('-inf'))
+        canonical_hash(float("-inf"))
+
+    # Test duplicate key detection after NFC normalization
+    # Create two different strings that normalize to the same NFC form
+    # Using é (U+00E9) vs e+combining (U+0065 U+0301)
+    with pytest.raises(ValueError, match="Duplicate key after NFC normalization"):
+        # Manually construct dict to bypass Python's literal deduplication
+        d = {}
+        d["café"] = 1  # precomposed
+        d["café"] = 2  # combining - will collide after NFC
+        canonical_hash(d)
+
+    # Test nested duplicate key detection
+    with pytest.raises(ValueError, match="Duplicate key after NFC normalization"):
+        d = {}
+        d["outer"] = {}
+        d["outer"]["keyé"] = 1  # precomposed
+        d["outer"]["keyé"] = 2  # combining - will collide
+        canonical_hash(d)
+
+    # Test non-string key rejection
+    with pytest.raises(TypeError, match="JSON object keys must be strings"):
+        canonical_hash({1: "value"})
+
+    # Test non-JSON-serializable type
+    with pytest.raises(TypeError, match="not JSON-serializable"):
+        canonical_hash({"key": set([1, 2, 3])})

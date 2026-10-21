@@ -6,6 +6,7 @@ This module implements canonical hashing for Canon persistence:
 
 Rejects NaN, Infinity, and duplicate keys after NFC normalization.
 """
+
 import hashlib
 import json
 import unicodedata
@@ -21,7 +22,7 @@ def raw_text_hash(text: str) -> str:
     Returns:
         Hex-encoded SHA-256 hash (64 characters)
     """
-    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def canonical_hash(obj: Any) -> str:
@@ -39,12 +40,13 @@ def canonical_hash(obj: Any) -> str:
 
     Raises:
         ValueError: If obj contains NaN, Infinity, or duplicate keys after NFC
-        TypeError: If obj is not JSON-serializable
+        TypeError: If obj is not JSON-serializable or has non-string keys
     """
     normalized = _normalize_for_canonical_hash(obj)
-    _validate_no_duplicate_keys(normalized)
-    canonical_json = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
-    return hashlib.sha256(canonical_json.encode('utf-8')).hexdigest()
+    canonical_json = json.dumps(
+        normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
+    return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
 
 def _normalize_for_canonical_hash(obj: Any) -> Any:
@@ -53,6 +55,7 @@ def _normalize_for_canonical_hash(obj: Any) -> Any:
     - Applies NFC normalization to all strings
     - Validates numeric types (rejects NaN, Infinity)
     - Preserves structure (dict, list, primitives)
+    - Detects duplicate keys after NFC normalization
 
     Args:
         obj: Object to normalize
@@ -61,45 +64,34 @@ def _normalize_for_canonical_hash(obj: Any) -> Any:
         Normalized object with same structure
 
     Raises:
-        ValueError: If obj contains NaN or Infinity
+        ValueError: If obj contains NaN, Infinity, or duplicate keys after NFC
+        TypeError: If obj is not JSON-serializable or has non-string keys
     """
     if isinstance(obj, str):
-        return unicodedata.normalize('NFC', obj)
+        return unicodedata.normalize("NFC", obj)
     elif isinstance(obj, dict):
-        return {
-            unicodedata.normalize('NFC', k) if isinstance(k, str) else k: _normalize_for_canonical_hash(v)
-            for k, v in obj.items()
-        }
+        normalized_dict = {}
+        for k, v in obj.items():
+            if not isinstance(k, str):
+                raise TypeError(f"JSON object keys must be strings, got {type(k).__name__}")
+            normalized_key = unicodedata.normalize("NFC", k)
+            if normalized_key in normalized_dict:
+                raise ValueError(
+                    f"Duplicate key after NFC normalization: {normalized_key!r}"
+                )
+            normalized_dict[normalized_key] = _normalize_for_canonical_hash(v)
+        return normalized_dict
     elif isinstance(obj, list):
         return [_normalize_for_canonical_hash(item) for item in obj]
     elif isinstance(obj, float):
-        if not (-float('inf') < obj < float('inf')):
-            raise ValueError(f"Cannot hash float value: {obj} (NaN or Infinity not allowed)")
+        if not (-float("inf") < obj < float("inf")):
+            raise ValueError(
+                f"Cannot hash float value: {obj} (NaN or Infinity not allowed)"
+            )
         return obj
     elif isinstance(obj, (int, bool, type(None))):
         return obj
     else:
-        raise TypeError(f"Object of type {type(obj).__name__} is not JSON-serializable")
-
-
-def _validate_no_duplicate_keys(obj: Any) -> None:
-    """Validate that no duplicate keys exist after NFC normalization.
-
-    Recursively checks all dict objects in the structure.
-
-    Args:
-        obj: Normalized object to validate
-
-    Raises:
-        ValueError: If any dict contains duplicate keys
-    """
-    if isinstance(obj, dict):
-        keys = list(obj.keys())
-        if len(keys) != len(set(keys)):
-            duplicates = [k for k in keys if keys.count(k) > 1]
-            raise ValueError(f"Duplicate keys after NFC normalization: {duplicates}")
-        for value in obj.values():
-            _validate_no_duplicate_keys(value)
-    elif isinstance(obj, list):
-        for item in obj:
-            _validate_no_duplicate_keys(item)
+        raise TypeError(
+            f"Object of type {type(obj).__name__} is not JSON-serializable"
+        )

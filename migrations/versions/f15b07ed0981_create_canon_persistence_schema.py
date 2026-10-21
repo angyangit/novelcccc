@@ -87,10 +87,10 @@ def upgrade() -> None:
         'execution_control',
         sa.Column('project_id', sa.String(length=255), nullable=False),
         sa.Column('branch_name', sa.String(length=255), nullable=False),
-        sa.Column('execution_version', sa.Integer(), nullable=False),
-        sa.Column('permit_id', sa.String(length=255), nullable=False),
-        sa.Column('issued_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
-        sa.PrimaryKeyConstraint('project_id', 'branch_name', 'execution_version', name='pk_execution_control'),
+        sa.Column('execution_version', sa.Integer(), nullable=False, server_default=sa.text('1')),
+        sa.Column('cancelled_at', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+        sa.PrimaryKeyConstraint('project_id', 'branch_name', name='pk_execution_control'),
         sa.ForeignKeyConstraint(['project_id'], ['project.project_id'], name='fk_execution_control_project')
     )
 

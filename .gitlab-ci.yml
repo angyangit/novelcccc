@@ -146,6 +146,7 @@ postgres_env:
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_TLS_VERIFY: 1
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
+    CI_DIND_MODE: "true"  # Enable DinD-aware postgres fixture (container network access)
     POSTGRES_DB: bootstrap_test
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ci_test_password_not_real

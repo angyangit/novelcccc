@@ -41,11 +41,28 @@ def postgres():
                ANOVELOS_TEST_PASSWORD=secrets.token_urlsafe(24))
     compose = ["docker", "compose", "--env-file", os.devnull, "-f", str(ROOT / "compose.yaml"), "-p", project]
     print(f"POSTGRES_PROJECT {project}", flush=True)
+
+    # Detect GitLab CI DinD mode where container network access is required
+    ci_dind_mode = os.getenv("CI_DIND_MODE") == "true"
+
     try:
         run(compose + ["up", "-d", "--wait", "--wait-timeout", "60"], env)
-        endpoint = run(compose + ["port", "postgres", "5432"], env).stdout.strip()
-        host, port = endpoint.rsplit(":", 1)
-        assert host == "127.0.0.1"
+
+        if ci_dind_mode:
+            # GitLab DinD: Access postgres container directly via docker network
+            # Port mapping to 127.0.0.1 exists but is in dind container's namespace,
+            # not accessible from job container. Use container name instead.
+            container_name = f"{project}-postgres-1"
+            host = container_name
+            port = 5432
+            print(f"CI_DIND_MODE: Using container network access: {host}:{port}", flush=True)
+        else:
+            # Local development: Use port mapping to 127.0.0.1 (original behavior)
+            endpoint = run(compose + ["port", "postgres", "5432"], env).stdout.strip()
+            host, port = endpoint.rsplit(":", 1)
+            assert host == "127.0.0.1", f"Expected 127.0.0.1, got {host} - check compose.yaml host_ip binding"
+            print(f"Local mode: Using port mapping: {host}:{port}", flush=True)
+
         dsn = URL.create("postgresql+psycopg", username=env["ANOVELOS_TEST_USER"],
                          password=env["ANOVELOS_TEST_PASSWORD"], host=host, port=int(port),
                          database=env["ANOVELOS_TEST_DB"]).render_as_string(hide_password=False)

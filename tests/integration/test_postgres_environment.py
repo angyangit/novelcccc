@@ -51,11 +51,21 @@ def postgres():
         if ci_dind_mode:
             # GitLab DinD: Access postgres container directly via docker network
             # Port mapping to 127.0.0.1 exists but is in dind container's namespace,
-            # not accessible from job container. Use container name instead.
+            # not accessible from job container. Get container IP address instead.
             container_name = f"{project}-postgres-1"
-            host = container_name
+
+            # Get container IP address from docker inspect
+            inspect_result = run(
+                ["docker", "inspect", "-f", "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}", container_name],
+                env
+            )
+            host = inspect_result.stdout.strip()
             port = 5432
-            print(f"CI_DIND_MODE: Using container network access: {host}:{port}", flush=True)
+
+            if not host:
+                pytest.fail(f"Could not get IP address for container {container_name}")
+
+            print(f"CI_DIND_MODE: Using container IP: {host}:{port} (container: {container_name})", flush=True)
         else:
             # Local development: Use port mapping to 127.0.0.1 (original behavior)
             endpoint = run(compose + ["port", "postgres", "5432"], env).stdout.strip()

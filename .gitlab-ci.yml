@@ -187,6 +187,8 @@ postgres_env:
     - uv run pytest tests/integration/test_v2_010.py -v --tb=short
     - echo "Running V2-010 acceptance supplement tests..."
     - uv run pytest tests/integration/test_v2_010_acceptance_supplement.py -v --tb=short
+    - echo "Running V2-011 Canon Idempotency and CAS tests..."
+    - uv run pytest tests/integration/test_v2_011.py -v --tb=short
     - uv run pytest tests/integration/test_isolation_level.py -v --tb=short
     - echo "Running environment security regression test..."
     - uv run pytest tests/integration/test_postgres_environment.py::test_clean_environment_removes_postgres_bind_ip -v --tb=short

@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-21T01:09:43.405833+00:00",
+  "generated_at_utc": "2026-10-22T15:21:19.290189+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "d67dfb48bf8268abdac4190244691c01ea101738",
+  "validated_repository_revision": "7bfd7b2e4890e9cc4cfdf81f761efc2703899624",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -35,7 +35,8 @@
     },
     "statuses": {
       "CLOSED": 9,
-      "OPEN": 52
+      "OPEN": 51,
+      "IMPLEMENTED": 1
     },
     "suites": 61,
     "scenarios": 261,
@@ -50,10 +51,39 @@
     }
   },
   "errors": [
+    "TASK_SCHEMA V2-011 ['readiness']: 'IMPLEMENT_COMPLETE' is not one of ['READY_TO_START', 'PLANNED', 'READY_AFTER_GATES']",
+    "TASK_SCHEMA V2-011 []: Additional properties are not allowed ('implementation_note' was unexpected)",
+    "TASK_SCHEMA V2-011 ['execution_packet_ref']: None is not of type 'string'",
+    "TASK_START V2-011: dependency V2-010 not verified",
+    "TASK_READINESS V2-011: still PLANNED",
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: live source changed/missing: machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-009: live source changed/missing: machine/test-catalog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_PACKET V2-011: non-OPEN task requires an execution packet",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "TASK_SCHEMA V2-011 ['readiness']: 'IMPLEMENT_COMPLETE' is not one of ['READY_TO_START', 'PLANNED', 'READY_AFTER_GATES']",
+    "TASK_SCHEMA V2-011 []: Additional properties are not allowed ('implementation_note' was unexpected)",
+    "TASK_SCHEMA V2-011 ['execution_packet_ref']: None is not of type 'string'",
+    "TASK_START V2-011: dependency V2-010 not verified",
+    "TASK_READINESS V2-011: still PLANNED",
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: live source changed/missing: machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-009: live source changed/missing: machine/test-catalog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_PACKET V2-011: non-OPEN task requires an execution packet",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

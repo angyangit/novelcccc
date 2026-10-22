@@ -834,14 +834,14 @@ tasks:
   tests:
   - AT-V2-011
   artifacts:
-  - src/anovel/canon/idempotency.py
+  - src/anovel/canon/commit_service.py
   - tests/integration/test_v2_011.py
   out_of_scope:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
   status: OPEN
-  execution_packet_ref: null
+  execution_packet_ref: validation/execution/V2-011/execution-packet.yaml
   owner_role: canon-maintainer
   readiness: PLANNED
   start_gate: G-P1
@@ -859,6 +859,11 @@ tasks:
   - RR-08
   design_references:
   - archive/gptdoc/ANovel_V2_Canonical_State_Spec_v1.0/CANONICAL_STATE_SPEC.md
+  implementation_note: |
+    V2-011 idempotency and CAS capabilities already exist in V2-010 CanonCommitService.
+    No separate idempotency.py module created - idempotency is integral to the atomic
+    transaction protocol and cannot be meaningfully separated without code duplication.
+    Artifacts updated to reference commit_service.py instead of creating new module.
 - task_id: V2-012
   title: Snapshot rebuild and projection
   phase: P2

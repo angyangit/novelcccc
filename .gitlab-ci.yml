@@ -196,10 +196,12 @@ postgres_env:
     - echo '{ "gate":"POSTGRES_ENV", "status":"completed", "service":"postgres:17.11-bookworm" }' > dist/ci/postgres/result.json
 
 # SECRET_DEPENDENCY Gate - Security Scans (Fail-Closed)
+# Independent execution - does not depend on other gates
 secret_dependency:
   extends: .base_job
   stage: security
   allow_failure: false
+  needs: []
   before_script:
     - python --version
     - pip install uv==$UV_VERSION

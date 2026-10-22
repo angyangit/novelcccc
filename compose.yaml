@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${ANOVELOS_TEST_PASSWORD:?Set a disposable test password}
     ports:
       - target: 5432
-        host_ip: 127.0.0.1
+        host_ip: ${ANOVELOS_POSTGRES_BIND_IP:-127.0.0.1}
         protocol: tcp
     tmpfs:
       - /var/lib/postgresql/data

@@ -46,26 +46,40 @@ def postgres():
     ci_dind_mode = os.getenv("CI_DIND_MODE") == "true"
 
     try:
+        if ci_dind_mode:
+            # GitLab DinD: Resolve docker service IP and bind postgres to it
+            # This allows job container to access published port on docker service interface
+            docker_ip_result = run(["getent", "hosts", "docker"], env)
+            docker_ip = docker_ip_result.stdout.strip().split()[0]
+
+            if not docker_ip:
+                pytest.fail("CI_DIND_MODE: Could not resolve docker service IP")
+
+            print(f"CI_DIND_MODE: Docker service IP: {docker_ip}", flush=True)
+            env["ANOVELOS_POSTGRES_BIND_IP"] = docker_ip
+
         run(compose + ["up", "-d", "--wait", "--wait-timeout", "60"], env)
 
         if ci_dind_mode:
-            # GitLab DinD: Access postgres container directly via docker network
-            # Port mapping to 127.0.0.1 exists but is in dind container's namespace,
-            # not accessible from job container. Get container IP address instead.
-            container_name = f"{project}-postgres-1"
+            # Get published endpoint - handles both IPv4 and IPv6
+            endpoint = run(compose + ["port", "postgres", "5432"], env).stdout.strip()
 
-            # Get container IP address from docker inspect
-            inspect_result = run(
-                ["docker", "inspect", "-f", "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}", container_name],
-                env
-            )
-            host = inspect_result.stdout.strip()
-            port = 5432
+            # Extract port correctly for IPv6 [::1]:port or IPv4 127.0.0.1:port
+            port_str = endpoint.split(":")[-1]
 
-            if not host:
-                pytest.fail(f"Could not get IP address for container {container_name}")
+            # Validate port
+            if not port_str.isdigit():
+                pytest.fail(f"CI_DIND_MODE: Invalid port '{port_str}' from endpoint '{endpoint}'")
 
-            print(f"CI_DIND_MODE: Using container IP: {host}:{port} (container: {container_name})", flush=True)
+            port = int(port_str)
+            if port < 1 or port > 65535:
+                pytest.fail(f"CI_DIND_MODE: Port {port} out of valid range")
+
+            # Use docker service IP as host (same IP we bound to)
+            host = docker_ip
+
+            print(f"CI_DIND_MODE: Published endpoint: {endpoint}", flush=True)
+            print(f"CI_DIND_MODE: Connecting to: {host}:{port}", flush=True)
         else:
             # Local development: Use port mapping to 127.0.0.1 (original behavior)
             endpoint = run(compose + ["port", "postgres", "5432"], env).stdout.strip()

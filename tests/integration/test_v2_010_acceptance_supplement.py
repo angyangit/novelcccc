@@ -199,13 +199,13 @@ def test_at_v2_010_03_long_term_commit_evidence_retrieval():
                 project_id="novel-project",
                 branch_name="main",
                 parent_commit_id="commit-root",
-                idempotency_key="idem-chapter-001",
+                idempotency_key="test-key-alpha",
                 narrative_delta=delta1,
                 permit=permit,
             )
 
             receipt1 = service1.commit_narrative_delta(request1)
-            commit_ids.append(("chapter-001", receipt1.commit_id, receipt1.idempotency_key))
+            commit_ids.append(("chapter-001", receipt1.commit_id, "test-key-alpha"))
 
             # Chapter 2: 林舟突破境界
             delta2 = create_narrative_delta(
@@ -226,13 +226,13 @@ def test_at_v2_010_03_long_term_commit_evidence_retrieval():
                 project_id="novel-project",
                 branch_name="main",
                 parent_commit_id=receipt1.commit_id,
-                idempotency_key="idem-chapter-002",
+                idempotency_key="test-key-beta",
                 narrative_delta=delta2,
                 permit=permit,
             )
 
             receipt2 = service1.commit_narrative_delta(request2)
-            commit_ids.append(("chapter-002", receipt2.commit_id, receipt2.idempotency_key))
+            commit_ids.append(("chapter-002", receipt2.commit_id, "test-key-beta"))
 
         finally:
             repo1.close()

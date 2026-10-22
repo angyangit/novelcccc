@@ -131,18 +131,41 @@ arch_fitness:
       junit: dist/ci/arch/junit.xml
     expire_in: 7 days
 
-# POSTGRES_ENV Gate - PostgreSQL Integration
+# POSTGRES_ENV Gate - PostgreSQL Integration with Docker-in-Docker
 postgres_env:
-  extends: .base_job
+  image: python:3.12-bookworm
   stage: test
   allow_failure: false
   services:
+    - name: docker:27-dind
+      alias: docker
     - name: postgres:17.11-bookworm@sha256:639ab7ceb90e13123085b741fb31ef493fba25463002f6da665352e7b534b652
       alias: postgres
   variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
     POSTGRES_DB: bootstrap_test
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: ci_test_password_not_real
+  before_script:
+    # Install docker client
+    - apt-get update && apt-get install -y docker.io
+    - docker version
+    # Install Python dependencies
+    - python --version
+    - pip install uv==$UV_VERSION
+    - uv --version
+    - uv sync --frozen
+  cache:
+    key:
+      files:
+        - uv.lock
+    paths:
+      - .cache/pip
+      - .cache/uv
+      - .venv
   script:
     - echo "=== POSTGRES_ENV Gate ==="
     - echo "Waiting for PostgreSQL to be ready..."

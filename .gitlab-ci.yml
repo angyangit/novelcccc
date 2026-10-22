@@ -323,7 +323,21 @@ dind_network_experiment:
       # 4. Get published port
       echo "4. Getting published port..."
       ENDPOINT=$(docker compose -f /tmp/test-compose.yaml -p $TEST_PROJECT port postgres 5432)
-      PUBLISHED_PORT=$(echo $ENDPOINT | cut -d: -f2)
+
+      # Extract port correctly for both IPv4 (127.0.0.1:32768) and IPv6 ([::1]:32768)
+      PUBLISHED_PORT="${ENDPOINT##*:}"
+
+      # Validate port is numeric and in valid range
+      if ! [[ "$PUBLISHED_PORT" =~ ^[0-9]+$ ]]; then
+        echo "   ✗ ERROR: Invalid port format: '$PUBLISHED_PORT' from endpoint: '$ENDPOINT'"
+        exit 1
+      fi
+
+      if [ "$PUBLISHED_PORT" -lt 1 ] || [ "$PUBLISHED_PORT" -gt 65535 ]; then
+        echo "   ✗ ERROR: Port out of range: $PUBLISHED_PORT"
+        exit 1
+      fi
+
       echo "   Endpoint: $ENDPOINT"
       echo "   Published: ${DOCKER_IP}:${PUBLISHED_PORT}"
       echo ""

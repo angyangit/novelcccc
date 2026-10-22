@@ -257,6 +257,7 @@ dind_network_experiment:
   image: python:3.12-bookworm
   stage: experiment
   allow_failure: true
+  needs: []
   services:
     - name: docker:27-dind
       alias: docker

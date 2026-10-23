@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-23T03:23:37.603669+00:00",
+  "generated_at_utc": "2026-10-23T04:29:09.809107+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "b7507f5aa61cec66c694af87e0eddec4744388c2",
+  "validated_repository_revision": "7ba557200fe8c1160feee6f8fcc7d78f6d9064f1",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -51,9 +51,12 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

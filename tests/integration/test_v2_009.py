@@ -77,6 +77,7 @@ def test_at_v2_009_01_empty_database_migration_and_scope_fk():
                     "branch_head",
                     "canon_commit",
                     "canon_event",
+                    "canon_snapshot",
                     "execution_control",
                     "project",
                 ]

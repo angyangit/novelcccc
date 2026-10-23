@@ -1,0 +1,8 @@
+V2-011 CAS Idempotency Tests - Test Results
+
+Test execution verified at revision 455d7b9e7aaa4d71a056800d529333ba408d6f41:
+
+Test file: tests/integration/test_v2_011.py
+Scenarios: 3/3 PASS (AT-V2-011-01, AT-V2-011-02, AT-V2-011-03)
+
+GitLab CI Pipeline #2979764705 Job #17406020375: PASS

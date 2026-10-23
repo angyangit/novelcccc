@@ -1,0 +1,7 @@
+V2-011 Canon Idempotency and CAS - Code Artifacts
+
+Implementation verified at revision 455d7b9e7aaa4d71a056800d529333ba408d6f41:
+
+1. src/anovel/canon/commit_service.py - CAS idempotency via canon_hash uniqueness
+
+All files merged and verified via GitLab CI Pipeline #2979764705.

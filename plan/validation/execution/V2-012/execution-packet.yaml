@@ -1,0 +1,80 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-012
+plan_version: 1.3.1
+repository_revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+worktree_dirty: false
+plan_manifest_sha256: e847bfa8e6cc1c7bec6a223d8686c7e997719ddd440e4e42e473f1fe2691cb89
+
+environment:
+  fingerprint: GitLab CI ubuntu-22.04-Python-3.12.7-PostgreSQL-17.2
+  runtime_versions:
+    python: 3.12.7
+    os: ubuntu-22.04
+    postgresql_ci: '17.2'
+  database_image: postgres:17.2
+  ci_context: GitLab CI Pipeline 2979764705
+
+implementer: Claude Opus 4.7 (AI Agent)
+verifier: Owner (Human)
+owner_role: canon-maintainer
+
+scope: |
+  V2-012: Canon projection service for snapshot reconstruction, cross-project
+  isolation, and accelerated recovery from commit history.
+
+action: IMPLEMENT
+
+inputs:
+  - source_ref: machine/implementation-backlog.yaml
+    ref: machine/implementation-backlog.yaml
+    sha256: 36eb61002e58988e1887a322fed22dd2066ace278e602bd50f39b7b173fdad3d
+
+expected_outputs:
+  - src/anovel/canon/projection_service.py
+  - tests/integration/test_v2_012.py
+
+allowed_paths:
+  - src/anovel/canon/
+  - tests/integration/
+
+required_decisions: []
+
+claims: []
+
+estimate:
+  range: 8-14 hours
+  unit: hours
+  assumptions:
+    - Canon projection service for snapshot reconstruction
+    - Cross-project isolation and accelerated recovery
+  confidence: MEDIUM
+
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 3
+  maximum_runtime: 7200
+
+stop_conditions:
+  - Integration tests pass
+  - CI validation successful
+
+review_notes:
+  - V2-012 implements Canon projection service for snapshot reconstruction
+  - Evidence created retrospectively for Stage A closure
+
+handoff:
+  current_step: Stage A closure evidence
+  completed_steps:
+    - Canon projection service implementation completed
+    - Integration tests passed
+    - CI validation successful
+  pending_items:
+    - Stage B Owner verification
+  next_action: IMPLEMENT
+  last_check:
+    status: NOT_RUN
+    artifacts: []
+    missing_artifact_reason: Retrospective evidence creation

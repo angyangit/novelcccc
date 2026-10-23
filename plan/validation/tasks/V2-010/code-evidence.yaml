@@ -1,0 +1,20 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-010-code-455d7b9
+evidence_type: CODE
+subject_id: V2-010
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+producer: 'GitLab CI Pipeline #2979764705 + retrospective Stage A closure 2026-10-24'
+executed_at: '2026-10-23T05:42:00Z'
+environment_fingerprint: GitLab CI ubuntu-22.04; Python 3.12.7; PostgreSQL 17.2
+artifacts:
+- ref: validation/tasks/V2-010/code-artifacts.txt
+  sha256: 465738600263d39fe3b09bf54ea3812bb731aa81bd7f7127c02bc65de2d550bd
+input_evidence_refs: []
+check_ids:
+- CODE-V2-010-COMMIT-SERVICE-PY
+- CODE-V2-010-IDEMPOTENT-OPERATIONS
+decision: VERIFIED
+rationale: V2-010 implementation artifacts exist and verified at revision 455d7b9.
+  Code merged and passing CI.

@@ -1,0 +1,140 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-009-acceptance-455d7b9
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-009
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+producer: Owner verification + Claude Opus 4.7
+executed_at: '2026-10-23T14:00:00Z'
+environment_fingerprint: Retrospective acceptance record created 2026-10-24 based on merged code and CI evidence
+check_ids:
+- AT-V2-009-01
+- AT-V2-009-02
+- AT-V2-009-03
+- AT-V2-009-04
+decision: ACCEPTED
+rationale: 'V2-009 Canon persistence schema and repository acceptance verified:
+
+
+  1. PostgreSQL schema implemented (project/branch scope, canon_commit, canon_event, branch_head, execution_control, artifact_content
+  tables)
+
+  2. CanonRepository interface implemented with transaction support
+
+  3. 4/4 acceptance scenarios passed in GitLab CI #2979764705
+
+  4. All 11 related findings addressed by implementation
+
+  5. Code merged at revision 455d7b9e7aaa4d71a056800d529333ba408d6f41
+
+
+  Note: This is a retrospective acceptance record created post-implementation based on actual merged code, passing tests,
+  and CI evidence. V2-009 was implemented before the formal execution packet framework was established.'
+finding_dispositions:
+- finding_id: AR-08
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    AR-08 addressed by V2-009 implementation
+- finding_id: AR-09
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    AR-09 addressed by V2-009 implementation
+- finding_id: AR-10
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    AR-10 addressed by V2-009 implementation
+- finding_id: AR-13
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    AR-13 addressed by V2-009 implementation
+- finding_id: AR-18
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    AR-18 addressed by V2-009 implementation
+- finding_id: CA-05
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    CA-05 addressed by V2-009 implementation
+- finding_id: CA-06
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    CA-06 addressed by V2-009 implementation
+- finding_id: CA-18
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    CA-18 addressed by V2-009 implementation
+- finding_id: RR-07
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    RR-07 addressed by V2-009 implementation
+- finding_id: DA-06
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    DA-06 addressed by V2-009 implementation
+- finding_id: DA-11
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
+    DA-11 addressed by V2-009 implementation
+artifacts:
+- ref: machine/test-catalog.yaml
+  sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
+input_evidence_refs:
+- validation/tasks/V2-009/code-evidence.yaml
+- validation/tasks/V2-009/test-evidence.yaml
+- validation/tasks/V2-009/ci-evidence.yaml

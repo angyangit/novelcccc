@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-23T09:56:03.506328+00:00",
+  "generated_at_utc": "2026-10-23T15:02:41.547288+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
   "status": "PASS",
   "not_certified": [
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "455d7b9e7aaa4d71a056800d529333ba408d6f41",
+  "validated_repository_revision": "6c9e463396790b974bf5915e63c67f983100206b",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "f6f64fd78543eb27d66ec6b6f60a72879bfcfeb686bb3e3497ccb31099d51e24",
+  "manifest_sha256": "878ef0b424e0f93737e25d46e9c2fdc1a9ce796db860ac7dfc4a410a260f7190",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -34,8 +34,8 @@
       "P12": 3
     },
     "statuses": {
-      "CLOSED": 9,
-      "OPEN": 52
+      "CLOSED": 13,
+      "OPEN": 48
     },
     "suites": 61,
     "scenarios": 261,

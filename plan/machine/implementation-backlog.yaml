@@ -725,19 +725,31 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: OPEN
+  status: CLOSED
   execution_packet_ref: validation/execution/V2-009/execution-packet.yaml
   owner_role: canon-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P1
   required_decisions:
   - ADR-005
   - ADR-006
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/tasks/V2-009/code-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    tests:
+    - ref: validation/tasks/V2-009/test-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    ci:
+    - ref: validation/tasks/V2-009/ci-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    acceptance:
+    - ref: validation/tasks/V2-009/acceptance-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
   related_findings:
   - AR-08
   - AR-09
@@ -779,19 +791,31 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: OPEN
+  status: CLOSED
   owner_role: canon-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P1
   required_decisions:
   - ADR-004
   - ADR-005
   - ADR-006
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/tasks/V2-010/code-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    tests:
+    - ref: validation/tasks/V2-010/test-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    ci:
+    - ref: validation/tasks/V2-010/ci-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    acceptance:
+    - ref: validation/tasks/V2-010/acceptance-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
   related_findings:
   - AR-04
   - AR-05
@@ -811,7 +835,7 @@ tasks:
   - changes/2026-09-21_REVIEW_ADOPTION.md
   external_practices:
   - EXT-006
-  execution_packet_ref: null
+  execution_packet_ref: validation/execution/V2-010/execution-packet.yaml
 - task_id: V2-011
   title: Canon idempotency and CAS
   phase: P2
@@ -835,17 +859,29 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: OPEN
+  status: CLOSED
   owner_role: canon-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P1
   required_decisions:
   - ADR-006
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/tasks/V2-011/code-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    tests:
+    - ref: validation/tasks/V2-011/test-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    ci:
+    - ref: validation/tasks/V2-011/ci-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    acceptance:
+    - ref: validation/tasks/V2-011/acceptance-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
   related_findings:
   - AR-09
   - AR-13
@@ -853,7 +889,7 @@ tasks:
   - RR-08
   design_references:
   - archive/gptdoc/ANovel_V2_Canonical_State_Spec_v1.0/CANONICAL_STATE_SPEC.md
-  execution_packet_ref: null
+  execution_packet_ref: validation/execution/V2-011/execution-packet.yaml
 - task_id: V2-012
   title: Snapshot rebuild and projection
   phase: P2
@@ -878,17 +914,29 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: OPEN
+  status: CLOSED
   owner_role: canon-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P1
   required_decisions:
   - ADR-006
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/tasks/V2-012/code-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    tests:
+    - ref: validation/tasks/V2-012/test-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    ci:
+    - ref: validation/tasks/V2-012/ci-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
+    acceptance:
+    - ref: validation/tasks/V2-012/acceptance-evidence.yaml
+      revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+      status: PASS
   related_findings:
   - AR-10
   - CA-07
@@ -899,7 +947,7 @@ tasks:
   design_references:
   - archive/gptdoc/ANovel_V2_Canonical_State_Spec_v1.0/CANONICAL_STATE_SPEC.md
   - changes/2026-09-21_REVIEW_ADOPTION.md
-  execution_packet_ref: null
+  execution_packet_ref: validation/execution/V2-012/execution-packet.yaml
 - task_id: V2-013
   title: GenreProfile and GenrePack loader
   phase: P3

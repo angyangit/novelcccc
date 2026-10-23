@@ -2,7 +2,7 @@
 
 唯一源：`machine/implementation-backlog.yaml` 与 `machine/phase-gates.yaml`。不要手工修改。
 
-共 61 个任务。当前任务状态：{"CLOSED": 9, "OPEN": 52}
+共 61 个任务。当前任务状态：{"CLOSED": 13, "OPEN": 48}
 
 ## P0 — Repository & Governance
 
@@ -33,10 +33,10 @@
 
 | ID | 名称 | 依赖 | 状态 |
 |---|---|---|---|
-| V2-009 | Canon persistence schema and repository | V2-008 | OPEN |
-| V2-010 | CanonCommitService | V2-009 | OPEN |
-| V2-011 | Canon idempotency and CAS | V2-010 | OPEN |
-| V2-012 | Snapshot rebuild and projection | V2-010 | OPEN |
+| V2-009 | Canon persistence schema and repository | V2-008 | CLOSED |
+| V2-010 | CanonCommitService | V2-009 | CLOSED |
+| V2-011 | Canon idempotency and CAS | V2-010 | CLOSED |
+| V2-012 | Snapshot rebuild and projection | V2-010 | CLOSED |
 
 ## P3 — Genre Kernel
 

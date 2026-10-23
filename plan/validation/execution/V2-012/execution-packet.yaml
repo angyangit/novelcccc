@@ -31,7 +31,7 @@ inputs:
     sha256: 36eb61002e58988e1887a322fed22dd2066ace278e602bd50f39b7b173fdad3d
 
 expected_outputs:
-  - src/anovel/canon/projection_service.py
+  - src/anovel/canon/projection.py
   - tests/integration/test_v2_012.py
 
 allowed_paths:

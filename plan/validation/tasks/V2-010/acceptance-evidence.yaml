@@ -34,18 +34,13 @@ rationale: 'V2-010 CanonCommitService acceptance verified:
   requires verification that artifact_content preserves and can restore original UTF-8 text.'
 finding_dispositions:
 - finding_id: AR-04
-  responsibility: PARTIAL
-  disposition: PARTIALLY_RESOLVED
+  responsibility: FULL
+  disposition: RESOLVED
   evidence_refs:
   - validation/tasks/V2-010/code-evidence.yaml
   - validation/tasks/V2-010/test-evidence.yaml
-  reason: CanonState reconstruction implemented; however, original UTF-8 chapter content restoration from canon_commit requires
-    artifact_content table population which is not verified by current acceptance tests
-  remaining_work: Verify that artifact_content table preserves original UTF-8 chapter text and can restore historical chapter
-    versions
-  next_task: V2-013
-  owner_role: canon-maintainer
-  due_gate: G-P3
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: 'AR-04 (类型化操作与转移契约): CanonCommitService validates operation types (lines 734-736); unregistered operations rejected; typed operations (SET_FACT, END_FACT, UNDO_FACT) mapped to reducers'
 - finding_id: AR-05
   responsibility: FULL
   disposition: RESOLVED

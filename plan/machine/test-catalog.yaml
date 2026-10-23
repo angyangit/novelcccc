@@ -215,7 +215,7 @@ suites:
 - id: AT-V2-009
   task_id: V2-009
   phase: P2
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/integration/test_v2_009.py
   scenarios:
   - id: AT-V2-009-01
@@ -226,11 +226,12 @@ suites:
     required_assertion: 根提交并发唯一并且测试初始化无旁路
   - id: AT-V2-009-04
     required_assertion: 取消与提交的原子次序、执行权限版本及早期数据恢复边界在持久化接口前明确
-  execution_evidence: []
+  execution_evidence:
+  - validation/tasks/V2-009/test-evidence.yaml
 - id: AT-V2-010
   task_id: V2-010
   phase: P2
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/integration/test_v2_010.py
   scenarios:
   - id: AT-V2-010-01
@@ -243,11 +244,12 @@ suites:
     required_assertion: 没有正式更正流程时对已接受正文的就地替换被拒绝且历史正文/提交证据保持可重建
   - id: AT-V2-010-05
     required_assertion: 取消先成功时旧执行许可不得产生新提交；提交先成功时取消不伪装回滚且可恢复原收据
-  execution_evidence: []
+  execution_evidence:
+  - validation/tasks/V2-010/test-evidence.yaml
 - id: AT-V2-011
   task_id: V2-011
   phase: P2
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/integration/test_v2_011.py
   scenarios:
   - id: AT-V2-011-01
@@ -256,11 +258,12 @@ suites:
     required_assertion: 同键异载荷冲突且并发 CAS 仅一个成功
   - id: AT-V2-011-03
     required_assertion: 提交成功响应丢失后重试不产生第二提交
-  execution_evidence: []
+  execution_evidence:
+  - validation/tasks/V2-011/test-evidence.yaml
 - id: AT-V2-012
   task_id: V2-012
   phase: P2
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/integration/test_v2_012.py
   scenarios:
   - id: AT-V2-012-01
@@ -269,7 +272,8 @@ suites:
     required_assertion: 投影失败不能被报告为 Canon 回滚
   - id: AT-V2-012-03
     required_assertion: 按 reducer 与 Schema 版本恢复旧快照
-  execution_evidence: []
+  execution_evidence:
+  - validation/tasks/V2-012/test-evidence.yaml
 - id: AT-V2-013
   task_id: V2-013
   phase: P3

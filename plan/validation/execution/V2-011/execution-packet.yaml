@@ -31,7 +31,7 @@ inputs:
     sha256: 36eb61002e58988e1887a322fed22dd2066ace278e602bd50f39b7b173fdad3d
 
 expected_outputs:
-  - src/anovel/canon/idempotency.py
+  - src/anovel/canon/commit_service.py
   - tests/integration/test_v2_011.py
 
 allowed_paths:
@@ -64,6 +64,7 @@ stop_conditions:
 review_notes:
   - V2-011 implements idempotency and CAS operations for Canon commits
   - Evidence created retrospectively for Stage A closure
+  - Implementation delivered in commit_service.py using canon_hash uniqueness constraint rather than separate idempotency.py module
 
 handoff:
   current_step: Stage A closure evidence

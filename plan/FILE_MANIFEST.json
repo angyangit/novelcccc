@@ -1491,8 +1491,8 @@
   },
   {
     "path": "scripts/architecture_checks.py",
-    "bytes": 24397,
-    "sha256": "1b1c952742a1a7314c59f68d4a67ad21e36a5a1c4161ca4f5ff02847f22e812b"
+    "bytes": 24445,
+    "sha256": "3abea2c8f730927509a145df550bb471114e39cb7f08a7c4269fa0feea56a625"
   },
   {
     "path": "scripts/change_review.py",

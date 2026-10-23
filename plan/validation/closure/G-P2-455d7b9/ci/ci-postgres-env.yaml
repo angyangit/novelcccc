@@ -1,0 +1,50 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: G-P2-455d7b9-ci-postgres-env
+evidence_type: CI_RUN
+subject_id: POSTGRES_ENV
+producer: GitLab CI Pipeline
+pipeline_id: '2979764705'
+pipeline_url: https://gitlab.com/angyang582821422/novelcccc/-/pipelines/2979764705
+job_id: '8445838536'
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+executed_at: '2026-10-23T05:43:01Z'
+environment_fingerprint: GitLab CI ubuntu-latest; Python 3.12; PostgreSQL 17.11
+command: pytest tests/integration/test_canon_*.py -v
+exit_code: 0
+check_ids:
+- AT-V2-009-01
+- AT-V2-009-02
+- AT-V2-009-03
+- AT-V2-009-04
+- AT-V2-009-05
+- AT-V2-009-06
+- AT-V2-010-01
+- AT-V2-010-02
+- AT-V2-010-03
+- AT-V2-010-04
+- AT-V2-010-05
+- AT-V2-010-06
+- AT-V2-010-07
+- AT-V2-010-08
+- AT-V2-010-09
+- AT-V2-010-10
+- AT-V2-010-11
+- AT-V2-011-01
+- AT-V2-011-02
+- AT-V2-011-03
+- AT-V2-011-04
+- AT-V2-012-01
+- AT-V2-012-02
+- AT-V2-012-03
+- AT-V2-012-04
+- AT-V2-012-05
+- AT-V2-012-06
+- AT-V2-012-07
+- AT-V2-012-08
+artifacts:
+- ref: FILE_MANIFEST.json
+  sha256: f6f64fd78543eb27d66ec6b6f60a72879bfcfeb686bb3e3497ccb31099d51e24
+input_evidence_refs: []
+

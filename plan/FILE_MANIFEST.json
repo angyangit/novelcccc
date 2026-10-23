@@ -1421,8 +1421,8 @@
   },
   {
     "path": "machine/implementation-backlog.yaml",
-    "bytes": 95676,
-    "sha256": "4c742568129938be2756db861305e7c7f869a0e2df453932f611f79050c7b33e"
+    "bytes": 95656,
+    "sha256": "89d4c8406b342a6f568aed28dd0f3dfab46dda60d5dc620f335b976e777ef689"
   },
   {
     "path": "machine/legacy-evidence-compatibility.yaml",
@@ -1456,8 +1456,8 @@
   },
   {
     "path": "machine/test-catalog.yaml",
-    "bytes": 40121,
-    "sha256": "6d85a2a711105f7b48ff3fbdfbcc0391716888088083988e3d1bd5c4ae2e153a"
+    "bytes": 40061,
+    "sha256": "7175aaa8f4c7d225902d6401f31a12e1eb1d0e0314749f28e0746c449d8e0b73"
   },
   {
     "path": "review/00_REVIEW_TRIAGE_POLICY.md",

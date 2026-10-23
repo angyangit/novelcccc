@@ -14,11 +14,9 @@ suites:
   - id: AT-V2-001-03
     required_assertion: 缺配置明确失败且无真实凭证
   - id: AT-V2-001-04
-    required_assertion: 根 README 和 AGENTS 指向现行 plan；执行入口不宣称未完成能力，开工记录区分计划版本/审核编号并记录
-      checkout、工作区/manifest、实际环境与负责人
+    required_assertion: 根 README 和 AGENTS 指向现行 plan；执行入口不宣称未完成能力，开工记录区分计划版本/审核编号并记录 checkout、工作区/manifest、实际环境与负责人
   - id: AT-V2-001-05
-    required_assertion: 形成包含 .claude/convergence 等隐藏历史资料的目录与分发包清单，核对归档覆盖/hash/实际入口引用与独有资料，保留工具配置；迁移不得丢失唯一版本或让
-      archive 进入业务构建
+    required_assertion: 形成包含 .claude/convergence 等隐藏历史资料的目录与分发包清单，核对归档覆盖/hash/实际入口引用与独有资料，保留工具配置；迁移不得丢失唯一版本或让 archive 进入业务构建
   execution_evidence:
   - validation/execution/V2-001/closure/test-result.yaml
 - id: AT-V2-002
@@ -40,31 +38,26 @@ suites:
   - id: AT-V2-002-06
     required_assertion: 不存在文件、目录、README 或未接受 ADR 模板冒充类型化证据均被拒绝；证据的类型归属版本与 hash 一致
   - id: AT-V2-002-07
-    required_assertion: readiness、P0 entry 和 ADR/finding 双向关系受校验；任务 CLOSED 必须逐项处置关联
-      finding
+    required_assertion: readiness、P0 entry 和 ADR/finding 双向关系受校验；任务 CLOSED 必须逐项处置关联 finding
   - id: AT-V2-002-08
     required_assertion: 治理回归包含合格完成链正例及单点负例；深层失败不能被更早的无效夹具掩盖
   - id: AT-V2-002-09
     required_assertion: 仅 PASS 的 plan_execution_evidence 用于放行见证，失败/UNKNOWN 原始执行记录独立保留且不得冒充完成证据
   - id: AT-V2-002-10
-    required_assertion: 校验产物可输出到 plan 外的独立目录（如项目内 dist/validation）；该模式不回写被测计划，已提交
-      JSON 不视为当前提交认证
+    required_assertion: 校验产物可输出到 plan 外的独立目录（如项目内 dist/validation）；该模式不回写被测计划，已提交 JSON 不视为当前提交认证
   - id: AT-V2-002-11
     required_assertion: 模板 Artifact 按解析后路径判定；相对路径别名与符号链接不能冒充执行结果，合法产物不被误拒绝
   - id: AT-V2-002-12
     required_assertion: 里程碑与其阶段决定及阶段适用 CI 绑定同一被核验 revision，同时允许保留适用的历史任务证据
   - id: AT-V2-002-13
-    required_assertion: 任务从 OPEN 进入执行须引用具体 task_execution_packet；缺失、模板、错误任务/规范/输入
-      hash 或过期上下文被拒绝，合格执行包按 PREPARE/IMPLEMENT/LIVE_CALL/CERTIFY 动作通过对应检查；本地资料通过不代替
-      runner 开工拦截
+    required_assertion: 任务从 OPEN 进入执行须引用具体 task_execution_packet；缺失、模板、错误任务/规范/输入 hash 或过期上下文被拒绝，合格执行包按 PREPARE/IMPLEMENT/LIVE_CALL/CERTIFY
+      动作通过对应检查；本地资料通过不代替 runner 开工拦截
   - id: AT-V2-002-14
-    required_assertion: 动作前核对所需 ADR 与授权：PREPARE 可调查未决项但不执行受其约束的实现，IMPLEMENT/LIVE_CALL/CERTIFY
-      到达决定点时未接受 ADR 被拒绝，已接受且适用的决定允许继续；必要付费上限缺失时不得调用
+    required_assertion: 动作前核对所需 ADR 与授权：PREPARE 可调查未决项但不执行受其约束的实现，IMPLEMENT/LIVE_CALL/CERTIFY 到达决定点时未接受 ADR 被拒绝，已接受且适用的决定允许继续；必要付费上限缺失时不得调用
   - id: AT-V2-002-15
     required_assertion: 执行判断显式区分 FACT/ASSUMPTION/UNKNOWN 与独立 ADR 决定 并绑定依据；阻断当前动作的未知项或无依据事实不得被猜测成已解决，已核实事项和不影响当前动作的明确假设可按范围继续
   - id: AT-V2-002-16
-    required_assertion: 恢复执行须核对交接记录、仓库与工作区、规范/输入快照、实际测试产物和未决事项；缺失交接或失效证据不得继承完成结论，合格恢复可继续原任务，不因摘要或模型更换静默重开或越过
-      Gate
+    required_assertion: 恢复执行须核对交接记录、仓库与工作区、规范/输入快照、实际测试产物和未决事项；缺失交接或失效证据不得继承完成结论，合格恢复可继续原任务，不因摘要或模型更换静默重开或越过 Gate
   execution_evidence:
   - validation/execution/V2-002/revalidation-fd7667ec/test-result.yaml
 - id: AT-V2-003
@@ -84,8 +77,7 @@ suites:
   - id: AT-V2-003-05
     required_assertion: 比较可信基线与本次改动，联动识别验收和场景同步降标、测试删除/skip、阈值放宽、扫描排除扩大和门禁删改；任务与场景仍一致不能使未处置的降标通过，差异报告保留理由与影响
   - id: AT-V2-003-06
-    required_assertion: 范围与防降标检查同时覆盖合法新增测试、等效重构及有适用授权和影响记录的规则修订正例，以及跨任务越界和无依据削弱负例；不能只按文件名拒绝合法改动，也不能由实施
-      AI 自写理由自动批准例外
+    required_assertion: 范围与防降标检查同时覆盖合法新增测试、等效重构及有适用授权和影响记录的规则修订正例，以及跨任务越界和无依据削弱负例；不能只按文件名拒绝合法改动，也不能由实施 AI 自写理由自动批准例外
   execution_evidence:
   - validation/execution/V2-003/closure/test-result.yaml
 - id: AT-V2-004
@@ -107,12 +99,10 @@ suites:
     required_assertion: 远程合并保护的实际状态可核验；CI 缺权限记未验证，必需门禁删除后移及失败不能制造绿色
     status: VERIFIED
   - id: AT-V2-004-05
-    required_assertion: 由当前提交的真实 CI 生成运行结果和 artifact，核对项目/commit/pipeline/job/结果/hash；缺失或来源未核验不作真实
-      CI 放行证据
+    required_assertion: 由当前提交的真实 CI 生成运行结果和 artifact，核对项目/commit/pipeline/job/结果/hash；缺失或来源未核验不作真实 CI 放行证据
     status: VERIFIED
   - id: AT-V2-004-06
-    required_assertion: 可信 CI 按实际受保护 runner 核对项目、被测 revision、运行命令、job 与原始 artifact；本地伪造
-      JSON、他项目/旧提交/未受信运行记录被拒绝，真实当前运行可通过，来源无法核验记未验证
+    required_assertion: 可信 CI 按实际受保护 runner 核对项目、被测 revision、运行命令、job 与原始 artifact；本地伪造 JSON、他项目/旧提交/未受信运行记录被拒绝，真实当前运行可通过，来源无法核验记未验证
     status: VERIFIED
   - id: AT-V2-004-07
     required_assertion: 普通实施凭证采用最小权限，不同时具备修改保护规则、绕过合并门禁和批准自身例外的能力；用安全测试验证越权操作确被拒绝且授权范围内操作可用，不具备核验权限时不得自称权限隔离生效

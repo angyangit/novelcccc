@@ -1,0 +1,21 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: G-P2-455d7b9-ci-unit
+evidence_type: CI_RUN
+subject_id: UNIT
+producer: GitLab CI Pipeline
+pipeline_id: '2979764705'
+pipeline_url: https://gitlab.com/angyang582821422/novelcccc/-/pipelines/2979764705
+job_id: '8445838534'
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+executed_at: '2026-10-23T05:41:30Z'
+environment_fingerprint: GitLab CI ubuntu-latest; Python 3.12
+command: pytest tests/unit/ -v
+exit_code: 0
+check_ids:
+- UNIT-TESTS
+artifacts:
+- ref: FILE_MANIFEST.json
+  sha256: f6f64fd78543eb27d66ec6b6f60a72879bfcfeb686bb3e3497ccb31099d51e24
+input_evidence_refs: []

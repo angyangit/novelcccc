@@ -2,9 +2,20 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+      - 'fix/**'
+      - 'feature/**'
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -20,7 +31,7 @@ env:
 jobs:
   static:
     name: STATIC
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,6 +51,17 @@ jobs:
       - name: Install dependencies
         run: |
           uv sync --frozen
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/uv
+            .venv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
 
       - name: Run format check
         run: |
@@ -62,7 +84,7 @@ jobs:
 
   schema_contract:
     name: SCHEMA_CONTRACT
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -101,7 +123,7 @@ jobs:
 
   unit:
     name: UNIT
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -135,7 +157,7 @@ jobs:
 
   arch_fitness:
     name: ARCH_FITNESS
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -169,7 +191,7 @@ jobs:
 
   postgres_env:
     name: POSTGRES_ENV
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     services:
       postgres:
         image: postgres:17.11-bookworm@sha256:639ab7ceb90e13123085b741fb31ef493fba25463002f6da665352e7b534b652
@@ -233,16 +255,36 @@ jobs:
           echo "Running V2-010 CanonCommitService integration tests..."
           uv run pytest tests/integration/test_v2_010.py -v --tb=short
 
+      - name: Run V2-010 acceptance supplement tests
+        run: |
+          echo "Running V2-010 acceptance supplement tests..."
+          uv run pytest tests/integration/test_v2_010_acceptance_supplement.py -v --tb=short
+
+      - name: Run V2-011 Canon Idempotency tests
+        run: |
+          echo "Running V2-011 Canon Idempotency and CAS tests..."
+          uv run pytest tests/integration/test_v2_011.py -v --tb=short
+
+      - name: Run V2-012 Canon Snapshot tests
+        run: |
+          echo "Running V2-012 Canon Snapshot and Projection tests..."
+          uv run pytest tests/integration/test_v2_012.py -v --tb=short
+
       - name: Verify PostgreSQL transaction isolation
         run: |
           uv run pytest tests/integration/test_isolation_level.py -v --tb=short
+
+      - name: Run environment security regression test
+        run: |
+          echo "Running environment security regression test..."
+          uv run pytest tests/integration/test_postgres_environment.py::test_clean_environment_removes_postgres_bind_ip -v --tb=short
 
       - name: POSTGRES_ENV gate result
         run: echo "POSTGRES_ENV gate PASS"
 
   secret_dependency:
     name: SECRET_DEPENDENCY
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

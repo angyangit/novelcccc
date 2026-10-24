@@ -20,36 +20,35 @@ verifier: Owner (Human)
 owner_role: canon-maintainer
 
 scope: |
-  V2-009 PREPARE: Establish execution packet, verify dependencies, document implementation
-  scope and acceptance criteria for Canon persistence schema and repository.
+  V2-009 IMPLEMENT: Canon persistence schema and repository implementation.
 
-  In scope:
-  - Create task execution packet with all required bindings
-  - Verify ADR-005 and ADR-006 are ACCEPTED
-  - Document PostgreSQL schema requirements (project/branch scope, canon_commit, canon_event,
-    branch_head, execution_control, artifact_content)
-  - Document CanonRepository minimal interface requirements
-  - Document ADR-005 hash implementation requirements
-  - Bind test scenarios AT-V2-009-01 through AT-V2-009-04
-  - Document implementation sequence for future IMPLEMENT phase
-  - Update implementation-backlog.yaml execution_packet_ref
-  - Regenerate FILE_MANIFEST and pass validation
+  RETROSPECTIVE RECONSTRUCTION: This execution packet was created retrospectively
+  (2026-10-23) to document implementation that occurred earlier via GitLab MR.
+  Original implementation commits: d67dfb4, 026c8e1. Authorization: GitLab merge to main.
+
+  Note: GitLab merge proves code entered main but does not constitute pre-authorization
+  evidence. This packet documents implementation that occurred without formal
+  execution packet at the time.
+
+  Implemented:
+  - PostgreSQL migrations (project/branch scope, canon_commit, canon_event,
+    branch_head, execution_control, artifact_content tables)
+  - CanonRepository implementation with transaction support
+  - ADR-005 hash function implementation
+  - Integration tests AT-V2-009-01 through AT-V2-009-04
+  - Cross-project isolation enforcement
 
   Out of scope:
-  - Actual database migration code (requires IMPLEMENT authorization)
-  - CanonRepository implementation code (requires IMPLEMENT authorization)
-  - Hash function implementation code (requires IMPLEMENT authorization)
-  - Integration test implementation (requires IMPLEMENT authorization)
-  - CanonCommitService business logic (deferred to V2-010)
-  - Genesis initialization (deferred to P10)
-  - Paid model calls (not authorized)
+  - CanonCommitService business logic (V2-010)
+  - Genesis initialization (P10)
+  - Paid model calls
 
-action: PREPARE
+action: IMPLEMENT
 
 inputs:
   - source_ref: machine/implementation-backlog.yaml
-    ref: machine/implementation-backlog.yaml
-    sha256: 8c5d72915098c2542c901877e97942865298c98bc67caef3679574e97870d4c9
+    ref: validation/execution/V2-009/snapshots/implementation-backlog-historical.yaml
+    sha256: 4c742568129938be2756db861305e7c7f869a0e2df453932f611f79050c7b33e
   - source_ref: machine/test-catalog.yaml
     ref: machine/test-catalog.yaml
     sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
@@ -75,7 +74,7 @@ inputs:
     ref: AI_EXECUTION_PROTOCOL.md
     sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
   - source_ref: machine/phase-gates.yaml
-    ref: machine/phase-gates.yaml
+    ref: validation/execution/V2-009/snapshots/phase-gates-historical.yaml
     sha256: 537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f
 
 expected_outputs:
@@ -197,26 +196,22 @@ review_notes:
   - PREPARE phase documents scope and verifies dependencies only
 
 handoff:
-  current_step: Creating V2-009 execution packet
+  current_step: V2-009 IMPLEMENT completed via GitLab MR (retrospectively documented)
   completed_steps:
-    - Verified main at 36eb104 with PR #15 merged
-    - Verified ADR-005 and ADR-006 status ACCEPTED
-    - Verified G-P1 gate satisfied (V2-008 CLOSED)
-    - Created prepare/v2-009-canon-persistence branch
-    - Collected input file SHA256 hashes
-    - Documented environment fingerprint
-  pending_items:
-    - Update implementation-backlog.yaml execution_packet_ref
-    - Regenerate FILE_MANIFEST.json
-    - Run validate_plan.py --check
-    - Commit and push PREPARE branch
-    - Create PREPARE PR
-    - Verify CI 6/6 SUCCESS
-    - Request Owner IMPLEMENT authorization
-  next_action: PREPARE
+    - Implemented Canon persistence schema (migrations)
+    - Implemented CanonRepository with transaction support
+    - Implemented ADR-005 hash functions
+    - Implemented integration tests (6 tests, all PASS)
+    - Verified CI Pipeline #2979764705 SUCCESS
+  pending_items: []
+  next_action: IMPLEMENT
   last_check:
-    status: NOT_RUN
-    artifacts: []
-    missing_artifact_reason: PREPARE in progress
+    status: PASS
+    artifacts:
+      - ref: validation/execution/V2-009/snapshots/repository-455d7b9.py
+        sha256: a3586cba9ca2702a75a14fd9c77e0260ab79f74cdc27dba528eafc796dfd4280
+      - ref: validation/execution/V2-009/snapshots/test_v2_009-455d7b9.py
+        sha256: c11b68cf98e183840305773bcd6b1a897e0911855e945f91582c0a886529c303
+    missing_artifact_reason: null
 
 change_review: null

@@ -26,6 +26,10 @@ scope: |
   (2026-10-23) to document implementation that occurred earlier via GitLab MR.
   Original implementation commits: d67dfb4, 026c8e1. Authorization: GitLab merge to main.
 
+  Note: GitLab merge proves code entered main but does not constitute pre-authorization
+  evidence. This packet documents implementation that occurred without formal
+  execution packet at the time.
+
   Implemented:
   - PostgreSQL migrations (project/branch scope, canon_commit, canon_event,
     branch_head, execution_control, artifact_content tables)

@@ -26,6 +26,10 @@ scope: |
   (2026-10-23) to document implementation via GitLab MR. Original implementation
   commits: c7d41da, d10f333, c1132d1. Authorization: GitLab merge to main.
 
+  Note: GitLab merge proves code entered main but does not constitute pre-authorization
+  evidence. This packet documents implementation that occurred without formal
+  execution packet at the time.
+
   Implemented:
   - CanonCommitService with commit creation, retrieval, and idempotent operations
   - Integration with CanonRepository for transactional persistence

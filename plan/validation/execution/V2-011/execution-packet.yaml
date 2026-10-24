@@ -26,8 +26,13 @@ scope: |
   (2026-10-23) to document implementation via GitLab MR. Original implementation
   commit: 81225b4 (merge 6c4ad1f). Authorization: GitLab merge to main.
 
+  Note: GitLab merge proves code entered main but does not constitute pre-authorization
+  evidence. This packet documents implementation that occurred without formal
+  execution packet at the time.
+
   Implemented:
-  - CAS (Content-Addressable Storage) idempotency via canon_hash uniqueness
+  - CAS (Compare-And-Swap) idempotency via canon_hash uniqueness constraint
+  - Duplicate canon_hash detection prevents redundant commit storage
   - Duplicate canon_hash detection prevents redundant commit storage
   - Integration tests AT-V2-011-01 through AT-V2-011-03
 

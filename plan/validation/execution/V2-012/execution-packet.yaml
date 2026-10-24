@@ -24,7 +24,11 @@ scope: |
 
   RETROSPECTIVE RECONSTRUCTION: This execution packet was created retrospectively
   (2026-10-23) to document implementation via GitLab MR !4. Original implementation
-  commits: a1f209c, 7ba5572 (merge 455d7b9). Authorization: GitLab merge to main.
+  commit: 7ba5572 (merge 455d7b9). Authorization: GitLab merge to main.
+
+  Note: GitLab merge proves code entered main but does not constitute pre-authorization
+  evidence. This packet documents implementation that occurred without formal
+  execution packet at the time.
 
   Implemented:
   - Projection service for CanonState reconstruction

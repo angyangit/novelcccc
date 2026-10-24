@@ -7,12 +7,12 @@ worktree_dirty: false
 plan_manifest_sha256: 8e5b9b8ef7989cb2c42aa5de8984e13b481992b3886d28c1019964bee174a93a
 
 environment:
-  fingerprint: GitLab CI ubuntu-22.04-Python-3.12.7-PostgreSQL-17.2
+  fingerprint: GitLab CI ubuntu-22.04-Python-3.12.7-PostgreSQL-17.11
   runtime_versions:
     python: 3.12.7
     os: ubuntu-22.04
-    postgresql_ci: '17.2'
-  database_image: postgres:17.2
+    postgresql_ci: '17.11'
+  database_image: postgres:17.11-bookworm
   ci_context: GitLab CI Pipeline 2979764705
 
 implementer: Claude Opus 4.7 (AI Agent)

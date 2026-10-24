@@ -11,7 +11,7 @@ revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
 status: PASS
 executed_at: '2026-10-23T06:08:27Z'
 environment_fingerprint: GitLab CI Python 3.12-bookworm; PostgreSQL 17.11-bookworm
-command: uv run pytest tests/integration/test_v2_009.py tests/integration/test_v2_010.py tests/integration/test_v2_011.py tests/integration/test_v2_012.py -v --tb=short
+command: uv run pytest tests/integration/test_v2_011.py -v --tb=short
 exit_code: 0
 check_ids:
 - AT-V2-011-01

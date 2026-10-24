@@ -31,9 +31,9 @@ scope: |
   execution packet at the time.
 
   Implemented:
-  - CAS (Compare-And-Swap) idempotency via canon_hash uniqueness constraint
-  - Duplicate canon_hash detection prevents redundant commit storage
-  - Duplicate canon_hash detection prevents redundant commit storage
+  - Idempotency via idempotency_key uniqueness constraint (commit_service.py lines 200-242)
+  - CAS (Compare-And-Swap) for branch HEAD updates to prevent concurrent write conflicts
+  - Conflict detection: same key + different payload raises IdempotencyConflictError
   - Integration tests AT-V2-011-01 through AT-V2-011-03
 
 action: IMPLEMENT
@@ -95,8 +95,10 @@ stop_conditions:
 
 review_notes:
   - V2-011 implements idempotency and CAS operations for Canon commits
+  - Idempotency via idempotency_key uniqueness constraint prevents duplicate commits
+  - CAS Compare-And-Swap pattern for branch HEAD updates provides concurrent write safety
   - Evidence created retrospectively for Stage A closure
-  - Implementation delivered in commit_service.py using canon_hash uniqueness constraint rather than separate idempotency.py module
+  - Implementation delivered in commit_service.py using existing transaction protocol
 
 handoff:
   current_step: Stage A closure evidence

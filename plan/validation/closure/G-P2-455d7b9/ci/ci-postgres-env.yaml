@@ -1,0 +1,35 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: G-P2-455d7b9-ci-postgres-env
+evidence_type: CI_RUN
+subject_id: POSTGRES_ENV
+producer: 'GitLab CI Pipeline #2979764705'
+pipeline_id: '2979764705'
+pipeline_url: https://gitlab.com/angyang582821422/novelcccc/-/pipelines/2979764705
+job_id: '17406020375'
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+executed_at: '2026-10-23T06:08:27Z'
+environment_fingerprint: GitLab CI Python 3.12-bookworm; PostgreSQL 17.11-bookworm
+command: 'uv run pytest tests/integration/test_v2_009.py tests/integration/test_v2_010.py tests/integration/test_v2_011.py tests/integration/test_v2_012.py -v --tb=short'
+exit_code: 0
+check_ids:
+- AT-V2-009-01
+- AT-V2-009-02
+- AT-V2-009-03
+- AT-V2-009-04
+- AT-V2-010-01
+- AT-V2-010-02
+- AT-V2-010-03
+- AT-V2-010-04
+- AT-V2-010-05
+- AT-V2-011-01
+- AT-V2-011-02
+- AT-V2-011-03
+- AT-V2-012-01
+- AT-V2-012-02
+- AT-V2-012-03
+artifacts:
+- ref: machine/test-catalog.yaml
+  sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
+input_evidence_refs: []

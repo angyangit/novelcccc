@@ -1,0 +1,22 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-012-test-455d7b9
+evidence_type: TEST_RESULT
+subject_id: V2-012
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+producer: 'GitLab CI Pipeline #2979764705 Job #17406020375'
+executed_at: '2026-10-23T05:42:00Z'
+environment_fingerprint: GitLab CI ubuntu-22.04; Python 3.12.7; PostgreSQL 17.2
+command: pytest tests/integration/test_v2_*.py -v --tb=short
+exit_code: 0
+check_ids:
+- AT-V2-012-01
+- AT-V2-012-02
+- AT-V2-012-03
+artifacts:
+- ref: validation/tasks/V2-012/test-artifacts.txt
+  sha256: 176184adeea0b3706e9b907f844cd5185924ab3017cd45e4b21ec05718393696
+input_evidence_refs:
+- validation/tasks/V2-012/code-evidence.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-postgres-env.yaml

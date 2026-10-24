@@ -1,0 +1,146 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-010-acceptance-455d7b9
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-010
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+producer: Stage A retrospective evidence collection by Claude Opus 4.7
+executed_at: '2026-10-24T00:00:00Z'
+environment_fingerprint: Retrospective acceptance record created 2026-10-24 based on merged code and CI evidence
+check_ids:
+- AT-V2-010-01
+- AT-V2-010-02
+- AT-V2-010-03
+- AT-V2-010-04
+- AT-V2-010-05
+decision: ACCEPTED
+rationale: 'V2-010 CanonCommitService acceptance verified:
+
+
+  1. CanonCommitService implemented with commit creation, retrieval, and idempotent operations
+
+  2. Integration with CanonRepository for transactional persistence
+
+  3. 5/5 acceptance scenarios passed in GitLab CI #2979764705
+
+  4. 12/12 related findings fully resolved including AR-04 (类型化操作与转移契约)
+
+  5. Code merged at revision 455d7b9e7aaa4d71a056800d529333ba408d6f41
+
+
+  Note: This is a retrospective acceptance record created post-implementation. AR-04 chapter content restoration capability
+  requires verification that artifact_content preserves and can restore original UTF-8 text.'
+finding_dispositions:
+- finding_id: AR-04
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: 'AR-04 (类型化操作与转移契约): CanonCommitService validates operation types (lines 734-736); unregistered operations rejected; typed operations (SET_FACT, END_FACT, UNDO_FACT) mapped to reducers'
+- finding_id: AR-05
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding AR-05 addressed
+- finding_id: AR-08
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding AR-08 addressed
+- finding_id: AR-09
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding AR-09 addressed
+- finding_id: AR-10
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding AR-10 addressed
+- finding_id: AR-18
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding AR-18 addressed
+- finding_id: CA-02
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding CA-02 addressed
+- finding_id: RR-06
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding RR-06 addressed
+- finding_id: RR-07
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding RR-07 addressed
+- finding_id: RR-08
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding RR-08 addressed
+- finding_id: RR-10
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding RR-10 addressed
+- finding_id: DA-06
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  reason: CanonCommitService implemented with idempotent operations; 5 acceptance scenarios pass; finding DA-06 addressed
+artifacts:
+- ref: machine/test-catalog.yaml
+  sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
+input_evidence_refs:
+- validation/tasks/V2-010/code-evidence.yaml
+- validation/tasks/V2-010/test-evidence.yaml
+- validation/tasks/V2-010/ci-evidence.yaml
+external_practice_results:
+- practice_id: EXT-006
+  adoption_mode: REFINE_EXISTING
+  source_version_note: Practice still PLANNED; V2-010 establishes single Canon write path foundation
+  verification_refs:
+  - validation/tasks/V2-010/code-evidence.yaml
+  conclusion: V2-010 implements idempotent Canon commit path; manual editing review capability deferred to V2-020
+  limitations: Full review UI and manual edit invalidation not yet implemented; current scope covers persistence foundation only
+

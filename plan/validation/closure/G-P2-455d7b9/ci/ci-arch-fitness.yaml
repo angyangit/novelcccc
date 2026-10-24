@@ -1,0 +1,22 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: G-P2-455d7b9-ci-arch-fitness
+evidence_type: CI_RUN
+subject_id: ARCH_FITNESS
+producer: 'GitLab CI Pipeline #2979764705'
+pipeline_id: '2979764705'
+pipeline_url: https://gitlab.com/angyang582821422/novelcccc/-/pipelines/2979764705
+job_id: '17406020374'
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+executed_at: '2026-10-23T05:41:35Z'
+environment_fingerprint: GitLab CI ubuntu-22.04; Python 3.12.7; PostgreSQL 17.2
+command: python3 plan/scripts/architecture_checks.py
+exit_code: 0
+check_ids:
+- ARCH-DEPENDENCY-CHECK
+- ARCH-MODULE-STRUCTURE
+artifacts:
+- ref: plan/FILE_MANIFEST.json
+  sha256: e847bfa8e6cc1c7bec6a223d8686c7e997719ddd440e4e42e473f1fe2691cb89
+input_evidence_refs: []

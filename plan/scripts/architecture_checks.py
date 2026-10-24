@@ -448,11 +448,12 @@ def _boundary(source, target):
                 "Domain third-party dependency is not in the reviewed allowlist",
             )
     if _within(target, REPOSITORY) and not any(
-        _within(source, prefix) for prefix in (REPOSITORY, PUBLIC_COMMIT)
+        _within(source, prefix)
+        for prefix in (REPOSITORY, PUBLIC_COMMIT, "anovel.canon.projection")
     ):
         return (
             "ARCH_CANON_INTERNAL",
-            "Canon repository is internal to repository and commit service",
+            "Canon repository is internal to repository, commit service, and projection",
         )
     if _within(target, PUBLIC_COMMIT) and not any(
         _within(source, prefix) for prefix in ("anovel.canon", "anovel.workflow")

@@ -1,0 +1,8 @@
+V2-012 Snapshot Rebuild and Projection - Code Artifacts
+
+Implementation verified at revision 455d7b9e7aaa4d71a056800d529333ba408d6f41:
+
+1. src/anovel/canon/projection.py - Projection service for CanonState reconstruction
+2. migrations/versions/bdcd0bc7457d_add_canon_snapshot_table.py - canon_snapshot table
+
+All files merged and verified via GitLab CI Pipeline #2979764705.

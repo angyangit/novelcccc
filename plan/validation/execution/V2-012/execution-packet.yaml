@@ -1,0 +1,102 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-012
+plan_version: 1.3.1
+repository_revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+worktree_dirty: false
+plan_manifest_sha256: 8e5b9b8ef7989cb2c42aa5de8984e13b481992b3886d28c1019964bee174a93a
+
+environment:
+  fingerprint: GitLab CI ubuntu-22.04-Python-3.12.7-PostgreSQL-17.11
+  runtime_versions:
+    python: 3.12.7
+    os: ubuntu-22.04
+    postgresql_ci: '17.11'
+  database_image: postgres:17.11-bookworm
+  ci_context: GitLab CI Pipeline 2979764705
+
+implementer: Claude Opus 4.7 (AI Agent)
+verifier: Owner (Human)
+owner_role: canon-maintainer
+
+scope: |
+  V2-012: Canon projection service for snapshot reconstruction, cross-project
+  isolation, and accelerated recovery from commit history.
+
+action: PREPARE
+
+inputs:
+  - source_ref: machine/implementation-backlog.yaml
+    ref: machine/implementation-backlog.yaml
+    sha256: 8c5d72915098c2542c901877e97942865298c98bc67caef3679574e97870d4c9
+  - source_ref: decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md
+    ref: decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md
+    sha256: 56a889426524eabefee93ccd36848cea4d19dd4b5cd50dd4b5354a3bf73d435e
+  - source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+    ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+    sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
+  - source_ref: 07_PLATFORM_SECURITY_AND_DELIVERY.md
+    ref: 07_PLATFORM_SECURITY_AND_DELIVERY.md
+    sha256: d75bc3e6899809652bb56ceb7b60d9cbdfe9e8c39467bb44ed48772ff32a779b
+  - source_ref: AI_EXECUTION_PROTOCOL.md
+    ref: AI_EXECUTION_PROTOCOL.md
+    sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
+  - source_ref: machine/test-catalog.yaml
+    ref: machine/test-catalog.yaml
+    sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
+  - source_ref: machine/decision-register.yaml
+    ref: machine/decision-register.yaml
+    sha256: 416e1b3a392cf1121a608f453e399477154fe3b0a411696e99330d32242fd358
+  - source_ref: machine/ai-execution-policy.yaml
+    ref: machine/ai-execution-policy.yaml
+    sha256: feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171
+
+expected_outputs:
+  - src/anovel/canon/projection.py
+  - tests/integration/test_v2_012.py
+
+allowed_paths:
+  - src/anovel/canon/
+  - tests/integration/
+
+required_decisions:
+  - ADR-006
+
+claims: []
+
+estimate:
+  range: 8-14 hours
+  unit: hours
+  assumptions:
+    - Canon projection service for snapshot reconstruction
+    - Cross-project isolation and accelerated recovery
+  confidence: MEDIUM
+
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 3
+  maximum_runtime: 7200
+
+stop_conditions:
+  - Integration tests pass
+  - CI validation successful
+
+review_notes:
+  - V2-012 implements Canon projection service for snapshot reconstruction
+  - Evidence created retrospectively for Stage A closure
+
+handoff:
+  current_step: Stage A closure evidence
+  completed_steps:
+    - Canon projection service implementation completed
+    - Integration tests passed
+    - CI validation successful
+  pending_items:
+    - Stage B Owner verification
+  next_action: PREPARE
+  last_check:
+    status: NOT_RUN
+    artifacts: []
+    missing_artifact_reason: Retrospective evidence creation

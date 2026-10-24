@@ -1,0 +1,20 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-012-code-455d7b9
+evidence_type: CODE
+subject_id: V2-012
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+producer: 'GitLab CI Pipeline #2979764705 + retrospective Stage A closure 2026-10-24'
+executed_at: '2026-10-23T05:42:00Z'
+environment_fingerprint: GitLab CI ubuntu-22.04; Python 3.12.7; PostgreSQL 17.2
+artifacts:
+- ref: validation/tasks/V2-012/code-artifacts.txt
+  sha256: cdd6dd2fd72632bae5c65c0c4768486ef9269e7032730bbdaf5eb58a9c5b3aca
+input_evidence_refs: []
+check_ids:
+- CODE-V2-012-PROJECTION-PY
+- CODE-V2-012-SNAPSHOT-TABLE
+decision: VERIFIED
+rationale: V2-012 implementation artifacts exist and verified at revision 455d7b9.
+  Code merged and passing CI.

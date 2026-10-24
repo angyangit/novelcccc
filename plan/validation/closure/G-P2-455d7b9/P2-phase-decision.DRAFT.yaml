@@ -1,0 +1,44 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: P2-phase-decision-455d7b9
+evidence_type: PHASE_DECISION
+subject_id: P2
+revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
+status: PASS
+producer: Stage A evidence collection - DRAFT awaiting Owner Stage B authorization
+executed_at: '2026-10-24T00:00:00Z'
+environment_fingerprint: GitLab CI ubuntu-latest; Python 3.12.14; PostgreSQL 17.11; candidate 455d7b9e7aaa4d71a056800d529333ba408d6f41
+artifacts:
+- ref: machine/phase-gates.yaml
+  sha256: 537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f
+input_evidence_refs:
+- validation/closure/G-P2-455d7b9/ci/ci-static.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-unit.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-postgres-env.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-schema-contract.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-arch-fitness.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-secret-dependency.yaml
+ci_evidence_refs:
+- validation/closure/G-P2-455d7b9/ci/ci-static.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-unit.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-postgres-env.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-schema-contract.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-arch-fitness.yaml
+- validation/closure/G-P2-455d7b9/ci/ci-secret-dependency.yaml
+decision: DRAFT_CANDIDATE
+rationale: |
+  DRAFT - This is Stage A technical analysis only. Not an authorized phase decision.
+
+  G-P2 candidate 455d7b9e7aaa4d71a056800d529333ba408d6f41 technical verification through CI evidence and functional capability demonstration.
+
+  P2 exit criteria satisfied:
+  1. 短事务原子性 CAS 幂等 PostgreSQL 证据: 29 PostgreSQL integration tests passed (V2-009: 6 tests, V2-010: 11 tests, V2-011: 4 tests, V2-012: 8 tests)
+  2. 唯一根提交与完整收据: ADR-006 implemented, partial UNIQUE index enforced, commit_evidence immutable
+  3. 快照重建和跨项目隔离: V2-012 projection service validated, snapshot accelerated recovery verified, cross-project isolation enforced via composite foreign keys
+
+  GitLab CI pipeline #2979764705 on candidate 455d7b9 passed all six gates (STATIC, SCHEMA_CONTRACT, SECRET_DEPENDENCY, ARCH_FITNESS, UNIT, POSTGRES_ENV).
+
+  Note: Individual P2 tasks (V2-009/010/011/012) remain OPEN in implementation-backlog.yaml pending Owner formal closure authorization.
+  This DRAFT does not authorize P3 entry. Owner Stage B review required before G-P2 can be formally closed.
+
+  This is Stage A evidence collection metadata; the decision revision identifies candidate 455d7b9 and not the closure commit itself.

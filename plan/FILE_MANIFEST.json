@@ -1381,8 +1381,8 @@
   },
   {
     "path": "generated/PHASE_TASK_REGISTRY.md",
-    "bytes": 6213,
-    "sha256": "f1b45fb7fc7af7b03865587a68fdffd2fc6aaced0a850dafbbd0928da6a2bb87"
+    "bytes": 6222,
+    "sha256": "c2424e67ff4c4255eb890103f2e5e8f97aa748b049cafe8ebc15f4b3b49770f6"
   },
   {
     "path": "machine/ai-execution-policy.yaml",
@@ -1421,8 +1421,8 @@
   },
   {
     "path": "machine/implementation-backlog.yaml",
-    "bytes": 97867,
-    "sha256": "8c5d72915098c2542c901877e97942865298c98bc67caef3679574e97870d4c9"
+    "bytes": 97875,
+    "sha256": "36eb61002e58988e1887a322fed22dd2066ace278e602bd50f39b7b173fdad3d"
   },
   {
     "path": "machine/legacy-evidence-compatibility.yaml",

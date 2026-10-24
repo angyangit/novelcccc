@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-24T01:25:45.829170+00:00",
+  "generated_at_utc": "2026-10-24T03:39:36.043916+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "0e49e968840e6be46c7b94514e4fd264065e8a40",
+  "validated_repository_revision": "45197217b51590bbfeb0094e0ec19bcf04582155",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "8e5b9b8ef7989cb2c42aa5de8984e13b481992b3886d28c1019964bee174a93a",
+  "manifest_sha256": "878ef0b424e0f93737e25d46e9c2fdc1a9ce796db860ac7dfc4a410a260f7190",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -34,8 +34,8 @@
       "P12": 3
     },
     "statuses": {
-      "CLOSED": 9,
-      "OPEN": 52
+      "CLOSED": 13,
+      "OPEN": 48
     },
     "suites": 61,
     "scenarios": 261,
@@ -51,9 +51,30 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-009: preparation is not an implementation record",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-010: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-010: preparation is not an implementation record",
+    "EXEC_INPUT V2-011: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-011: preparation is not an implementation record",
+    "EXEC_INPUT V2-012: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-012: preparation is not an implementation record"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-009: preparation is not an implementation record",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-010: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-010: preparation is not an implementation record",
+    "EXEC_INPUT V2-011: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-011: preparation is not an implementation record",
+    "EXEC_INPUT V2-012: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_ACTION V2-012: preparation is not an implementation record"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

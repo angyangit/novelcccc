@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-24T03:39:36.043916+00:00",
+  "generated_at_utc": "2026-10-24T04:09:08.568108+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "FAIL",
+  "status": "PASS",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "45197217b51590bbfeb0094e0ec19bcf04582155",
+  "validated_repository_revision": "7a1e8e4595a9c574f480579d4eddc006ee9d0ab0",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -51,30 +51,9 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-009: preparation is not an implementation record",
-    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-010: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-010: preparation is not an implementation record",
-    "EXEC_INPUT V2-011: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-011: preparation is not an implementation record",
-    "EXEC_INPUT V2-012: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-012: preparation is not an implementation record"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
   ],
-  "fatal_errors": [
-    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-009: preparation is not an implementation record",
-    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-009: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-010: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-010: preparation is not an implementation record",
-    "EXEC_INPUT V2-011: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-011: preparation is not an implementation record",
-    "EXEC_INPUT V2-012: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_ACTION V2-012: preparation is not an implementation record"
-  ],
+  "fatal_errors": [],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

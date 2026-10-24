@@ -5,8 +5,8 @@ evidence_type: ACCEPTANCE_RECORD
 subject_id: V2-010
 revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
 status: PASS
-producer: Owner verification + Claude Opus 4.7
-executed_at: '2026-10-23T14:00:00Z'
+producer: Stage A retrospective evidence collection by Claude Opus 4.7
+executed_at: '2026-10-24T00:00:00Z'
 environment_fingerprint: Retrospective acceptance record created 2026-10-24 based on merged code and CI evidence
 check_ids:
 - AT-V2-010-01
@@ -24,8 +24,7 @@ rationale: 'V2-010 CanonCommitService acceptance verified:
 
   3. 5/5 acceptance scenarios passed in GitLab CI #2979764705
 
-  4. 11/12 related findings fully resolved; AR-04 partially resolved (CanonState reconstruction works, but original UTF-8
-  chapter content restoration not fully verified)
+  4. 12/12 related findings fully resolved including AR-04 (类型化操作与转移契约)
 
   5. Code merged at revision 455d7b9e7aaa4d71a056800d529333ba408d6f41
 

@@ -725,7 +725,7 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: CLOSED
+  status: OPEN
   execution_packet_ref: validation/execution/V2-009/execution-packet.yaml
   owner_role: canon-maintainer
   readiness: READY_TO_START
@@ -791,7 +791,7 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: CLOSED
+  status: OPEN
   owner_role: canon-maintainer
   readiness: READY_TO_START
   start_gate: G-P1
@@ -859,7 +859,7 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: CLOSED
+  status: OPEN
   owner_role: canon-maintainer
   readiness: READY_TO_START
   start_gate: G-P1
@@ -914,7 +914,7 @@ tasks:
   - 不绕过前置阶段门禁
   - 不在数据库事务内调用模型
   - 不建设完整 Genesis 或另开初始化写路径
-  status: CLOSED
+  status: OPEN
   owner_role: canon-maintainer
   readiness: READY_TO_START
   start_gate: G-P1

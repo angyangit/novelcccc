@@ -5,7 +5,7 @@ evidence_type: ACCEPTANCE_RECORD
 subject_id: V2-011
 revision: 455d7b9e7aaa4d71a056800d529333ba408d6f41
 status: PASS
-producer: Owner verification + Claude Opus 4.7
+producer: Stage A retrospective evidence collection by Claude Opus 4.7
 executed_at: '2026-10-23T14:00:00Z'
 environment_fingerprint: Retrospective acceptance record created 2026-10-24 based on merged code and CI evidence
 check_ids:

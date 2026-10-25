@@ -1,7 +1,7 @@
 {
   "scope": "planning validator self-test only",
-  "generated_at_utc": "2026-10-25T05:43:34.983415+00:00",
-  "manifest_sha256": "e871fcce6e5593947607f6dc3da9450be935df729cd290e0b4040ca15e29b0f3",
+  "generated_at_utc": "2026-10-25T06:14:48.751750+00:00",
+  "manifest_sha256": "4f0cd3d31fa3946a83c7a3cf85f2bd3641079bf6314dde5aac9436fa8dc8980e",
   "status": "PASS",
   "cases": [
     {

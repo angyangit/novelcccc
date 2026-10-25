@@ -47,14 +47,45 @@ def check_file(file_path: Path) -> list[str]:
 
     content = file_path.read_text()
 
-    # Check for correct canonical declaration
+    # All active entry points MUST have an explicit canonical declaration
     if file_path.name in ["AGENTS.md", "README.md", "PROJECT_STATUS.md"]:
-        if "Canonical Repository" in content or "CANONICAL REPOSITORY" in content:
-            if CORRECT_CANONICAL not in content:
-                errors.append(
-                    f"MISSING_GITHUB: {file_path} has Canonical Repository section "
-                    f"but does not declare {CORRECT_CANONICAL}"
-                )
+        has_canonical_header = (
+            "Canonical Repository" in content or "CANONICAL REPOSITORY" in content
+        )
+
+        if not has_canonical_header:
+            errors.append(
+                f"MISSING_CANONICAL_SECTION: {file_path} must have a Canonical Repository section"
+            )
+            # If there's no section at all, we can't check further
+            return errors
+
+        # Section exists, now verify the correct GitHub URL appears within the canonical section
+        # Check that the URL appears in the canonical section, not just anywhere in the file
+        lines = content.split("\n")
+        in_canonical_section = False
+        found_correct_url_in_canonical = False
+
+        for line in lines:
+            # Track if we're in a canonical repository section
+            if (
+                "canonical repository" in line.lower()
+                or "## canonical repository" in line.lower()
+            ):
+                in_canonical_section = True
+            elif line.startswith("##") and in_canonical_section:
+                in_canonical_section = False
+
+            # Check if correct URL appears in canonical section
+            if in_canonical_section and CORRECT_CANONICAL in line:
+                found_correct_url_in_canonical = True
+                break
+
+        if not found_correct_url_in_canonical:
+            errors.append(
+                f"MISSING_GITHUB: {file_path} has Canonical Repository section "
+                f"but does not declare {CORRECT_CANONICAL} within that section"
+            )
 
     # Check for forbidden patterns (only in canonical declaration sections)
     lines = content.split("\n")

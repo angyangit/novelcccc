@@ -1511,8 +1511,8 @@
   },
   {
     "path": "scripts/check_canonical_authority.py",
-    "bytes": 3877,
-    "sha256": "06feb25deb4497dd020d16734cf2826e296488e3f2500f73ca4fa169492e7890"
+    "bytes": 5134,
+    "sha256": "27557ee266764c104e1cee05f96d5208b95d7f8b6aab2c5d9fa2fceba04513e9"
   },
   {
     "path": "scripts/execution_checks.py",

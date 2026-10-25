@@ -53,7 +53,7 @@ inputs:
     ref: machine/test-catalog.yaml
     sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
   - source_ref: machine/decision-register.yaml
-    ref: machine/decision-register.yaml
+    ref: validation/execution/V2-009/snapshots/decision-register-historical.yaml
     sha256: 416e1b3a392cf1121a608f453e399477154fe3b0a411696e99330d32242fd358
   - source_ref: machine/ai-execution-policy.yaml
     ref: machine/ai-execution-policy.yaml

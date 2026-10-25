@@ -71,7 +71,7 @@ decisions:
   - 补充取消/提交次序、执行权限撤销与最小恢复证据闭包
 - id: ADR-007
   title: Genre 扩展命名空间与状态转移
-  status: REQUIRED
+  status: ACCEPTED
   owner_role: genre-maintainer
   related_tasks:
   - V2-013
@@ -80,7 +80,7 @@ decisions:
   - V2-016
   decision_due_task: V2-013
   timing: before_interface_implementation
-  decision_record: null
+  decision_record: validation/decisions/adr-007-acceptance-acff54b/adr-007-decision.yaml
   verification_refs: []
 - id: ADR-008
   title: 候选 overlay 与 Contract 编译绑定

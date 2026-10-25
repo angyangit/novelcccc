@@ -70,6 +70,11 @@
     "sha256": "52b0029d661d2a5ac2a44280d8a4064008ec627e8e9867f5570b335ea36dac97"
   },
   {
+    "path": "V2-013_IMPLEMENTATION_READINESS.md",
+    "bytes": 23190,
+    "sha256": "b7d22a04c2388a2f72c61b4b019d84e9941f36de616693b7a2bb9dbcc1af876d"
+  },
+  {
     "path": "archive/README.md",
     "bytes": 839,
     "sha256": "fdf988fb3e9f1911416f745b2dd75c08ea8a073a95e5b707bf84e450a44ef5ff"
@@ -1370,6 +1375,11 @@
     "sha256": "56a889426524eabefee93ccd36848cea4d19dd4b5cd50dd4b5354a3bf73d435e"
   },
   {
+    "path": "decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md",
+    "bytes": 27654,
+    "sha256": "e59822c28420b1fdf5030f376ad53e632d44e2d26ebe81e59133c4aa3695eb38"
+  },
+  {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",
     "bytes": 3286,
     "sha256": "c5f816a2050dacad720ff5a5600e0d89d52b19052d09dcd7d9af98299058eb4d"
@@ -1401,8 +1411,8 @@
   },
   {
     "path": "machine/decision-register.yaml",
-    "bytes": 5536,
-    "sha256": "416e1b3a392cf1121a608f453e399477154fe3b0a411696e99330d32242fd358"
+    "bytes": 5601,
+    "sha256": "f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2"
   },
   {
     "path": "machine/external-practice-register.yaml",

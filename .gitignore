@@ -39,3 +39,6 @@ build/
 .gitlab-ci-local/
 
 /ainovel
+.adr-007-*.md
+.pr-description.md
+.local-reports/

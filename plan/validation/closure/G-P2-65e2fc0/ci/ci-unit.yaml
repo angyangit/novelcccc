@@ -1,0 +1,22 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: CI-GH-40152806100-UNIT
+evidence_type: CI_RUN
+subject_id: P2
+revision: e6b6ed2eb2c1a2081863e3b907102953d479c5d4
+status: PASS
+producer: GitHub Actions Run 40152806100 (attempt 2) Job 121051322834
+executed_at: '2026-10-25T02:19:23Z'
+environment_fingerprint: 'Python 3.12.14, pytest, ubuntu-22.04, GitHub Actions'
+artifacts:
+- ref: validation/closure/G-P2-65e2fc0/ci/artifacts/github-job-UNIT.txt
+  sha256: e0f32bfbf998293d398926ea4b65a4c6f2285652e678d114bcffd0133a7d1753
+input_evidence_refs: []
+check_ids:
+- UNIT
+command: |
+  uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+exit_code: 0
+pipeline_id: '40152806100'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40152806100
+job_id: '121051322834'

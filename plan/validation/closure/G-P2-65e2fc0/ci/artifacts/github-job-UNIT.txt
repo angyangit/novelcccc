@@ -1,0 +1,18 @@
+# Provenance
+Source: GitHub Actions Run 40152806100 (attempt 2), Job 121051322834 (UNIT)
+Repository: https://github.com/angyangit/novelcccc
+Commit: e6b6ed2eb2c1a2081863e3b907102953d479c5d4
+Started: 2026-10-25T02:19:23Z
+Completed: 2026-10-25T02:23:33Z
+Duration: 250s
+Conclusion: success
+Official URL: https://github.com/angyangit/novelcccc/actions/runs/40152806100/job/121051322834
+
+# Execution Summary
+Commands:
+  uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+Exit Code: 0
+Runner: ubuntu-22.04
+
+# Result
+989 tests passed. All architecture and contract tests successful.

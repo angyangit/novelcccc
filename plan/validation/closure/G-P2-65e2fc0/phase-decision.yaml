@@ -1,0 +1,55 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_type: PHASE_DECISION
+evidence_id: PHASE-P2-G-P2-e6b6ed2
+status: PASS
+decision: VERIFIED
+subject_id: P2
+revision: e6b6ed2eb2c1a2081863e3b907102953d479c5d4
+
+producer: Owner-authorized G-P2 Stage B closure
+executed_at: '2026-10-25T02:23:33Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-Candidate-e6b6ed2
+
+artifacts:
+  - ref: machine/phase-gates.yaml
+    sha256: 16b41c2161cc71e700d4f3fb5d616d1d7263386fd9a60f82df9ac85802524155
+
+input_evidence_refs:
+  - validation/tasks/V2-009/code-evidence.yaml
+  - validation/tasks/V2-009/test-evidence.yaml
+  - validation/tasks/V2-009/ci-evidence.yaml
+  - validation/tasks/V2-009/acceptance-evidence.yaml
+  - validation/tasks/V2-010/code-evidence.yaml
+  - validation/tasks/V2-010/test-evidence.yaml
+  - validation/tasks/V2-010/ci-evidence.yaml
+  - validation/tasks/V2-010/acceptance-evidence.yaml
+  - validation/tasks/V2-011/code-evidence.yaml
+  - validation/tasks/V2-011/test-evidence.yaml
+  - validation/tasks/V2-011/ci-evidence.yaml
+  - validation/tasks/V2-011/acceptance-evidence.yaml
+  - validation/tasks/V2-012/code-evidence.yaml
+  - validation/tasks/V2-012/test-evidence.yaml
+  - validation/tasks/V2-012/ci-evidence.yaml
+  - validation/tasks/V2-012/acceptance-evidence.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-static.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-schema-contract.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-unit.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-arch-fitness.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-postgres-env.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-secret-dependency.yaml
+
+ci_evidence_refs:
+  - validation/closure/G-P2-65e2fc0/ci/ci-static.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-schema-contract.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-unit.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-arch-fitness.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-postgres-env.yaml
+  - validation/closure/G-P2-65e2fc0/ci/ci-secret-dependency.yaml
+
+rationale: |
+  G-P2 Stage B closure. Tasks V2-009~012 CLOSED with complete evidence; GitHub Actions run #40152806100 (attempt 2) 6/6 PASS at C'';
+  P2 exit criteria satisfied; CANON_CAS_IDEMPOTENCY verified via POSTGRES_ENV (29 integration tests); retrospective evidence
+  accepted by Owner Decision 1-A with V2-011 wording limitation disclosed; branch protection manual exception Decision 2-C;
+  test lifecycle fix PR #3 merged establishing C''; transient UNIT failure (attempt 1) resolved without code changes;
+  closure-only metadata identifies candidate not closure commit.

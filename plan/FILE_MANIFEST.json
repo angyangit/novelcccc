@@ -1396,8 +1396,8 @@
   },
   {
     "path": "machine/ci-gates.yaml",
-    "bytes": 2598,
-    "sha256": "1ed4416efa93ec78a31dd52a577271b2e3e2dc30658784bbe15e466f0f5b7cca"
+    "bytes": 2648,
+    "sha256": "97faaad0b781bf235b57ab78e8317e34bd6b12638598291c6b3097cd3c3f3639"
   },
   {
     "path": "machine/decision-register.yaml",
@@ -1436,8 +1436,8 @@
   },
   {
     "path": "machine/phase-gates.yaml",
-    "bytes": 5750,
-    "sha256": "537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f"
+    "bytes": 5799,
+    "sha256": "16b41c2161cc71e700d4f3fb5d616d1d7263386fd9a60f82df9ac85802524155"
   },
   {
     "path": "machine/remediation-register.yaml",

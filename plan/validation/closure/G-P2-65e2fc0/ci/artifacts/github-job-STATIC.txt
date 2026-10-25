@@ -1,0 +1,20 @@
+# Provenance
+Source: GitHub Actions Run 40152806100 (attempt 2), Job 121051323605 (STATIC)
+Repository: https://github.com/angyangit/novelcccc
+Commit: e6b6ed2eb2c1a2081863e3b907102953d479c5d4
+Started: 2026-10-25T02:00:36Z
+Completed: 2026-10-25T02:00:57Z
+Duration: 21s
+Conclusion: success
+Official URL: https://github.com/angyangit/novelcccc/actions/runs/40152806100/job/121051323605
+
+# Execution Summary
+Commands:
+  uv run ruff format --check plan/scripts/ src/
+  uv run ruff check plan/scripts/ src/
+  uv run mypy plan/scripts/ src/ --ignore-missing-imports --no-strict-optional
+Exit Code: 0
+Runner: ubuntu-22.04
+
+# Result
+All static analysis checks passed. No formatting issues, no lint violations, no type errors.

@@ -9,10 +9,8 @@ Conclusion: success
 Official URL: https://github.com/angyangit/novelcccc/actions/runs/40152806100/job/121051353828
 
 # Execution Summary
-Commands:
-  uv run pytest tests/architecture/test_dependency_boundaries.py -v --tb=short
-  uv run pytest tests/architecture/test_change_review.py -v --tb=short
-  uv run pytest tests/architecture/test_weakening.py -v --tb=short
+Command:
+  uv run pytest tests/architecture/test_dependency_boundaries.py tests/architecture/test_change_review.py tests/architecture/test_weakening_checks.py -v --tb=short --junitxml=dist/ci/arch/junit.xml
 Exit Code: 0
 Runner: ubuntu-22.04
 

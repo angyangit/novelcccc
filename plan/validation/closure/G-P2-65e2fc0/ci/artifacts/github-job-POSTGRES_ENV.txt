@@ -9,15 +9,22 @@ Conclusion: success
 Official URL: https://github.com/angyangit/novelcccc/actions/runs/40152806100/job/121051343334
 
 # Execution Summary
+PostgreSQL Service: postgres:17.11-bookworm
+
 Commands:
-  docker run --name postgres-test postgres:17.2@sha256:9f563af6e984fc...
-  uv run pytest tests/integration/test_database.py -v --tb=short
+  uv run python scripts/check_postgres.py
+  uv run pytest tests/integration/test_postgres_ci_service.py -v --tb=short
+  uv run alembic upgrade head
   uv run pytest tests/integration/test_v2_009.py -v --tb=short
   uv run pytest tests/integration/test_v2_010.py -v --tb=short
+  uv run pytest tests/integration/test_v2_010_acceptance_supplement.py -v --tb=short
   uv run pytest tests/integration/test_v2_011.py -v --tb=short
   uv run pytest tests/integration/test_v2_012.py -v --tb=short
+  uv run pytest tests/integration/test_isolation_level.py -v --tb=short
+  uv run pytest tests/integration/test_postgres_environment.py::test_clean_environment_removes_postgres_bind_ip -v --tb=short
+
 Exit Code: 0
 Runner: ubuntu-22.04
 
 # Result
-PostgreSQL environment verified. All integration tests passed including V2-011 (CANON_CAS_IDEMPOTENCY: 29 tests).
+PostgreSQL environment verified. All integration tests passed including V2-009 (Canon persistence), V2-010 (CanonCommitService), V2-011 (CANON_CAS_IDEMPOTENCY), V2-012 (Canon Snapshot), isolation level tests, and environment security checks.

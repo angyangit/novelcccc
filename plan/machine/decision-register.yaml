@@ -80,7 +80,7 @@ decisions:
   - V2-016
   decision_due_task: V2-013
   timing: before_interface_implementation
-  decision_record: plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
+  decision_record: validation/decisions/adr-007-acceptance-acff54b/adr-007-decision.yaml
   verification_refs: []
 - id: ADR-008
   title: 候选 overlay 与 Contract 编译绑定

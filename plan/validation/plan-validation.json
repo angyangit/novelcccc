@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-25T04:35:50.068508+00:00",
+  "generated_at_utc": "2026-10-25T04:55:02.322670+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "FAIL",
+  "status": "PASS",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "85542f77d43720f17b904f2043bf4eccbcc9666d",
+  "validated_repository_revision": "acff54b0e8e40396d42fae5f723667cb525aa7aa",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "02c622eb31cd936f897c5c8965682043fe25a44e275d27d12a15db5049b729a3",
+  "manifest_sha256": "e871fcce6e5593947607f6dc3da9450be935df729cd290e0b4040ca15e29b0f3",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -50,25 +50,10 @@
     }
   },
   "errors": [
-    "EVIDENCE_RECORD plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md: local evidence file missing/outside package/not a file",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_INPUT V2-009: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_INPUT V2-010: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_INPUT V2-011: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_INPUT V2-012: missing/changed artifact machine/decision-register.yaml",
-    "LOCAL_REF: absent/outside package plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
   ],
-  "fatal_errors": [
-    "EVIDENCE_RECORD plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md: local evidence file missing/outside package/not a file",
-    "EXEC_INPUT V2-009: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_INPUT V2-010: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_INPUT V2-011: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_INPUT V2-012: missing/changed artifact machine/decision-register.yaml",
-    "LOCAL_REF: absent/outside package plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
-  ],
+  "fatal_errors": [],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

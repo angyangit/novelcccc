@@ -1376,8 +1376,8 @@
   },
   {
     "path": "decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md",
-    "bytes": 26721,
-    "sha256": "80d93264d9d1816d63c56a55fc819fdb6d71843b65893589e5e1f89c82171db8"
+    "bytes": 27654,
+    "sha256": "e59822c28420b1fdf5030f376ad53e632d44e2d26ebe81e59133c4aa3695eb38"
   },
   {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",
@@ -1411,8 +1411,8 @@
   },
   {
     "path": "machine/decision-register.yaml",
-    "bytes": 5536,
-    "sha256": "416e1b3a392cf1121a608f453e399477154fe3b0a411696e99330d32242fd358"
+    "bytes": 5601,
+    "sha256": "f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2"
   },
   {
     "path": "machine/external-practice-register.yaml",

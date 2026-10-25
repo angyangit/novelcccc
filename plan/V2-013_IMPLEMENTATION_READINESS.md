@@ -67,14 +67,14 @@ class GenrePackIdentity:
     Immutable GenrePack identity triple.
     
     Attributes:
-        pack_id: Stable logical identifier (e.g., "urban.business.realistic.v1")
+        pack_id: Stable logical identifier (e.g., "urban.business.realistic")
         version: Semantic version (e.g., "1.0.0")
         content_hash: SHA-256 canonical hash of Pack content (64 hex chars)
     
     Invariants:
         - Same (pack_id, version) must always have same content_hash
         - Different content → different content_hash or different version
-        - pack_id follows pattern: {category}.{subcategory}.{variant}.v{major}
+        - pack_id does NOT include version suffix (e.g., NOT "urban.business.realistic.v1")
     """
     pack_id: str
     version: str
@@ -87,6 +87,9 @@ class GenrePackIdentity:
             raise ValueError("version cannot be empty")
         if len(self.content_hash) != 64:
             raise ValueError(f"content_hash must be 64 hex chars, got {len(self.content_hash)}")
+        if ".v" in self.pack_id and self.pack_id.split(".")[-1].startswith("v"):
+            raise ValueError(f"pack_id should not include version suffix: {self.pack_id}")
+
 
 
 @dataclass(frozen=True)
@@ -268,8 +271,18 @@ class GenrePackRegistry:
         with open(pack_path, "r", encoding="utf-8") as f:
             pack_content = yaml.safe_load(f)
         
+        # Extract hashable content (exclude content_hash field to avoid self-reference)
+        hashable_content = {
+            "pack_id": pack_content["pack_id"],
+            "version": pack_content["version"],
+            "extension_schemas": pack_content.get("extension_schemas", []),
+            "transition_rules": pack_content.get("transition_rules", []),
+            "world_mechanics": pack_content.get("world_mechanics", {}),
+            "quality_rubric": pack_content.get("quality_rubric", {})
+        }
+        
         # Compute canonical hash (ADR-005)
-        actual_hash = canonical_hash(pack_content)
+        actual_hash = canonical_hash(hashable_content)
         
         return actual_hash == pack_identity.content_hash
     
@@ -353,9 +366,9 @@ class ProjectGenreBindingService:
         pack_identity: GenrePackIdentity
     ) -> ProjectGenreBinding:
         """
-        Bind a GenrePack to a project (frozen).
+        Bind a GenrePack to a project (frozen) with mandatory hash verification.
         
-        Verifies Pack exists and hash is valid before binding.
+        Verifies Pack exists and hash is valid by recomputing from source YAML.
         
         Args:
             project_id: Project identifier
@@ -366,15 +379,38 @@ class ProjectGenreBindingService:
         
         Raises:
             GenrePackNotFoundError: Pack does not exist in registry
-            GenrePackHashMismatchError: Hash verification failed
+            GenrePackHashMismatchError: Hash verification failed (content tampered)
             ValueError: Project already has a binding
         """
-        # Verify Pack exists and hash is valid
-        self._registry.get_pack(
+        # Verify Pack exists
+        metadata = self._registry.get_pack(
             pack_identity.pack_id,
-            pack_identity.version,
-            expected_hash=pack_identity.content_hash
+            pack_identity.version
         )
+        
+        # Load Pack YAML and recompute hash (mandatory verification)
+        pack_path = self._registry_path.parent / metadata.pack_file_path
+        with open(pack_path, "r", encoding="utf-8") as f:
+            pack_content = yaml.safe_load(f)
+        
+        # Extract hashable content (exclude content_hash to avoid self-reference)
+        hashable_content = {
+            "pack_id": pack_content["pack_id"],
+            "version": pack_content["version"],
+            "extension_schemas": pack_content.get("extension_schemas", []),
+            "transition_rules": pack_content.get("transition_rules", []),
+            "world_mechanics": pack_content.get("world_mechanics", {}),
+            "quality_rubric": pack_content.get("quality_rubric", {})
+        }
+        computed_hash = canonical_hash(hashable_content)
+        
+        # Verify hash matches
+        if computed_hash != pack_identity.content_hash:
+            raise GenrePackHashMismatchError(
+                pack_identity.pack_id,
+                pack_identity.content_hash,
+                computed_hash
+            )
         
         # Check for existing binding
         if project_id in self._bindings:
@@ -529,7 +565,7 @@ class TestV2013GenrePackLoader:
 # tests/fixtures/genres/test_registry.yaml
 version: 1.0.0
 packs:
-  - pack_id: urban.business.realistic.v1
+  - pack_id: urban.business.realistic
     version: 1.0.0
     content_hash: "TEST_HASH_URBAN_BUSINESS_V1_PLACEHOLDER"
     extension_namespaces:
@@ -539,7 +575,7 @@ packs:
       - urban.business.realistic
     pack_file: test_urban_business.yaml
   
-  - pack_id: fantasy.eastern.progression.v1
+  - pack_id: fantasy.eastern.progression
     version: 1.0.0
     content_hash: "TEST_HASH_FANTASY_EASTERN_V1_PLACEHOLDER"
     extension_namespaces:

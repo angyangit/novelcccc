@@ -27,32 +27,122 @@ P3 首期冻结两个 Anchor：`urban.business.realistic` 和 `fantasy.eastern.p
 
 ### 1. GenrePack 稳定身份
 
-**Pack Identity 由三元组唯一确定**:
-- `pack_id`: 稳定逻辑标识符 (例: `urban.business.realistic.v1`)
+**Pack Identity 由二元组 + 内容哈希确定**:
+- `pack_id`: 稳定逻辑标识符，包含主版本标识 (例: `urban.business.realistic`)
 - `version`: 语义版本 (例: `1.0.0`)
 - `content_hash`: Pack 内容的 canonical hash (ADR-005)
+
+**pack_id 语义**:
+- 不包含版本后缀（错误: `urban.business.realistic.v1`）
+- 正确格式: `{category}.{subcategory}.{variant}` (例: `urban.business.realistic`)
+- 版本信息完全由 `version` 字段表达
+- 避免 pack_id 中隐含版本导致的重复标识
+
+**两个冻结 Anchor** (P3 首期):
+- Pack ID: `urban.business.realistic`, Version: `1.0.0`
+- Pack ID: `fantasy.eastern.progression`, Version: `1.0.0`
 
 **不可变性约束**:
 ```python
 @dataclass(frozen=True)
 class GenrePackIdentity:
     """Immutable GenrePack identity triple."""
-    pack_id: str  # Stable logical ID (e.g., "urban.business.realistic.v1")
+    pack_id: str  # Stable logical ID (e.g., "urban.business.realistic")
     version: str  # Semantic version (e.g., "1.0.0")
-    content_hash: str  # SHA-256 canonical hash of pack content
+    content_hash: str  # SHA-256 canonical hash of pack content (64 hex chars)
 ```
 
 **内容哈希计算**:
-- 使用 ADR-005 `canonical_hash()` 计算 Pack 定义的规范化哈希
-- 输入：Pack 的 YAML/JSON 定义（world_mechanics, extension_schemas, transition_rules, rubric）
-- 排除：注释、元数据、外部引用路径（仅保留引用的 content hash）
-- 验证：加载时重新计算 hash，与声明的 `content_hash` 比对
+
+使用 `anovel.canon.hash.canonical_hash()` (ADR-005) 计算 Pack 内容的 SHA-256 哈希。
+
+**输入集合** (Pack YAML 必须包含的字段):
+```yaml
+pack_id: "urban.business.realistic.v1"
+version: "1.0.0"
+extension_schemas: [...]
+transition_rules: [...]
+world_mechanics: {...}
+quality_rubric: {...}
+```
+
+**排除字段** (不参与哈希计算):
+- `content_hash`: 哈希摘要本身（避免自引用）
+- YAML 注释
+- 文件元数据（修改时间、作者等）
+- 外部文件路径（仅保留被引用内容的 hash）
+
+**哈希计算过程**:
+```python
+# Step 1: Load Pack YAML
+with open(pack_file, "r", encoding="utf-8") as f:
+    pack_data = yaml.safe_load(f)
+
+# Step 2: Extract hashable content (exclude content_hash field)
+hashable_content = {
+    "pack_id": pack_data["pack_id"],
+    "version": pack_data["version"],
+    "extension_schemas": pack_data.get("extension_schemas", []),
+    "transition_rules": pack_data.get("transition_rules", []),
+    "world_mechanics": pack_data.get("world_mechanics", {}),
+    "quality_rubric": pack_data.get("quality_rubric", {})
+}
+
+# Step 3: Compute canonical hash using ADR-005
+from anovel.canon.hash import canonical_hash
+computed_hash = canonical_hash(hashable_content)
+
+# Step 4: Verify against declared hash
+if computed_hash != pack_data["content_hash"]:
+    raise GenrePackHashMismatchError(pack_id, pack_data["content_hash"], computed_hash)
+```
+
+**验证时机**:
+1. **Registry 加载时**: 可选快速校验（仅比较字符串）
+2. **项目绑定时**: **强制校验**（重新计算 hash 并比对）
+3. **Pack 首次使用时**: 再次校验确保文件未被篡改
 
 **冲突检测**:
 ```python
-# 场景1: 相同 pack_id + version，不同 content_hash → REJECT
+# 场景1: 相同 pack_id + version，不同 content_hash → REJECT (GenrePackHashMismatchError)
 # 场景2: 相同 pack_id + version，相同 content_hash → 幂等加载
 # 场景3: 不同 pack_id 或 version → 独立 Pack
+```
+
+**可复现正反例**:
+
+✅ **正例**: 相同内容产生相同哈希
+```python
+pack1 = {"pack_id": "test.v1", "version": "1.0.0", "extension_schemas": []}
+pack2 = {"pack_id": "test.v1", "version": "1.0.0", "extension_schemas": []}
+assert canonical_hash(pack1) == canonical_hash(pack2)  # 相同内容 → 相同哈希
+```
+
+❌ **反例1**: content_hash 字段不参与计算
+```python
+pack_with_hash = {
+    "pack_id": "test.v1", 
+    "version": "1.0.0",
+    "extension_schemas": [],
+    "content_hash": "abc123..."  # 此字段被排除
+}
+pack_without_hash = {
+    "pack_id": "test.v1",
+    "version": "1.0.0", 
+    "extension_schemas": []
+}
+# 计算时都排除 content_hash，因此哈希相同
+assert canonical_hash({k: v for k, v in pack_with_hash.items() if k != "content_hash"}) \
+    == canonical_hash(pack_without_hash)
+```
+
+❌ **反例2**: 篡改检测
+```python
+declared_hash = "abc123..."
+pack_data = {"pack_id": "test.v1", "version": "1.0.0", "extension_schemas": [{"modified": "tampered"}]}
+computed_hash = canonical_hash(pack_data)
+if computed_hash != declared_hash:
+    raise GenrePackHashMismatchError("test.v1", declared_hash, computed_hash)  # 检测到篡改
 ```
 
 ### 2. Genre 扩展命名空间
@@ -77,7 +167,7 @@ class GenrePackIdentity:
 ```yaml
 version: 1.0.0
 packs:
-  - pack_id: urban.business.realistic.v1
+  - pack_id: urban.business.realistic
     version: 1.0.0
     content_hash: "abc123..."
     extension_namespaces:
@@ -85,9 +175,9 @@ packs:
       - "urban.business.finance"
     world_anchors:
       - "urban.business.realistic"
-    pack_file: "urban_business_realistic_v1.yaml"
+    pack_file: "urban_business_realistic_v1_0_0.yaml"
     
-  - pack_id: fantasy.eastern.progression.v1
+  - pack_id: fantasy.eastern.progression
     version: 1.0.0
     content_hash: "def456..."
     extension_namespaces:
@@ -95,14 +185,39 @@ packs:
       - "fantasy.eastern.realm"
     world_anchors:
       - "fantasy.eastern.progression"
-    pack_file: "fantasy_eastern_progression_v1.yaml"
+    pack_file: "fantasy_eastern_progression_v1_0_0.yaml"
 ```
 
 **命名空间隔离**:
 - 扩展字段必须使用命名空间前缀：`{namespace}.{field_name}`
 - 例：`fantasy.eastern.cultivation.realm_level`, `urban.business.company.equity_ratio`
-- 未声明的扩展命名空间 → 拒绝加载
+- **未声明的扩展命名空间 → 明确拒绝** (`UnknownExtensionNamespaceError`)
 - 不同 Pack 的扩展命名空间不能重叠
+
+**扩展命名空间验证** (V2-013):
+```python
+# 场景1: 使用已声明的命名空间 → PASS
+changeset = {
+    "namespace": "fantasy.eastern.cultivation",  # 在 Pack 中已声明
+    "field": "realm_level",
+    ...
+}
+# ProjectGenreBindingService.validate_extension_namespace() → True
+
+# 场景2: 使用未声明的命名空间 → REJECT
+changeset = {
+    "namespace": "unknown.namespace",  # 未在 Pack 中声明
+    "field": "some_field",
+    ...
+}
+# ProjectGenreBindingService.validate_extension_namespace() → False
+# 后续处理: raise UnknownExtensionNamespaceError(...)
+```
+
+**AT-V2-013-02 验收要求**:
+- 未知 Pack → `GenrePackNotFoundError` (明确拒绝)
+- 未知 version → `GenrePackNotFoundError` (明确拒绝)
+- 未声明扩展命名空间 → `validate_extension_namespace()` 返回 `False` (明确拒绝)
 
 ### 3. 状态转移与合法性边界
 
@@ -111,8 +226,8 @@ packs:
 每个 GenrePack 定义 **Typed State Schema** 和 **Transition Rules**：
 
 ```yaml
-# specs/genres/fantasy_eastern_progression_v1.yaml
-pack_id: fantasy.eastern.progression.v1
+# specs/genres/fantasy_eastern_progression_v1_0_0.yaml
+pack_id: fantasy.eastern.progression
 version: 1.0.0
 content_hash: "def456..."
 
@@ -150,8 +265,8 @@ transition_rules:
 **都市商业 Pack 示例**:
 
 ```yaml
-# specs/genres/urban_business_realistic_v1.yaml
-pack_id: urban.business.realistic.v1
+# specs/genres/urban_business_realistic_v1_0_0.yaml
+pack_id: urban.business.realistic
 version: 1.0.0
 content_hash: "abc123..."
 
@@ -229,14 +344,115 @@ class ProjectGenreBinding:
     project_id: ProjectId
     pack_identity: GenrePackIdentity  # Frozen triple
     bound_at: datetime
-    binding_hash: str  # Hash of this binding record
+    binding_hash: str  # Canonical hash of binding record
 ```
 
 **绑定语义**:
-1. **显式绑定**: 项目在初始化时显式声明 `pack_id`, `version`, `content_hash`
-2. **冻结输入**: Pack 绑定后不能因关键词、检索排名、相似名称而改变
-3. **版本隔离**: 不同项目可绑定不同 Pack 版本，不会交叉污染
-4. **明确拒绝**: Pack 不存在、版本不匹配、hash 校验失败 → 明确失败
+1. **显式绑定**: 项目在初始化时显式声明 `pack_id`, `version`, `expected_hash`
+2. **强制哈希校验**: 绑定时重新计算 Pack 内容哈希并验证（不仅比较字符串）
+3. **冻结输入**: Pack 绑定后不能因关键词、检索排名、相似名称而改变
+4. **版本隔离**: 不同项目可绑定不同 Pack 版本，不会交叉污染
+5. **明确拒绝**: Pack 不存在、版本不匹配、hash 校验失败 → 明确失败
+
+**绑定流程** (V2-013):
+```python
+def bind_pack(
+    self,
+    project_id: ProjectId,
+    pack_identity: GenrePackIdentity
+) -> ProjectGenreBinding:
+    """
+    Bind a GenrePack to a project with mandatory hash verification.
+    
+    Steps:
+    1. Verify Pack exists in registry
+    2. Load Pack YAML from disk
+    3. Recompute content hash using canonical_hash()
+    4. Compare computed hash with pack_identity.content_hash
+    5. If mismatch → raise GenrePackHashMismatchError
+    6. If match → create frozen ProjectGenreBinding
+    7. Record binding (V2-013: in-memory)
+    """
+    # Step 1-2: Load Pack and verify existence
+    metadata = self._registry.get_pack(pack_identity.pack_id, pack_identity.version)
+    pack_path = self._registry_path.parent / metadata.pack_file_path
+    with open(pack_path, "r", encoding="utf-8") as f:
+        pack_content = yaml.safe_load(f)
+    
+    # Step 3-4: Recompute hash and verify (mandatory)
+    hashable_content = {
+        "pack_id": pack_content["pack_id"],
+        "version": pack_content["version"],
+        "extension_schemas": pack_content.get("extension_schemas", []),
+        "transition_rules": pack_content.get("transition_rules", []),
+        "world_mechanics": pack_content.get("world_mechanics", {}),
+        "quality_rubric": pack_content.get("quality_rubric", {})
+    }
+    computed_hash = canonical_hash(hashable_content)
+    
+    if computed_hash != pack_identity.content_hash:
+        raise GenrePackHashMismatchError(
+            pack_identity.pack_id,
+            pack_identity.content_hash,
+            computed_hash
+        )
+    
+    # Step 5-6: Create frozen binding with traceable record
+    bound_at = datetime.utcnow()
+    binding_data = {
+        "project_id": project_id,
+        "pack_id": pack_identity.pack_id,
+        "version": pack_identity.version,
+        "content_hash": pack_identity.content_hash,
+        "bound_at": bound_at.isoformat()
+    }
+    binding_hash = canonical_hash(binding_data)
+    
+    binding = ProjectGenreBinding(
+        project_id=project_id,
+        pack_identity=pack_identity,
+        bound_at=bound_at,
+        binding_hash=binding_hash
+    )
+    
+    # Step 7: Persist binding (V2-013: in-memory; future: Canon commit)
+    self._bindings[project_id] = binding
+    return binding
+```
+
+**绑定记录可追溯性与恢复**:
+
+V2-013 (P3 首期):
+- 绑定存储：**内存 dict** (`self._bindings: dict[ProjectId, ProjectGenreBinding]`)
+- 验收范围：单进程测试场景，验证绑定逻辑和隔离性
+- 不持久化到数据库（满足 AT-V2-013 验收要求）
+
+未来持久化 (P4+):
+- **复用现有 Canon commit 机制**（不创建第二套提交体系）
+- 方案：将 `ProjectGenreBinding` 作为 Canon 事件持久化
+  ```python
+  # 通过 CanonCommitService 提交绑定事件
+  binding_event = {
+      "event_type": "PROJECT_GENRE_BINDING_CREATED",
+      "project_id": project_id,
+      "pack_identity": {
+          "pack_id": pack_identity.pack_id,
+          "version": pack_identity.version,
+          "content_hash": pack_identity.content_hash
+      },
+      "bound_at": bound_at.isoformat(),
+      "binding_hash": binding_hash
+  }
+  # 提交到 Canon，复用 ADR-006 事务协议
+  await canon_commit_service.commit(project_id, branch, changeset, permit_ref)
+  ```
+- 恢复：从 Canon 事件流重建 `ProjectGenreBinding`
+- **不引入新数据库表或独立存储系统**（复用 `canon_commit` 和 `canon_event` 表）
+
+**记录边界**:
+- 可追溯：binding_hash 唯一标识一次绑定，包含所有关键字段
+- 可恢复：从 binding 记录可精确恢复 (project_id, pack_id, version, content_hash, bound_at)
+- 不可篡改：binding_hash 变化立即检测到记录修改
 
 **禁止的回退行为**:
 ```python

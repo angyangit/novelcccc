@@ -1,15 +1,15 @@
 record_type: plan_execution_evidence
 schema_version: '1.0'
 evidence_type: PHASE_DECISION
-evidence_id: PHASE-P2-G-P2-65e2fc0
+evidence_id: PHASE-P2-G-P2-e6b6ed2
 status: PASS
 decision: VERIFIED
 subject_id: P2
-revision: 65e2fc0e9f44e16653650a4866095f57328cdc7c
+revision: e6b6ed2eb2c1a2081863e3b907102953d479c5d4
 
 producer: Owner-authorized G-P2 Stage B closure
-executed_at: '2026-10-24T15:25:59Z'
-environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-Candidate-65e2fc0
+executed_at: '2026-10-25T02:00:34Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-Candidate-e6b6ed2
 
 artifacts:
   - ref: machine/phase-gates.yaml
@@ -48,7 +48,8 @@ ci_evidence_refs:
   - validation/closure/G-P2-65e2fc0/ci/ci-secret-dependency.yaml
 
 rationale: |
-  G-P2 Stage B closure. Tasks V2-009~012 CLOSED with complete evidence; GitHub Actions run #40104699607 6/6 PASS at C';
+  G-P2 Stage B closure. Tasks V2-009~012 CLOSED with complete evidence; GitHub Actions run #40152806100 (attempt 2) 6/6 PASS at C'';
   P2 exit criteria satisfied; CANON_CAS_IDEMPOTENCY verified via POSTGRES_ENV (29 integration tests); retrospective evidence
   accepted by Owner Decision 1-A with V2-011 wording limitation disclosed; branch protection manual exception Decision 2-C;
+  test lifecycle fix PR #3 merged establishing C''; transient UNIT failure (attempt 1) resolved without code changes;
   closure-only metadata identifies candidate not closure commit.

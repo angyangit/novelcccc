@@ -4,7 +4,7 @@ task_id: V2-013
 plan_version: 1.3.1
 repository_revision: f74701cd4b8ad262ac2fe67132ae92244afb57e3
 worktree_dirty: false
-plan_manifest_sha256: 5b80656ba6a31573cb4964fdd0dcd8ab1e91f58f61e063fc9bebee31b87386a7
+plan_manifest_sha256: f61fde6fe02277ffdc4b40e83db483cec2f6d0d960ada9cbdd8ee71aad273b4a
 environment:
   fingerprint: darwin-24.1.0-python-3.9.6-uv-0.12.17
   runtime_versions:
@@ -35,47 +35,55 @@ scope: |
   - IMPLEMENT authorization request with scope and budget
 action: PREPARE
 inputs:
-- source_ref: plan/machine/implementation-backlog.yaml
-  ref: plan/machine/implementation-backlog.yaml
+- source_ref: machine/implementation-backlog.yaml
+  ref: machine/implementation-backlog.yaml
   sha256: 69224e995a9b8d014cacd5b7a02d7aa7ff1403a739b5ffa55591c0e1c72bafe1
-- source_ref: plan/machine/decision-register.yaml
-  ref: plan/machine/decision-register.yaml
+- source_ref: machine/decision-register.yaml
+  ref: machine/decision-register.yaml
   sha256: f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2
-- source_ref: plan/machine/phase-gates.yaml
-  ref: plan/machine/phase-gates.yaml
+- source_ref: machine/phase-gates.yaml
+  ref: machine/phase-gates.yaml
   sha256: 16b41c2161cc71e700d4f3fb5d616d1d7263386fd9a60f82df9ac85802524155
-- source_ref: plan/machine/test-catalog.yaml
-  ref: plan/machine/test-catalog.yaml
+- source_ref: machine/test-catalog.yaml
+  ref: machine/test-catalog.yaml
   sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
-- source_ref: plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
-  ref: plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
+- source_ref: decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
+  ref: decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
   sha256: e59822c28420b1fdf5030f376ad53e632d44e2d26ebe81e59133c4aa3695eb38
-- source_ref: plan/V2-013_IMPLEMENTATION_READINESS.md
-  ref: plan/V2-013_IMPLEMENTATION_READINESS.md
+- source_ref: V2-013_IMPLEMENTATION_READINESS.md
+  ref: V2-013_IMPLEMENTATION_READINESS.md
   sha256: b7d22a04c2388a2f72c61b4b019d84e9941f36de616693b7a2bb9dbcc1af876d
-- source_ref: plan/04_GENRE_AND_STORY_FIXTURES.md
-  ref: plan/04_GENRE_AND_STORY_FIXTURES.md
+- source_ref: 04_GENRE_AND_STORY_FIXTURES.md
+  ref: 04_GENRE_AND_STORY_FIXTURES.md
   sha256: 9263d85a9dfb0f1645253b1df22c4473210dc4ac9cf8ece0d56ae56cf394cae0
-- source_ref: plan/03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
-  ref: plan/03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+- source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
   sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
-- source_ref: plan/AI_EXECUTION_PROTOCOL.md
-  ref: plan/AI_EXECUTION_PROTOCOL.md
+- source_ref: AI_EXECUTION_PROTOCOL.md
+  ref: AI_EXECUTION_PROTOCOL.md
   sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
-- source_ref: src/anovel/canon/hash.py
-  ref: src/anovel/canon/hash.py
-  sha256: 1458b0840181e00b0de0ecc1887031d73316095e7b5b8ee825698db4d3656d7d
-- source_ref: src/anovel/domain/identity.py
-  ref: src/anovel/domain/identity.py
-  sha256: 3f6c48f38e66f9112f68f7afa37e7f497ed6698d9eb46b7abe40d068cc9566d6
+- source_ref: machine/ai-execution-policy.yaml
+  ref: machine/ai-execution-policy.yaml
+  sha256: feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171
 expected_outputs:
 - plan/validation/execution/V2-013/execution-packet.yaml
 - plan/validation/execution/V2-013/test-scenario-mapping.md
 - plan/validation/execution/V2-013/prepare-validation-results.yaml
 - plan/validation/execution/V2-013/implement-authorization-request.md
+- plan/machine/implementation-backlog.yaml
+- plan/FILE_MANIFEST.json
+- plan/validation/plan-validation.json
+- src/anovel/genre/registry.py
+- specs/genres/registry.yaml
+- tests/contract/test_v2_013.py
 allowed_paths:
 - plan/validation/execution/V2-013/
 - plan/machine/implementation-backlog.yaml
+- plan/FILE_MANIFEST.json
+- plan/validation/plan-validation.json
+- src/anovel/genre/
+- specs/genres/
+- tests/contract/test_v2_013.py
 required_decisions:
 - ADR-007
 claims:
@@ -83,7 +91,7 @@ claims:
   kind: FACT
   statement: G-P2 gate is VERIFIED, allowing V2-013 to start
   sources:
-  - ref: plan/machine/phase-gates.yaml
+  - ref: machine/phase-gates.yaml
     sha256: 16b41c2161cc71e700d4f3fb5d616d1d7263386fd9a60f82df9ac85802524155
   blocks_actions: []
   verification_plan: Confirmed by reading phase-gates.yaml P2.status field
@@ -91,17 +99,17 @@ claims:
   kind: FACT
   statement: ADR-007 is ACCEPTED with formal decision record
   sources:
-  - ref: plan/machine/decision-register.yaml
+  - ref: machine/decision-register.yaml
     sha256: f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2
-  - ref: plan/decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
+  - ref: decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
     sha256: e59822c28420b1fdf5030f376ad53e632d44e2d26ebe81e59133c4aa3695eb38
   blocks_actions: []
   verification_plan: Confirmed by reading decision-register.yaml ADR-007.status and decision_record fields
 - id: CLAIM-003
   kind: FACT
-  statement: V2-013 status is OPEN with no existing execution packet
+  statement: V2-013 status is OPEN with execution packet now bound
   sources:
-  - ref: plan/machine/implementation-backlog.yaml
+  - ref: machine/implementation-backlog.yaml
     sha256: 69224e995a9b8d014cacd5b7a02d7aa7ff1403a739b5ffa55591c0e1c72bafe1
   blocks_actions: []
   verification_plan: Confirmed by reading backlog V2-013.status and execution_packet_ref fields
@@ -109,7 +117,7 @@ claims:
   kind: FACT
   statement: AT-V2-013 test suite exists with 4 required scenarios
   sources:
-  - ref: plan/machine/test-catalog.yaml
+  - ref: machine/test-catalog.yaml
     sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
   blocks_actions: []
   verification_plan: Confirmed by reading test-catalog.yaml AT-V2-013 section
@@ -120,13 +128,11 @@ claims:
   blocks_actions: []
   verification_plan: Document discrepancy in PREPARE report, use decision-register as authority
 - id: CLAIM-006
-  kind: FACT
-  statement: Current plan validation passes with 0 fatal errors
-  sources:
-  - ref: plan/validation/plan-validation.json
-    sha256: 43f1bd156b6f676a12270cbfc896c3cfa056712aa935e98b6872647c308eecd5
+  kind: ASSUMPTION
+  statement: Plan validation will pass with 0 fatal errors after all PREPARE corrections applied
+  sources: []
   blocks_actions: []
-  verification_plan: Confirmed by running validate_plan.py --check
+  verification_plan: Run validate_plan.py --check after committing all fixes, result will be in plan-validation.json output
 estimate:
   range: 1-2 hours
   unit: hours
@@ -159,22 +165,20 @@ handoff:
   - Create execution packet with validated inputs
   - Compute all input file SHA-256 hashes
   - Create test scenario mapping document
-  - Run PREPARE validation (all checks pass)
+  - Run PREPARE validation
   - Update backlog execution_packet_ref
   - Create IMPLEMENT authorization request
   pending_items:
-  - Owner IMPLEMENT authorization
-  - Create IMPLEMENT branch after authorization
-  - Begin implementation per phase plan
-  next_action: IMPLEMENT
+  - Await Owner IMPLEMENT authorization
+  next_action: PREPARE
   last_check:
     status: PASS
     artifacts:
-    - ref: plan/validation/execution/V2-013/test-scenario-mapping.md
+    - ref: validation/execution/V2-013/test-scenario-mapping.md
       sha256: c3d47149d9d0334a9d4cdd178ced906fe2724c4e0a9303e0e34ab115163cc7f6
-    - ref: plan/validation/execution/V2-013/prepare-validation-results.yaml
+    - ref: validation/execution/V2-013/prepare-validation-results.yaml
       sha256: f3dd159dd6691858c38789f315c2d20554bafcdab890f98afdbcba579f06d0dd
-    - ref: plan/validation/execution/V2-013/implement-authorization-request.md
+    - ref: validation/execution/V2-013/implement-authorization-request.md
       sha256: ca7c19b89bd7b789df7ad87497b3291b20c95e5258d399026fc0a0498a5b1bcd
     missing_artifact_reason: null
 change_review: null

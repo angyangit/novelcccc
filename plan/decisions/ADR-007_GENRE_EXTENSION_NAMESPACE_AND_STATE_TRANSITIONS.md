@@ -58,7 +58,7 @@ class GenrePackIdentity:
 
 **输入集合** (Pack YAML 必须包含的字段):
 ```yaml
-pack_id: "urban.business.realistic.v1"
+pack_id: "urban.business.realistic"
 version: "1.0.0"
 extension_schemas: [...]
 transition_rules: [...]
@@ -71,6 +71,29 @@ quality_rubric: {...}
 - YAML 注释
 - 文件元数据（修改时间、作者等）
 - 外部文件路径（仅保留被引用内容的 hash）
+
+**完整性保证**:
+- **哈希覆盖所有行为影响字段**: `extension_schemas`, `transition_rules`, `world_mechanics`, `quality_rubric`
+- **未知字段处理**: Pack YAML 中出现未列入 hashable_content 的字段时
+  - 如果是规范允许的扩展字段 → 需明确是否纳入 hash
+  - 如果是任意未定义字段 → 当前设计排除（只哈希已知字段）
+  - **建议**: V2-013 实现时验证 Pack Schema，拒绝未知顶层字段
+- **篡改检测**: 任何 hashable_content 中的字段被修改 → hash 不匹配 → 加载失败
+- **不存在哈希盲区**: 所有影响 Genre 行为的规范字段都在 hashable_content 中
+
+**Schema 验证建议** (V2-013 或后续):
+```python
+# 验证 Pack YAML 只包含已知字段
+KNOWN_PACK_FIELDS = {
+    "pack_id", "version", "content_hash",
+    "extension_schemas", "transition_rules",
+    "world_mechanics", "quality_rubric",
+    "extension_namespaces", "world_anchors"
+}
+unknown_fields = set(pack_content.keys()) - KNOWN_PACK_FIELDS
+if unknown_fields:
+    raise ValueError(f"Pack contains unknown fields: {unknown_fields}")
+```
 
 **哈希计算过程**:
 ```python
@@ -191,7 +214,7 @@ packs:
 **命名空间隔离**:
 - 扩展字段必须使用命名空间前缀：`{namespace}.{field_name}`
 - 例：`fantasy.eastern.cultivation.realm_level`, `urban.business.company.equity_ratio`
-- **未声明的扩展命名空间 → 明确拒绝** (`UnknownExtensionNamespaceError`)
+- **未声明的扩展命名空间 → 抛出 UnknownExtensionNamespaceError**
 - 不同 Pack 的扩展命名空间不能重叠
 
 **扩展命名空间验证** (V2-013):
@@ -202,7 +225,8 @@ changeset = {
     "field": "realm_level",
     ...
 }
-# ProjectGenreBindingService.validate_extension_namespace() → True
+# ProjectGenreBindingService.validate_extension_namespace(project_id, namespace)
+# → 不抛出异常，验证通过
 
 # 场景2: 使用未声明的命名空间 → REJECT
 changeset = {
@@ -210,14 +234,14 @@ changeset = {
     "field": "some_field",
     ...
 }
-# ProjectGenreBindingService.validate_extension_namespace() → False
-# 后续处理: raise UnknownExtensionNamespaceError(...)
+# ProjectGenreBindingService.validate_extension_namespace(project_id, namespace)
+# → 抛出 UnknownExtensionNamespaceError
 ```
 
 **AT-V2-013-02 验收要求**:
 - 未知 Pack → `GenrePackNotFoundError` (明确拒绝)
 - 未知 version → `GenrePackNotFoundError` (明确拒绝)
-- 未声明扩展命名空间 → `validate_extension_namespace()` 返回 `False` (明确拒绝)
+- 未声明扩展命名空间 → `UnknownExtensionNamespaceError` (明确拒绝)
 
 ### 3. 状态转移与合法性边界
 
@@ -423,13 +447,15 @@ def bind_pack(
 **绑定记录可追溯性与恢复**:
 
 V2-013 (P3 首期):
-- 绑定存储：**内存 dict** (`self._bindings: dict[ProjectId, ProjectGenreBinding]`)
-- 验收范围：单进程测试场景，验证绑定逻辑和隔离性
-- 不持久化到数据库（满足 AT-V2-013 验收要求）
+- **绑定存储**: 内存 dict (`self._bindings: dict[ProjectId, ProjectGenreBinding]`)
+- **验收范围**: 单进程测试场景，验证绑定逻辑和隔离性
+- **不持久化**: 满足 AT-V2-013 验收要求，进程重启后绑定不恢复
+- **记录可追溯**: binding_hash 唯一标识绑定，包含所有关键字段
+- **限制**: 无跨进程恢复能力，测试后丢失
 
-未来持久化 (P4+):
-- **复用现有 Canon commit 机制**（不创建第二套提交体系）
-- 方案：将 `ProjectGenreBinding` 作为 Canon 事件持久化
+未来持久化 (P4+ 需求明确后):
+- **复用 Canon commit 机制**（不创建第二套提交体系）
+- **方案**: 将 `ProjectGenreBinding` 作为 Canon 事件持久化
   ```python
   # 通过 CanonCommitService 提交绑定事件
   binding_event = {
@@ -443,16 +469,17 @@ V2-013 (P3 首期):
       "bound_at": bound_at.isoformat(),
       "binding_hash": binding_hash
   }
-  # 提交到 Canon，复用 ADR-006 事务协议
-  await canon_commit_service.commit(project_id, branch, changeset, permit_ref)
+  # 需要扩展 CanonCommitService 以支持 binding event type
+  # 当前 Canon 服务尚未实现此事件类型
   ```
-- 恢复：从 Canon 事件流重建 `ProjectGenreBinding`
-- **不引入新数据库表或独立存储系统**（复用 `canon_commit` 和 `canon_event` 表）
+- **恢复**: 从 Canon 事件流重建 `ProjectGenreBinding`
+- **不引入新系统**: 复用 `canon_commit` 和 `canon_event` 表（ADR-006）
+- **前置条件**: Canon 服务需要支持项目级绑定事件（当前未实现）
 
-**记录边界**:
-- 可追溯：binding_hash 唯一标识一次绑定，包含所有关键字段
-- 可恢复：从 binding 记录可精确恢复 (project_id, pack_id, version, content_hash, bound_at)
-- 不可篡改：binding_hash 变化立即检测到记录修改
+**V2-013 与持久化的明确边界**:
+- ✅ V2-013 验证: 绑定身份、隔离性、hash 校验、冻结语义
+- ❌ V2-013 不提供: 进程重启后恢复、跨会话持久化
+- 🔮 未来扩展: 需要明确的进程重启恢复需求和 Canon 集成设计
 
 **禁止的回退行为**:
 ```python
@@ -586,14 +613,29 @@ class ProjectGenreBindingService:
         self,
         project_id: ProjectId,
         namespace: str
-    ) -> bool:
+    ) -> None:
         """
-        Check if namespace is declared in project's bound Pack.
+        Validate that namespace is declared in project's bound Pack.
         
-        Returns:
-            True if namespace is declared, False otherwise
+        Args:
+            project_id: Project identifier
+            namespace: Extension namespace to validate
+        
+        Raises:
+            ProjectGenreBindingNotFoundError: Project has no binding
+            UnknownExtensionNamespaceError: Namespace not declared in Pack
         """
-        ...
+        binding = self.get_binding(project_id)
+        pack_metadata = self._registry.get_pack(
+            binding.pack_identity.pack_id,
+            binding.pack_identity.version
+        )
+        
+        if namespace not in pack_metadata.extension_namespaces:
+            raise UnknownExtensionNamespaceError(
+                namespace,
+                pack_metadata.extension_namespaces
+            )
 ```
 
 ### 7. 与 Canon Kernel 的接口复用

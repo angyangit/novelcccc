@@ -70,6 +70,11 @@
     "sha256": "52b0029d661d2a5ac2a44280d8a4064008ec627e8e9867f5570b335ea36dac97"
   },
   {
+    "path": "V2-013_IMPLEMENTATION_READINESS.md",
+    "bytes": 23190,
+    "sha256": "b7d22a04c2388a2f72c61b4b019d84e9941f36de616693b7a2bb9dbcc1af876d"
+  },
+  {
     "path": "archive/README.md",
     "bytes": 839,
     "sha256": "fdf988fb3e9f1911416f745b2dd75c08ea8a073a95e5b707bf84e450a44ef5ff"
@@ -1368,6 +1373,11 @@
     "path": "decisions/ADR-006_ROOT_COMMIT_TRANSACTION_RECEIPT_CLOSURE.md",
     "bytes": 21871,
     "sha256": "56a889426524eabefee93ccd36848cea4d19dd4b5cd50dd4b5354a3bf73d435e"
+  },
+  {
+    "path": "decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md",
+    "bytes": 25601,
+    "sha256": "cd8d43813c31fa241828de9748759a0a53c5a62dc5efdf4186f1ec7d27f09ed9"
   },
   {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",

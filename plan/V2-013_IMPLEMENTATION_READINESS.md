@@ -382,34 +382,31 @@ class ProjectGenreBindingService:
             GenrePackHashMismatchError: Hash verification failed (content tampered)
             ValueError: Project already has a binding
         """
-        # Verify Pack exists
+        # Verify Pack exists and get metadata
         metadata = self._registry.get_pack(
             pack_identity.pack_id,
             pack_identity.version
         )
         
-        # Load Pack YAML and recompute hash (mandatory verification)
-        pack_path = self._registry_path.parent / metadata.pack_file_path
-        with open(pack_path, "r", encoding="utf-8") as f:
-            pack_content = yaml.safe_load(f)
-        
-        # Extract hashable content (exclude content_hash to avoid self-reference)
-        hashable_content = {
-            "pack_id": pack_content["pack_id"],
-            "version": pack_content["version"],
-            "extension_schemas": pack_content.get("extension_schemas", []),
-            "transition_rules": pack_content.get("transition_rules", []),
-            "world_mechanics": pack_content.get("world_mechanics", {}),
-            "quality_rubric": pack_content.get("quality_rubric", {})
-        }
-        computed_hash = canonical_hash(hashable_content)
-        
-        # Verify hash matches
-        if computed_hash != pack_identity.content_hash:
+        # Verify hash by recomputing (delegates to registry's verified method)
+        if not self._registry.verify_pack_hash(pack_identity):
+            # Get actual hash for error message
+            pack_path = Path("specs/genres") / metadata.pack_file_path
+            with open(pack_path, "r", encoding="utf-8") as f:
+                pack_content = yaml.safe_load(f)
+            hashable_content = {
+                "pack_id": pack_content["pack_id"],
+                "version": pack_content["version"],
+                "extension_schemas": pack_content.get("extension_schemas", []),
+                "transition_rules": pack_content.get("transition_rules", []),
+                "world_mechanics": pack_content.get("world_mechanics", {}),
+                "quality_rubric": pack_content.get("quality_rubric", {})
+            }
+            actual_hash = canonical_hash(hashable_content)
             raise GenrePackHashMismatchError(
                 pack_identity.pack_id,
                 pack_identity.content_hash,
-                computed_hash
+                actual_hash
             )
         
         # Check for existing binding
@@ -463,19 +460,17 @@ class ProjectGenreBindingService:
         self,
         project_id: str,
         namespace: str
-    ) -> bool:
+    ) -> None:
         """
-        Check if namespace is declared in project's bound Pack.
+        Validate that namespace is declared in project's bound Pack.
         
         Args:
             project_id: Project identifier
             namespace: Extension namespace to validate
         
-        Returns:
-            True if namespace is declared in Pack, False otherwise
-        
         Raises:
             ProjectGenreBindingNotFoundError: Project has no binding
+            UnknownExtensionNamespaceError: Namespace not declared in Pack
         """
         binding = self.get_binding(project_id)
         pack_metadata = self._registry.get_pack(
@@ -483,7 +478,11 @@ class ProjectGenreBindingService:
             binding.pack_identity.version
         )
         
-        return namespace in pack_metadata.extension_namespaces
+        if namespace not in pack_metadata.extension_namespaces:
+            raise UnknownExtensionNamespaceError(
+                namespace,
+                pack_metadata.extension_namespaces
+            )
 ```
 
 ## Test Matrix (AT-V2-013)

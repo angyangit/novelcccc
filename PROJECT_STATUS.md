@@ -19,19 +19,21 @@ If this document ever conflicts with `plan/machine/*`, the machine SSOT wins.
 
 ## Canonical Repository
 
-**Repository**: `https://gitlab.com/angyang582821422/novelcccc.git`  
+**Repository**: `https://github.com/angyangit/novelcccc.git`  
 **Branch**: `main`
-
-Historical GitHub repository (`https://github.com/AY123/AiNoverCC.git`) is preserved for reference only.
 
 Resolve current HEAD live:
 
 ```bash
-git fetch gitlab --prune
-git rev-parse gitlab/main
+git fetch origin --prune
+git rev-parse origin/main
 ```
 
 Do not treat a SHA written in this document as current authority.
+
+---
+
+**Historical Note**: Earlier work used different repositories. These are preserved for reference only.
 
 ---
 

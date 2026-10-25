@@ -1,7 +1,7 @@
 {
   "scope": "planning validator self-test only",
-  "generated_at_utc": "2026-10-19T04:44:24.325057+00:00",
-  "manifest_sha256": "a89d927a25a8563a86a440bd49419ad56cd6861e296fb9212999591394077dd4",
+  "generated_at_utc": "2026-10-25T05:43:34.983415+00:00",
+  "manifest_sha256": "e871fcce6e5593947607f6dc3da9450be935df729cd290e0b4040ca15e29b0f3",
   "status": "PASS",
   "cases": [
     {
@@ -46,7 +46,8 @@
       "evidence": [
         "TASK_START V2-006: dependency V2-005 not verified",
         "TASK_START V2-061: dependency V2-005 not verified",
-        "TASK_START V2-007: dependency V2-005 not verified"
+        "TASK_START V2-007: dependency V2-005 not verified",
+        "PHASE_VERIFIED P1: tasks must be CLOSED"
       ]
     },
     {
@@ -128,8 +129,8 @@
       "expected": "REJECT",
       "actual": "REJECT",
       "evidence": [
-        "PHASE_VERIFIED P1: missing evidence",
-        "PHASE_VERIFIED P1: tasks must be CLOSED"
+        "PHASE_VERIFIED P3: missing evidence",
+        "PHASE_VERIFIED P3: tasks must be CLOSED"
       ]
     },
     {

@@ -1,0 +1,24 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: CI-GH-40104699607-POSTGRES-ENV
+evidence_type: CI_RUN
+subject_id: P2
+revision: 65e2fc0e9f44e16653650a4866095f57328cdc7c
+status: PASS
+producer: GitHub Actions Run 40104699607 Job 120903858533
+executed_at: '2026-10-24T14:48:00Z'
+environment_fingerprint: 'Python 3.12.14, PostgreSQL 17.11, pytest, ubuntu-22.04, GitHub Actions'
+artifacts:
+- ref: validation/closure/G-P2-65e2fc0/ci/artifacts/github-job-POSTGRES_ENV.txt
+  sha256: 1a86a2d2a4c79ccf34ae3da9991068843a36a6dd8ea2ae9ca7fa24722e9157d2
+input_evidence_refs: []
+check_ids:
+- POSTGRES_ENV
+- CANON_CAS_IDEMPOTENCY
+command: |
+  python scripts/check_postgres.py
+  pytest tests/integration/canon/ -v --tb=short
+exit_code: 0
+pipeline_id: '40104699607'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40104699607
+job_id: '120903858533'

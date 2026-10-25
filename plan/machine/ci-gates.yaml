@@ -68,8 +68,9 @@ gates:
   - CAS
   - same/different payload dedupe
   - rebuild
-  status: NOT_IMPLEMENTED
-  evidence_refs: []
+  status: VERIFIED
+  evidence_refs:
+  - validation/closure/G-P2-65e2fc0/ci/ci-postgres-env.yaml
 - id: DETERMINISTIC_E2E
   activation_phase: P7
   mode: every_change

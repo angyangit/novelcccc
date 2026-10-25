@@ -1,0 +1,24 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: CI-GH-40104699607-STATIC
+evidence_type: CI_RUN
+subject_id: P2
+revision: 65e2fc0e9f44e16653650a4866095f57328cdc7c
+status: PASS
+producer: GitHub Actions Run 40104699607 Job 120903858561
+executed_at: '2026-10-24T14:48:00Z'
+environment_fingerprint: 'Python 3.12.14, Ruff 0.16.9, mypy, ubuntu-22.04, GitHub Actions'
+artifacts:
+- ref: validation/closure/G-P2-65e2fc0/ci/artifacts/github-job-STATIC.txt
+  sha256: e0aca06f7a66ad2d10ca10bc3fb6df5c2f8fdadfe99167a88cb6cbd68553023b
+input_evidence_refs: []
+check_ids:
+- STATIC
+command: |
+  uv run ruff format --check plan/scripts/ src/
+  uv run ruff check plan/scripts/ src/
+  uv run mypy plan/scripts/ src/ --ignore-missing-imports --no-strict-optional
+exit_code: 0
+pipeline_id: '40104699607'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40104699607
+job_id: '120903858561'

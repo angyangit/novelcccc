@@ -9,7 +9,7 @@ producer: ANovelOS Owner-authorized G-P1 Stage B closure
 executed_at: '2026-10-20T04:14:33.598Z'
 environment_fingerprint: GitHub Actions ubuntu-latest; Python 3.12.14; uv 0.12.17; candidate b29179f975588641da816da8059b70af7f5db976
 artifacts:
-- ref: machine/phase-gates.yaml
+- ref: validation/closure/G-P1-b29179f/snapshots/phase-gates-0624216.yaml
   sha256: 537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f
 input_evidence_refs:
 - docs/reports/V2-005_FINAL_CLOSURE_REPORT.md

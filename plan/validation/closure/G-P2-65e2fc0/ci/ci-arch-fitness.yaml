@@ -1,0 +1,22 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: CI-GH-40104699607-ARCH-FITNESS
+evidence_type: CI_RUN
+subject_id: P2
+revision: 65e2fc0e9f44e16653650a4866095f57328cdc7c
+status: PASS
+producer: GitHub Actions Run 40104699607 Job 120903858401
+executed_at: '2026-10-24T14:48:00Z'
+environment_fingerprint: 'Python 3.12.14, pytest, ubuntu-22.04, GitHub Actions'
+artifacts:
+- ref: validation/closure/G-P2-65e2fc0/ci/artifacts/github-job-ARCH_FITNESS.txt
+  sha256: 98a9782fe91ee1341b0a197ca53c91b763148534a8228a4f561280133aead3fa
+input_evidence_refs: []
+check_ids:
+- ARCH_FITNESS
+command: |
+  uv run pytest tests/architecture/ -v --tb=short
+exit_code: 0
+pipeline_id: '40104699607'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40104699607
+job_id: '120903858401'

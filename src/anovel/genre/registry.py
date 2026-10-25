@@ -133,6 +133,32 @@ class GenrePackRegistry:
         self._index = index
 
     @classmethod
+    def default_registry(cls) -> GenrePackRegistry:
+        """
+        Load default registry from specs/genres/registry.yaml.
+
+        This is the standard way to load the registry in production use.
+        Automatically resolves to project root specs/genres/registry.yaml.
+
+        Returns:
+            Loaded GenrePackRegistry instance
+
+        Raises:
+            FileNotFoundError: If default registry file does not exist
+
+        Example:
+            >>> registry = GenrePackRegistry.default_registry()
+            >>> metadata = registry.get_pack("urban.business.realistic", "1.0.0", expected_hash)
+        """
+        # Resolve to project root specs/genres/registry.yaml
+        # Assumes we're in src/anovel/genre/ and need to go up to project root
+        current_file = Path(__file__)
+        project_root = current_file.parent.parent.parent.parent
+        registry_path = project_root / "specs" / "genres" / "registry.yaml"
+        specs_root = project_root / "specs"
+        return cls.load_from_file(registry_path, specs_root)
+
+    @classmethod
     def load_from_file(
         cls, registry_path: str | Path, specs_root: str | Path | None = None
     ) -> GenrePackRegistry:
@@ -177,8 +203,8 @@ class GenrePackRegistry:
             metadata = GenrePackMetadata(
                 identity=identity,
                 pack_file_path=pack_entry["pack_file_path"],
-                extension_namespaces=pack_entry.get("extension_namespaces", []),
-                world_anchors=pack_entry.get("world_anchors", []),
+                extension_namespaces=tuple(pack_entry.get("extension_namespaces", [])),
+                world_anchors=tuple(pack_entry.get("world_anchors", [])),
             )
 
             key = (identity.pack_id, identity.version)
@@ -247,6 +273,37 @@ class GenrePackRegistry:
         with open(pack_file_path, encoding="utf-8") as f:
             pack_content = yaml.safe_load(f)
 
+        # Validate Pack file structure
+        # Check for unknown top-level fields
+        KNOWN_PACK_FIELDS = {
+            "pack_id",
+            "version",
+            "content_hash",
+            "extension_schemas",
+            "transition_rules",
+            "world_mechanics",
+            "quality_rubric",
+        }
+        unknown_fields = set(pack_content.keys()) - KNOWN_PACK_FIELDS
+        if unknown_fields:
+            raise ValueError(
+                f"Pack {pack_identity.pack_id} contains unknown top-level fields: {unknown_fields}"
+            )
+
+        # Validate content_hash field exists in Pack file
+        if "content_hash" not in pack_content:
+            raise ValueError(
+                f"Pack {pack_identity.pack_id} missing required 'content_hash' field"
+            )
+
+        # Verify Pack file's declared content_hash matches registry
+        pack_declared_hash = pack_content["content_hash"]
+        if pack_declared_hash != registry_hash:
+            raise ValueError(
+                f"Pack {pack_identity.pack_id} declares content_hash {pack_declared_hash[:8]}..., "
+                f"but registry declares {registry_hash[:8]}..."
+            )
+
         # Extract hashable content (exclude content_hash field)
         hashable_content = {
             "pack_id": pack_content["pack_id"],
@@ -281,7 +338,58 @@ class GenrePackRegistry:
                 f"declared {declared_namespaces}, schemas define {schema_namespaces}"
             )
 
+        # Step 5: World anchors validation (P3 requirement)
+        # Per ADR-007, world_anchors must match pack_id for P3 frozen Anchors
+        if registry_metadata.world_anchors:
+            if len(registry_metadata.world_anchors) != 1:
+                raise ValueError(
+                    f"Pack {pack_identity.pack_id} must have exactly one world_anchor in P3, "
+                    f"got {len(registry_metadata.world_anchors)}"
+                )
+            if registry_metadata.world_anchors[0] != pack_identity.pack_id:
+                raise ValueError(
+                    f"Pack {pack_identity.pack_id} world_anchor must match pack_id, "
+                    f"got '{registry_metadata.world_anchors[0]}'"
+                )
+
         return registry_metadata
+
+    def get_pack_by_id(
+        self, pack_id: str, version: str, expected_hash: str
+    ) -> GenrePackMetadata:
+        """
+        Get Pack metadata by ID with hash verification (simplified interface).
+
+        Convenience method that constructs GenrePackIdentity internally.
+        Preferred for most use cases per ADR-007.
+
+        Args:
+            pack_id: Pack ID (e.g., "urban.business.realistic")
+            version: Semantic version (e.g., "1.0.0")
+            expected_hash: Expected content hash (64 hex chars)
+
+        Returns:
+            GenrePackMetadata with validated identity
+
+        Raises:
+            InvalidPackIdError: If pack_id format is invalid
+            InvalidVersionError: If version format is invalid
+            InvalidContentHashError: If expected_hash format is invalid
+            UnknownPackError: If pack_id not in registry
+            UnknownVersionError: If version not found for pack_id
+            GenrePackHashMismatchError: If expected_hash != registry hash
+            RegistryPackFileMismatchError: If file hash != registry hash
+
+        Example:
+            >>> registry = GenrePackRegistry.default_registry()
+            >>> metadata = registry.get_pack_by_id(
+            ...     "urban.business.realistic",
+            ...     "1.0.0",
+            ...     "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336"
+            ... )
+        """
+        identity = GenrePackIdentity(pack_id, version, expected_hash)
+        return self.get_pack(identity)
 
     def list_packs(self) -> list[GenrePackMetadata]:
         """List all registered Packs."""

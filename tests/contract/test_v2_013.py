@@ -320,3 +320,72 @@ class TestPackIdentityPreservation:
         # Pack identity must remain unchanged
         retrieved_binding = binding_service.get_binding(project_id)
         assert retrieved_binding.pack_identity == urban_pack_identity
+
+
+# --- Enhanced validation tests ---
+
+
+class TestDefaultRegistryAndSimplifiedInterface:
+    """Test default registry loading and simplified get_pack_by_id interface."""
+
+    def test_default_registry_loads_successfully(self):
+        """Positive: default_registry() loads from specs/genres/registry.yaml."""
+        registry = GenrePackRegistry.default_registry()
+        assert registry is not None
+        assert len(registry.list_packs()) == 2
+
+    def test_get_pack_by_id_simplified_interface(self):
+        """Positive: get_pack_by_id() provides simplified interface."""
+        registry = GenrePackRegistry.default_registry()
+        metadata = registry.get_pack_by_id(
+            "urban.business.realistic",
+            "1.0.0",
+            "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336",
+        )
+        assert metadata.identity.pack_id == "urban.business.realistic"
+
+    def test_get_pack_by_id_with_wrong_hash_rejected(self):
+        """Negative: get_pack_by_id() rejects wrong hash."""
+        registry = GenrePackRegistry.default_registry()
+        with pytest.raises(GenrePackHashMismatchError):
+            registry.get_pack_by_id("urban.business.realistic", "1.0.0", "0" * 64)
+
+
+class TestPackFileValidation:
+    """Test Pack file content_hash and unknown fields validation."""
+
+    def test_pack_file_declares_content_hash(self, registry, urban_pack_identity):
+        """Positive: Pack files declare content_hash field."""
+        # This test verifies content_hash exists by successfully loading
+        metadata = registry.get_pack(urban_pack_identity)
+        assert metadata.identity.content_hash == urban_pack_identity.content_hash
+
+    def test_metadata_fields_immutable(self, registry, urban_pack_identity):
+        """Positive: Metadata extension_namespaces and world_anchors are tuples."""
+        metadata = registry.get_pack(urban_pack_identity)
+        assert isinstance(metadata.extension_namespaces, tuple)
+        assert isinstance(metadata.world_anchors, tuple)
+
+        # Verify they cannot be modified (tuples are immutable)
+        with pytest.raises(AttributeError):
+            metadata.extension_namespaces.append("new_namespace")
+
+
+class TestWorldAnchorValidation:
+    """Test world_anchor consistency validation per ADR-007 P3."""
+
+    def test_world_anchor_matches_pack_id(self, registry, urban_pack_identity):
+        """Positive: world_anchor matches pack_id for P3 Anchors."""
+        metadata = registry.get_pack(urban_pack_identity)
+        assert len(metadata.world_anchors) == 1
+        assert metadata.world_anchors[0] == urban_pack_identity.pack_id
+
+    def test_both_packs_have_matching_world_anchors(
+        self, registry, urban_pack_identity, fantasy_pack_identity
+    ):
+        """Positive: Both frozen Anchors have matching world_anchors."""
+        urban = registry.get_pack(urban_pack_identity)
+        fantasy = registry.get_pack(fantasy_pack_identity)
+
+        assert urban.world_anchors[0] == "urban.business.realistic"
+        assert fantasy.world_anchors[0] == "fantasy.eastern.progression"

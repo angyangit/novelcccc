@@ -120,22 +120,22 @@ class GenrePackMetadata:
     Attributes:
         identity: Pack identity triple
         pack_file_path: Relative path to Pack YAML file (e.g., "genres/urban_business_realistic_v1.yaml")
-        extension_namespaces: List of extension namespaces provided by this Pack
-        world_anchors: List of world anchors (P3: matches pack_id)
+        extension_namespaces: Tuple of extension namespaces provided by this Pack
+        world_anchors: Tuple of world anchors (P3: matches pack_id)
 
     Example:
         >>> metadata = GenrePackMetadata(
         ...     identity=GenrePackIdentity("urban.business.realistic", "1.0.0", "a" * 64),
         ...     pack_file_path="genres/urban_business_realistic_v1.yaml",
-        ...     extension_namespaces=["urban", "business"],
-        ...     world_anchors=["urban.business.realistic"]
+        ...     extension_namespaces=("urban", "business"),
+        ...     world_anchors=("urban.business.realistic",)
         ... )
     """
 
     identity: GenrePackIdentity
     pack_file_path: str
-    extension_namespaces: list[str]
-    world_anchors: list[str]
+    extension_namespaces: tuple[str, ...]
+    world_anchors: tuple[str, ...]
 
 
 @dataclass(frozen=True)

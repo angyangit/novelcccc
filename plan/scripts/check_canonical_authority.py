@@ -24,11 +24,18 @@ CORRECT_CANONICAL = "https://github.com/angyangit/novelcccc.git"
 
 # Incorrect patterns that should NOT appear in active entry points
 FORBIDDEN_PATTERNS = [
-    ("GitLab as the sole canonical", "Must not declare GitLab as sole canonical platform"),
+    (
+        "GitLab as the sole canonical",
+        "Must not declare GitLab as sole canonical platform",
+    ),
     ("git fetch gitlab --prune", "Must not instruct fetching from gitlab remote"),
     ("git rev-parse gitlab/main", "Must not reference gitlab/main as canonical HEAD"),
-    ("https://gitlab.com/angyang582821422/novelcccc.git", "GitLab URL must not be declared as canonical repository"),
+    (
+        "https://gitlab.com/angyang582821422/novelcccc.git",
+        "GitLab URL must not be declared as canonical repository",
+    ),
 ]
+
 
 def check_file(file_path: Path) -> list[str]:
     """Check a single file for canonical authority correctness."""
@@ -50,12 +57,15 @@ def check_file(file_path: Path) -> list[str]:
                 )
 
     # Check for forbidden patterns (only in canonical declaration sections)
-    lines = content.split('\n')
+    lines = content.split("\n")
     in_canonical_section = False
 
     for i, line in enumerate(lines):
         # Track if we're in a canonical repository section
-        if "canonical repository" in line.lower() or "## canonical repository" in line.lower():
+        if (
+            "canonical repository" in line.lower()
+            or "## canonical repository" in line.lower()
+        ):
             in_canonical_section = True
         elif line.startswith("##") and in_canonical_section:
             in_canonical_section = False
@@ -65,10 +75,11 @@ def check_file(file_path: Path) -> list[str]:
             for pattern, reason in FORBIDDEN_PATTERNS:
                 if pattern in line:
                     errors.append(
-                        f"FORBIDDEN_PATTERN: {file_path}:{i+1} contains '{pattern}' - {reason}"
+                        f"FORBIDDEN_PATTERN: {file_path}:{i + 1} contains '{pattern}' - {reason}"
                     )
 
     return errors
+
 
 def main():
     """Run canonical authority regression check."""
@@ -106,8 +117,9 @@ def main():
         print()
         print(f"Verified: {len(ACTIVE_ENTRY_POINTS)} entry points correctly declare")
         print(f"          {CORRECT_CANONICAL}")
-        print(f"          as canonical repository")
+        print("          as canonical repository")
         return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

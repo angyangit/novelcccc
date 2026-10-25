@@ -93,27 +93,51 @@ def test_p0_gates_cannot_allow_failure():
 
 
 def test_future_gates_not_falsely_activated():
-    """Future gates (P2+) must remain NOT_IMPLEMENTED."""
+    """Gates in unverified phases must remain NOT_IMPLEMENTED."""
+    # Load phase status to determine which phases are verified
+    phase_gates_path = ROOT / 'plan/machine/phase-gates.yaml'
+    with phase_gates_path.open() as f:
+        phase_data = yaml.safe_load(f)
+
+    verified_phases = {
+        phase['id'] for phase in phase_data['phases']
+        if phase['status'] == 'VERIFIED'
+    }
+
+    # Load CI gates
     gates_path = ROOT / 'plan/machine/ci-gates.yaml'
     with gates_path.open() as f:
-        data = yaml.safe_load(f)
+        gate_data = yaml.safe_load(f)
 
-    future_gates = {
+    gate_registry = {
         'CANON_CAS_IDEMPOTENCY': 'P2',
         'DETERMINISTIC_E2E': 'P7',
         'GENRE_SMOKE': 'P8',
         'LIVE_PROVIDER': 'P5'
     }
 
-    found_gates = {gate['id']: gate for gate in data['gates']}
+    found_gates = {gate['id']: gate for gate in gate_data['gates']}
 
-    for gate_id, expected_phase in future_gates.items():
-        if gate_id in found_gates:
-            gate = found_gates[gate_id]
-            assert gate['activation_phase'] == expected_phase, \
-                f"{gate_id} must remain in phase {expected_phase}"
+    for gate_id, activation_phase in gate_registry.items():
+        if gate_id not in found_gates:
+            continue
+
+        gate = found_gates[gate_id]
+
+        # Verify phase assignment unchanged
+        assert gate['activation_phase'] == activation_phase, \
+            f"{gate_id} activation_phase changed from {activation_phase}"
+
+        # Phase-aware status validation
+        if activation_phase in verified_phases:
+            # Verified phase: if VERIFIED, must have evidence
+            if gate['status'] == 'VERIFIED':
+                assert gate.get('evidence_refs'), \
+                    f"{gate_id} in verified phase {activation_phase} has status=VERIFIED but no evidence"
+        else:
+            # Future phase: must remain NOT_IMPLEMENTED
             assert gate['status'] == 'NOT_IMPLEMENTED', \
-                f"Future gate {gate_id} must remain NOT_IMPLEMENTED"
+                f"Gate {gate_id} in unverified phase {activation_phase} must remain NOT_IMPLEMENTED"
 
 
 def test_ci_gates_not_reduced_from_baseline():
@@ -647,3 +671,21 @@ def test_gitignore_includes_dist():
         content = f.read()
 
     assert 'dist/' in content, "dist/ must be in .gitignore"
+
+
+def test_verified_gates_have_evidence():
+    """Gates with status=VERIFIED must have non-empty evidence_refs."""
+    gates_path = ROOT / 'plan/machine/ci-gates.yaml'
+    with gates_path.open() as f:
+        data = yaml.safe_load(f)
+
+    for gate in data['gates']:
+        if gate['status'] == 'VERIFIED':
+            assert gate.get('evidence_refs'), \
+                f"Gate {gate['id']} has status=VERIFIED but no evidence_refs"
+
+            # Verify referenced evidence files exist
+            for ref in gate['evidence_refs']:
+                evidence_path = ROOT / 'plan' / ref
+                assert evidence_path.exists(), \
+                    f"Gate {gate['id']} references non-existent evidence: {ref}"

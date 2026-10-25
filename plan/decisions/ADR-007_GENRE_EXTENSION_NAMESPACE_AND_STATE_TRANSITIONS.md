@@ -1,6 +1,6 @@
 # ADR-007: Genre 扩展命名空间与状态转移
 
-**Status**: PROPOSED  
+**Status**: ACCEPTED  
 **Decision Due**: V2-013  
 **Owner**: genre-maintainer  
 **Related Tasks**: V2-013, V2-014, V2-015, V2-016
@@ -134,9 +134,25 @@ if unknown_fields:
 - ✅ **quality_rubric**: 定义质量评估标准
 
 **非哈希字段的验证**:
-- `extension_namespaces`: 从 Pack YAML 独立声明中加载，验证与 extension_schemas 一致
-- `world_anchors`: 从 Pack YAML 独立声明中加载，验证与项目绑定要求匹配
-- 这些字段通过 Schema 一致性检查验证，不直接参与 content_hash 计算
+- `extension_namespaces`: 从 Pack YAML 独立声明中加载，**必须与 extension_schemas 严格一致**
+  - 验证：extension_namespaces 中的每个 namespace 必须在 extension_schemas 中有对应定义
+  - 验证：extension_schemas 中定义的 namespace 必须在 extension_namespaces 中声明
+  - 不一致 → 加载失败
+- `world_anchors`: 从 Pack YAML 独立声明中加载，**与 pack_id 严格对应**
+  - P3 首期：两个固定 Anchor 与两个 Pack ID 一对一映射
+  - `urban.business.realistic` (pack_id) ↔ `urban.business.realistic` (world_anchor)
+  - `fantasy.eastern.progression` (pack_id) ↔ `fantasy.eastern.progression` (world_anchor)
+  - 不一致 → 加载失败
+- 这些字段不直接参与 content_hash 计算，但通过 Schema 一致性检查强制验证
+
+**关键不变量**:
+> 任何能够改变 Pack 有效世界机制、扩展权限或题材行为的配置，都不能绕过已冻结的 content_hash 身份。
+
+**首期约束** (P3):
+- extension_namespaces 由 extension_schemas 确定性导出
+- world_anchors 与 Pack ID 严格对应
+- Registry 不得独立改变世界机制
+- 未来如需独立配置，必须纳入规范化哈希或等价确定性绑定
 
 **哈希算法**:
 - 使用 `anovel.canon.hash.canonical_hash()` (ADR-005)

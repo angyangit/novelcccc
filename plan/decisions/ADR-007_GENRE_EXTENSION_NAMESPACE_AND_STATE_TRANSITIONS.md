@@ -72,28 +72,82 @@ quality_rubric: {...}
 - 文件元数据（修改时间、作者等）
 - 外部文件路径（仅保留被引用内容的 hash）
 
-**完整性保证**:
-- **哈希覆盖所有行为影响字段**: `extension_schemas`, `transition_rules`, `world_mechanics`, `quality_rubric`
-- **未知字段处理**: Pack YAML 中出现未列入 hashable_content 的字段时
-  - 如果是规范允许的扩展字段 → 需明确是否纳入 hash
-  - 如果是任意未定义字段 → 当前设计排除（只哈希已知字段）
-  - **建议**: V2-013 实现时验证 Pack Schema，拒绝未知顶层字段
-- **篡改检测**: 任何 hashable_content 中的字段被修改 → hash 不匹配 → 加载失败
-- **不存在哈希盲区**: 所有影响 Genre 行为的规范字段都在 hashable_content 中
+**完整性保证 (Fail-Closed)**:
 
-**Schema 验证建议** (V2-013 或后续):
+**三方一致性验证**:
+1. **Registry 声明**: `(pack_id, version, content_hash)` 在 `specs/genres/registry.yaml`
+2. **Pack 文件内容**: `specs/genres/{pack_file_path}` 的实际规范化内容
+3. **调用方请求**: 项目绑定时提供的 `GenrePackIdentity`
+
+**验证流程**:
 ```python
-# 验证 Pack YAML 只包含已知字段
+# Step 1: Registry 查询
+registry_metadata = registry.get_pack(pack_id, version)
+registry_hash = registry_metadata.identity.content_hash
+
+# Step 2: Pack 文件加载与哈希计算
+pack_content = load_yaml(registry_metadata.pack_file_path)
+hashable_content = {
+    "pack_id": pack_content["pack_id"],
+    "version": pack_content["version"],
+    "extension_schemas": pack_content.get("extension_schemas", []),
+    "transition_rules": pack_content.get("transition_rules", []),
+    "world_mechanics": pack_content.get("world_mechanics", {}),
+    "quality_rubric": pack_content.get("quality_rubric", {})
+}
+file_hash = canonical_hash(hashable_content)
+
+# Step 3: 调用方提供的 hash
+caller_hash = pack_identity.content_hash
+
+# Step 4: 三方一致性检查
+if registry_hash != file_hash:
+    raise RegistryPackFileMismatchError(
+        f"Registry declares {registry_hash[:8]}..., "
+        f"but Pack file computes to {file_hash[:8]}..."
+    )
+if caller_hash != registry_hash:
+    raise GenrePackHashMismatchError(
+        f"Caller expects {caller_hash[:8]}..., "
+        f"but registry declares {registry_hash[:8]}..."
+    )
+# 只有三者完全一致才允许绑定
+```
+
+**未知字段处理 (强制拒绝)**:
+```python
+# Pack YAML 只能包含已知字段
 KNOWN_PACK_FIELDS = {
     "pack_id", "version", "content_hash",
     "extension_schemas", "transition_rules",
-    "world_mechanics", "quality_rubric",
-    "extension_namespaces", "world_anchors"
+    "world_mechanics", "quality_rubric"
 }
 unknown_fields = set(pack_content.keys()) - KNOWN_PACK_FIELDS
 if unknown_fields:
-    raise ValueError(f"Pack contains unknown fields: {unknown_fields}")
+    raise ValueError(f"Pack contains unknown top-level fields: {unknown_fields}")
 ```
+
+**关键字段哈希覆盖**:
+- ✅ **extension_schemas**: 定义扩展状态字段和类型
+- ✅ **transition_rules**: 定义状态转移前置条件和代价
+- ✅ **world_mechanics**: 定义世界规则和约束
+- ✅ **quality_rubric**: 定义质量评估标准
+
+**非哈希字段的验证**:
+- `extension_namespaces`: 从 Pack YAML 独立声明中加载，验证与 extension_schemas 一致
+- `world_anchors`: 从 Pack YAML 独立声明中加载，验证与项目绑定要求匹配
+- 这些字段通过 Schema 一致性检查验证，不直接参与 content_hash 计算
+
+**哈希算法**:
+- 使用 `anovel.canon.hash.canonical_hash()` (ADR-005)
+- 不引入第二套哈希算法
+- NFC 规范化、确定性 JSON 序列化、SHA-256
+
+**失败语义**:
+- Registry vs. File 不一致 → 拒绝加载 Registry (配置错误)
+- Caller vs. Registry 不一致 → 拒绝绑定 (版本不匹配或篡改)
+- 未知字段存在 → 拒绝加载 Pack (Schema 违规)
+- 缺少必需字段 → 拒绝加载 Pack (不完整)
 
 **哈希计算过程**:
 ```python
@@ -390,38 +444,23 @@ def bind_pack(
     
     Steps:
     1. Verify Pack exists in registry
-    2. Load Pack YAML from disk
-    3. Recompute content hash using canonical_hash()
-    4. Compare computed hash with pack_identity.content_hash
-    5. If mismatch → raise GenrePackHashMismatchError
-    6. If match → create frozen ProjectGenreBinding
-    7. Record binding (V2-013: in-memory)
+    2. Verify hash by recomputing from Pack file (delegates to registry)
+    3. If mismatch → raise GenrePackHashMismatchError
+    4. If match → create frozen ProjectGenreBinding
+    5. Record binding (V2-013: in-memory)
     """
-    # Step 1-2: Load Pack and verify existence
+    # Step 1: Verify Pack exists
     metadata = self._registry.get_pack(pack_identity.pack_id, pack_identity.version)
-    pack_path = self._registry_path.parent / metadata.pack_file_path
-    with open(pack_path, "r", encoding="utf-8") as f:
-        pack_content = yaml.safe_load(f)
     
-    # Step 3-4: Recompute hash and verify (mandatory)
-    hashable_content = {
-        "pack_id": pack_content["pack_id"],
-        "version": pack_content["version"],
-        "extension_schemas": pack_content.get("extension_schemas", []),
-        "transition_rules": pack_content.get("transition_rules", []),
-        "world_mechanics": pack_content.get("world_mechanics", {}),
-        "quality_rubric": pack_content.get("quality_rubric", {})
-    }
-    computed_hash = canonical_hash(hashable_content)
-    
-    if computed_hash != pack_identity.content_hash:
+    # Step 2-3: Verify hash (delegates to registry's verified implementation)
+    if not self._registry.verify_pack_hash(pack_identity):
         raise GenrePackHashMismatchError(
             pack_identity.pack_id,
             pack_identity.content_hash,
-            computed_hash
+            "<actual_hash_from_registry>"
         )
     
-    # Step 5-6: Create frozen binding with traceable record
+    # Step 4: Create frozen binding
     bound_at = datetime.utcnow()
     binding_data = {
         "project_id": project_id,
@@ -439,7 +478,7 @@ def bind_pack(
         binding_hash=binding_hash
     )
     
-    # Step 7: Persist binding (V2-013: in-memory; future: Canon commit)
+    # Step 5: Persist binding (V2-013: in-memory)
     self._bindings[project_id] = binding
     return binding
 ```

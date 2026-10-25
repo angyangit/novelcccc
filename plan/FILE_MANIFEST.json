@@ -1376,8 +1376,8 @@
   },
   {
     "path": "decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md",
-    "bytes": 25601,
-    "sha256": "cd8d43813c31fa241828de9748759a0a53c5a62dc5efdf4186f1ec7d27f09ed9"
+    "bytes": 26721,
+    "sha256": "80d93264d9d1816d63c56a55fc819fdb6d71843b65893589e5e1f89c82171db8"
   },
   {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",

@@ -177,7 +177,7 @@ handoff:
     - ref: validation/execution/V2-013/test-scenario-mapping.md
       sha256: c3d47149d9d0334a9d4cdd178ced906fe2724c4e0a9303e0e34ab115163cc7f6
     - ref: validation/execution/V2-013/prepare-validation-results.yaml
-      sha256: f3dd159dd6691858c38789f315c2d20554bafcdab890f98afdbcba579f06d0dd
+      sha256: 9a5f9d28f59f717fbe0ce2e9d01aba12f50a1a6dcd718d33dc0081d6b2c1e218
     - ref: validation/execution/V2-013/implement-authorization-request.md
       sha256: ca7c19b89bd7b789df7ad87497b3291b20c95e5258d399026fc0a0498a5b1bcd
     missing_artifact_reason: null

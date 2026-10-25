@@ -1,0 +1,102 @@
+record_type: prepare_validation_results
+task_id: V2-013
+action: PREPARE
+validated_at_utc: '2026-10-25T06:41:31Z'
+repository_revision: f74701cd4b8ad262ac2fe67132ae92244afb57e3
+worktree_dirty: true
+validation_status: PASS
+
+validation_checks:
+  plan_validator_self_test:
+    status: PASS
+    cases: 32
+    output_ref: dist/validation/v2-013-prepare/validator-self-test.json
+
+  plan_validation:
+    status: PASS
+    fatal_errors: 0
+    informational_errors: 2
+    manifest_sha256: e57a9e2e848fcc9d76131d8de8c832ad4fc6af38370ed8fc016d33678cc998d9
+    output_ref: dist/validation/v2-013-prepare/plan-validation.json
+    notes:
+    - "V2-005 and V2-006 execution packet absence is informational only"
+    - "No fatal errors blocking PREPARE phase"
+
+  canonical_authority_check:
+    status: PASS
+    entry_points_verified: 3
+    notes:
+    - "AGENTS.md: PASS"
+    - "README.md: PASS"
+    - "PROJECT_STATUS.md: PASS"
+    - "All entry points correctly declare https://github.com/angyangit/novelcccc.git"
+
+prerequisites_verification:
+  g_p2_gate:
+    status: VERIFIED
+    evidence_ref: plan/machine/phase-gates.yaml
+    verification: "P2.status == VERIFIED, exit_criteria met, evidence_refs present"
+
+  adr_007:
+    status: ACCEPTED
+    decision_record: validation/decisions/adr-007-acceptance-acff54b/adr-007-decision.yaml
+    evidence_ref: plan/machine/decision-register.yaml
+    verification: "ADR-007.status == ACCEPTED, decision_record present"
+
+  v2_013_task_status:
+    status: OPEN
+    readiness: PLANNED
+    execution_packet_ref: null
+    evidence_ref: plan/machine/implementation-backlog.yaml
+    verification: "V2-013.status == OPEN, ready for execution packet binding"
+
+  v2_005_dependency:
+    status: CLOSED
+    verification: "V2-005 Identity foundation exists, ProjectId available"
+
+test_catalog_verification:
+  at_v2_013:
+    status: PLANNED
+    scenarios_count: 4
+    scenarios:
+    - AT-V2-013-01: "ID 版本 hash 均被绑定并核验"
+    - AT-V2-013-02: "未知 Pack 与扩展拒绝而非默认 fallback"
+    - AT-V2-013-03: "全局只读目录绑定到项目后仍可追溯"
+    - AT-V2-013-04: "显式 Pack 存在而可选策略无命中时保留原 ID/version/hash"
+    target_path: tests/contract/test_v2_013.py
+    evidence_ref: plan/machine/test-catalog.yaml
+
+execution_packet_verification:
+  packet_path: plan/validation/execution/V2-013/execution-packet.yaml
+  schema_version: '1.0'
+  action: PREPARE
+  inputs_count: 11
+  all_inputs_sha256_verified: true
+  required_decisions: [ADR-007]
+  claims_count: 6
+  fact_claims: 5
+  assumption_claims: 1
+  unknown_claims: 0
+  budget:
+    paid_calls_allowed: false
+    maximum_runtime: 7200
+
+deliverables_created:
+- plan/validation/execution/V2-013/execution-packet.yaml
+- plan/validation/execution/V2-013/test-scenario-mapping.md
+- plan/validation/execution/V2-013/prepare-validation-results.yaml
+- dist/validation/v2-013-prepare/plan-validation.json
+- dist/validation/v2-013-prepare/validator-self-test.json
+
+next_steps:
+- Update plan/machine/implementation-backlog.yaml V2-013.execution_packet_ref
+- Create IMPLEMENT authorization request document
+- Commit PREPARE branch and create GitHub PR
+- Request Owner IMPLEMENT authorization
+
+blocking_issues: []
+
+notes:
+- "V2-013_IMPLEMENTATION_READINESS.md reflects pre-ADR-007-acceptance state"
+- "Current ADR-007 status in decision-register.yaml is authoritative (ACCEPTED)"
+- "PREPARE phase complete, ready for backlog binding and IMPLEMENT authorization request"

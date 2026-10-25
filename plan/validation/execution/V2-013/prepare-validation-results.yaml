@@ -1,0 +1,124 @@
+record_type: prepare_validation_results
+task_id: V2-013
+action: PREPARE
+validated_at_utc: '2026-10-25T07:00:00Z'
+repository_revision: f74701cd4b8ad262ac2fe67132ae92244afb57e3
+worktree_dirty: false
+validation_status: PASS
+
+validation_checks:
+  plan_validator_self_test:
+    status: PASS
+    cases: 32
+    output_ref: dist/validation/v2-013-prepare-final/validator-self-test.json
+
+  plan_validation:
+    status: PASS
+    fatal_errors: 0
+    informational_errors: 2
+    manifest_sha256: f61fde6fe02277ffdc4b40e83db483cec2f6d0d960ada9cbdd8ee71aad273b4a
+    notes:
+    - "V2-005 and V2-006 execution packet absence is informational only"
+    - "No fatal errors after execution packet path fixes"
+
+  canonical_authority_check:
+    status: PASS
+    entry_points_verified: 3
+    notes:
+    - "AGENTS.md: PASS"
+    - "README.md: PASS"
+    - "PROJECT_STATUS.md: PASS"
+    - "All entry points correctly declare https://github.com/angyangit/novelcccc.git"
+
+  static_checks:
+    ruff_format:
+      status: PASS
+      files_checked: 30
+    ruff_lint:
+      status: PASS
+    mypy:
+      status: PASS
+      files_checked: 30
+
+prerequisites_verification:
+  g_p2_gate:
+    status: VERIFIED
+    evidence_ref: machine/phase-gates.yaml
+    verification: "P2.status == VERIFIED, exit_criteria met, evidence_refs present"
+
+  adr_007:
+    status: ACCEPTED
+    decision_record: validation/decisions/adr-007-acceptance-acff54b/adr-007-decision.yaml
+    evidence_ref: machine/decision-register.yaml
+    verification: "ADR-007.status == ACCEPTED, decision_record present"
+
+  v2_013_task_status:
+    status: OPEN
+    readiness: PLANNED
+    execution_packet_ref: validation/execution/V2-013/execution-packet.yaml
+    evidence_ref: machine/implementation-backlog.yaml
+    verification: "V2-013.status == OPEN, execution_packet_ref bound"
+
+  v2_005_dependency:
+    status: CLOSED
+    verification: "V2-005 Identity foundation exists, ProjectId available"
+
+test_catalog_verification:
+  at_v2_013:
+    status: PLANNED
+    scenarios_count: 4
+    scenarios:
+    - AT-V2-013-01: "ID 版本 hash 均被绑定并核验"
+    - AT-V2-013-02: "未知 Pack 与扩展拒绝而非默认 fallback"
+    - AT-V2-013-03: "全局只读目录绑定到项目后仍可追溯"
+    - AT-V2-013-04: "显式 Pack 存在而可选策略无命中时保留原 ID/version/hash"
+    target_path: tests/contract/test_v2_013.py
+    evidence_ref: machine/test-catalog.yaml
+
+execution_packet_verification:
+  packet_path: validation/execution/V2-013/execution-packet.yaml
+  schema_version: '1.0'
+  action: PREPARE
+  inputs_count: 10
+  all_inputs_plan_relative: true
+  required_decisions: [ADR-007]
+  claims_count: 6
+  fact_claims: 4
+  assumption_claims: 2
+  unknown_claims: 0
+  budget:
+    paid_calls_allowed: false
+    maximum_runtime: 7200
+
+fixes_applied:
+- Fixed input paths from absolute (plan/machine/) to plan-relative (machine/)
+- Fixed claims sources from absolute to plan-relative paths
+- Fixed expected_outputs to include plan/ prefix and all task artifacts
+- Added allowed_paths for src/ and specs/ directories
+- Fixed handoff.next_action from IMPLEMENT to PREPARE
+- Updated CLAIM-003 statement to reflect execution packet now bound
+- Changed CLAIM-006 to ASSUMPTION to avoid circular dependency with plan-validation.json
+- Updated plan_manifest_sha256 to current value
+- Added machine/ai-execution-policy.yaml as required input
+
+deliverables_created:
+- validation/execution/V2-013/execution-packet.yaml
+- validation/execution/V2-013/test-scenario-mapping.md
+- validation/execution/V2-013/prepare-validation-results.yaml
+- validation/execution/V2-013/implement-authorization-request.md
+
+next_steps:
+- Commit fixes to prepare/v2-013-genrepack-loader branch
+- Push updated branch to GitHub
+- Verify or create GitHub PR
+- Await GitHub Actions CI results
+- Request Owner IMPLEMENT authorization
+
+blocking_issues: []
+
+notes:
+- "All 35 fatal errors from initial validation have been resolved"
+- "Execution packet now uses correct plan-relative paths throughout"
+- "V2-013_IMPLEMENTATION_READINESS.md reflects pre-ADR-007-acceptance state"
+- "Current ADR-007 status in decision-register.yaml is authoritative (ACCEPTED)"
+- "PREPARE phase validation complete, ready for commit and PR"

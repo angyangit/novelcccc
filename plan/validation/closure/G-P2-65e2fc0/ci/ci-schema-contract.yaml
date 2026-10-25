@@ -6,7 +6,7 @@ subject_id: P2
 revision: 65e2fc0e9f44e16653650a4866095f57328cdc7c
 status: PASS
 producer: GitHub Actions Run 40104699607 Job 120903858662
-executed_at: '2026-10-24T14:48:00Z'
+executed_at: '2026-10-24T14:57:00Z'
 environment_fingerprint: 'Python 3.12.14, pytest, ubuntu-22.04, GitHub Actions'
 artifacts:
 - ref: validation/closure/G-P2-65e2fc0/ci/artifacts/github-job-SCHEMA_CONTRACT.txt
@@ -15,8 +15,9 @@ input_evidence_refs: []
 check_ids:
 - SCHEMA_CONTRACT
 command: |
-  cd plan && uv run python scripts/validate_plan.py --check
-  uv run pytest tests/contract/ -v --tb=short
+  uv run python plan/scripts/validate_plan.py --check --output-dir dist/ci/schema
+  uv run pytest tests/contract/test_plan_governance.py -v --tb=short
+  uv run pytest tests/integration/test_commit_receipt_schema.py -v --tb=short
 exit_code: 0
 pipeline_id: '40104699607'
 pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40104699607

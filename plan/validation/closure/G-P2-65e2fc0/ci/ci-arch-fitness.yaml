@@ -6,7 +6,7 @@ subject_id: P2
 revision: 65e2fc0e9f44e16653650a4866095f57328cdc7c
 status: PASS
 producer: GitHub Actions Run 40104699607 Job 120903858401
-executed_at: '2026-10-24T14:48:00Z'
+executed_at: '2026-10-24T14:57:00Z'
 environment_fingerprint: 'Python 3.12.14, pytest, ubuntu-22.04, GitHub Actions'
 artifacts:
 - ref: validation/closure/G-P2-65e2fc0/ci/artifacts/github-job-ARCH_FITNESS.txt
@@ -15,7 +15,7 @@ input_evidence_refs: []
 check_ids:
 - ARCH_FITNESS
 command: |
-  uv run pytest tests/architecture/ -v --tb=short
+  uv run pytest tests/architecture/test_dependency_boundaries.py tests/architecture/test_change_review.py tests/architecture/test_weakening_checks.py -v --tb=short --junitxml=dist/ci/arch/junit.xml
 exit_code: 0
 pipeline_id: '40104699607'
 pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40104699607

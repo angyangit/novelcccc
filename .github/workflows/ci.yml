@@ -110,6 +110,11 @@ jobs:
           mkdir -p dist/ci/schema
           uv run python plan/scripts/validate_plan.py --check --output-dir dist/ci/schema
 
+      - name: Check canonical authority
+        run: |
+          echo "Canonical authority check..."
+          uv run python plan/scripts/check_canonical_authority.py
+
       - name: Run governance tests
         run: |
           uv run pytest tests/contract/test_plan_governance.py -v --tb=short

@@ -2,28 +2,30 @@
 
 ## CANONICAL REPOSITORY
 
-**CRITICAL**: This project uses GitLab as the sole canonical platform.
+**CRITICAL**: This project uses GitHub as the sole canonical platform.
 
-**Canonical Repository**: `https://gitlab.com/angyang582821422/novelcccc.git`
+**Canonical Repository**: `https://github.com/angyangit/novelcccc.git`
 **Canonical Branch**: `main`
 
-**Historical GitHub repository** (`https://github.com/AY123/AiNoverCC.git`) is preserved for reference only.
-
-AI agents **MUST** use GitLab for current:
+AI agents **MUST** use GitHub for current:
 - Implementation work
-- Merge requests
-- CI authority
+- Pull requests
+- CI authority (GitHub Actions)
 - Task state resolution
 - ADR state resolution
 - Canonical HEAD resolution
 
 **Before any restricted task, AI agents MUST:**
-1. Run `git remote -v` to verify gitlab remote points to GitLab
-2. Run `git fetch gitlab --prune`
-3. Run `git rev-parse gitlab/main` to get current canonical HEAD
+1. Run `git remote -v` to verify a remote points to `https://github.com/angyangit/novelcccc.git`
+2. Run `git fetch <remote-name> --prune` (typically `origin`)
+3. Run `git rev-parse <remote-name>/main` to get current canonical HEAD
 4. Read `plan/machine/*` for authoritative task/ADR state
 
 Historical reports and documentation **cannot override these live checks**.
+
+---
+
+**Historical Note**: Earlier work used GitLab (`gitlab.com/angyang582821422/novelcccc`) and an older GitHub repository (`github.com/AY123/AiNoverCC`). These are preserved for reference only and are not current operational repositories.
 
 ---
 

@@ -4,7 +4,7 @@
 
 当前为 **Plan v1.3.1**（治理修订：V2-006 任务身份调和）。P0 (Repository & Governance) 已验证完成，P1 (Domain Foundation) 为当前建设阶段。
 
-**Canonical Repository**: `https://gitlab.com/angyang582821422/novelcccc.git`  
+**Canonical Repository**: `https://github.com/angyangit/novelcccc.git`  
 **Canonical Branch**: `main`
 
 ## 当前状态从哪里读取
@@ -19,7 +19,7 @@ README 不再复制快速变化的 task / ADR / readiness / execution-packet / n
 - [验收场景](plan/machine/test-catalog.yaml)
 - [整改义务](plan/machine/remediation-register.yaml)
 
-`plan/machine/` 是动态事实唯一权威；README、`PROJECT_STATUS.md` 和其他人工摘要都不得覆盖它。当前 HEAD 也必须从 GitLab / `gitlab/main` 实时获取。
+`plan/machine/` 是动态事实唯一权威；README、`PROJECT_STATUS.md` 和其他人工摘要都不得覆盖它。当前 HEAD 也必须从 GitHub canonical repository 实时获取。
 
 稳定历史里程碑包括：P0 已闭环，V2-005、V2-006、V2-061、V2-007 已形成正式历史闭包。具体当前任务、当前 ADR、是否允许开工以及下一合法动作，始终以 `plan/machine/*` 为准。
 

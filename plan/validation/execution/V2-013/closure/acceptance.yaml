@@ -21,7 +21,7 @@ artifacts:
 - ref: validation/execution/V2-013/closure/code-revalidation.yaml
   sha256: 2fda7161b9d9d10726f38f98986798233ad8a48bb223aba4c8f7b8a4ceff2187
 - ref: validation/execution/V2-013/closure/test-result.yaml
-  sha256: cdc8ab72eee59282dde08926308ff74e125a4d8fa80477c0f4e4289ec97bb6e1
+  sha256: 0de4f9f11ed4afe7942c9a9e50a57ae6718c76f88700ea8f833dfe4eeb72e002
 input_evidence_refs:
 - validation/execution/V2-013/closure/code-revalidation.yaml
 - validation/execution/V2-013/closure/test-result.yaml

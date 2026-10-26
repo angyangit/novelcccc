@@ -1,7 +1,7 @@
 {
   "scope": "Planning governance regressions in disposable copies; synthetic records are not runtime evidence",
-  "generated_at_utc": "2026-10-19T05:11:30.568979+00:00",
-  "manifest_sha256": "271e004ba9af4b1998148df915c2f70242202f538a34c571612debb6a84ebf02",
+  "generated_at_utc": "2026-10-26T02:40:51.122550+00:00",
+  "manifest_sha256": "f61fde6fe02277ffdc4b40e83db483cec2f6d0d960ada9cbdd8ee71aad273b4a",
   "status": "FAIL",
   "test_count": 46,
   "cases": [

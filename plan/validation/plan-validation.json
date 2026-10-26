@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-25T07:37:42.243761+00:00",
+  "generated_at_utc": "2026-10-26T02:42:09.835564+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "cf1e52a3e9063eec84a5cf3e22e62e3d91f72b49",
+  "validated_repository_revision": "912e6d6f33113101ef1f4b745b34724a39c55e63",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -34,8 +34,8 @@
       "P12": 3
     },
     "statuses": {
-      "CLOSED": 13,
-      "OPEN": 48
+      "CLOSED": 14,
+      "OPEN": 47
     },
     "suites": 61,
     "scenarios": 261,
@@ -50,10 +50,53 @@
     }
   },
   "errors": [
+    "TASK_READINESS V2-013: still PLANNED",
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
+    "EVIDENCE_ARTIFACT validation/closure/G-P2-455d7b9/ci/ci-postgres-env.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-009/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-009/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-010/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-010/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-011/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-011/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-012/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-012/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-010: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-011: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-012: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_ACTION V2-013: preparation is not an implementation record",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/test-catalog.yaml",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "TASK_READINESS V2-013: still PLANNED",
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
+    "EVIDENCE_ARTIFACT validation/closure/G-P2-455d7b9/ci/ci-postgres-env.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-009/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-009/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-010/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-010/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-011/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-011/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-012/ci-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EVIDENCE_ARTIFACT validation/tasks/V2-012/acceptance-evidence.yaml: missing/changed machine/test-catalog.yaml",
+    "EXEC_INPUT V2-009: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-010: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-011: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-012: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_ACTION V2-013: preparation is not an implementation record",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/test-catalog.yaml",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

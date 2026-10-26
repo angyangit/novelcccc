@@ -48,13 +48,23 @@ Historical reports and documentation **cannot override these live checks**.
 - **plan/machine/remediation-register.yaml** - 已知发现和修复
 - **plan/machine/external-practice-register.yaml** - 外部实践采纳
 
+**动态状态必须实时从 GitHub 和 plan/machine/* 获取**：
+- 当前 HEAD: `git rev-parse origin/main`
+- P0-P3 阶段状态: `plan/machine/phase-gates.yaml`
+- 任务状态/证据: `plan/machine/implementation-backlog.yaml`
+- ADR 接受状态: `plan/machine/decision-register.yaml`
+- 测试套件状态: `plan/machine/test-catalog.yaml`
+
+**不要依赖静态文档中的阶段或任务状态快照**。README、PROJECT_STATUS、历史报告中的状态描述可能过期。
+
 ### Default Excluded Context (默认不自动加载)
 
 **不要自动扫描这些目录作为当前上下文：**
 
 - `plan/archive/**` - 历史规范（已被取代）
 - `plan/validation/execution/**` - 执行包证据（修订版本绑定）
-  - **例外**：当前活跃任务的 execution 目录（如 `plan/validation/execution/V2-061/**` when V2-061 is active）可按需读取
+  - **例外**：当前活跃任务的 execution 目录（如 `plan/validation/execution/V2-014/**` when V2-014 is IN_PROGRESS）可按需读取
+  - **关闭任务的执行包**：状态已 CLOSED 的任务，其执行包已归档为历史证据，不应默认加载
 - `plan/validation/closure/**` - 历史闭环证据
 - `docs/archive/**` - 归档的进度报告、审计、包
 - `docs/reports/2026-10/**` - 已归档的历史报告（已被正式证据取代）

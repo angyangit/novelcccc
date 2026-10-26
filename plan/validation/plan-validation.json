@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-26T03:45:40.512660+00:00",
+  "generated_at_utc": "2026-10-26T04:16:39.265577+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
   "status": "PASS",
   "not_certified": [
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "d84dcf1e297483ee4f0c9af25e65cd9e90e9e509",
+  "validated_repository_revision": "723ea5de954608e6d3ee3637db86c9a3a7c90a98",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",

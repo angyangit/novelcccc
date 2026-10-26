@@ -139,6 +139,6 @@ handoff:
     - ref: validation/execution/V2-013/closure/test-result.yaml
       sha256: 0de4f9f11ed4afe7942c9a9e50a57ae6718c76f88700ea8f833dfe4eeb72e002
     - ref: validation/execution/V2-013/closure/ci-all.yaml
-      sha256: 6c14fa23936b25e9443cc1c8839519a379762fe9e89ea786d80d37c03f07c118
+      sha256: 567099d4d85544e915679e7932d8612c255aa682acf72b4f5113ec4d4a2cdf74
     missing_artifact_reason: null
 

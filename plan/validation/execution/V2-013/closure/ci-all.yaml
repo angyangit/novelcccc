@@ -11,17 +11,12 @@ environment_fingerprint: github-actions-ubuntu-22.04
 command: github-actions-workflow
 exit_code: 0
 pipeline_id: '40253812680'
-job_id: '40253812680'
+job_id: '121351232185'
 pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40253812680
 artifacts:
 - ref: validation/execution/V2-013/closure/closure-review.md
   sha256: 93577a5b80f7593ccf8facaa5d552a18542ed147c44b13aef9ec634d36464ff1
 input_evidence_refs: []
 check_ids:
-- STATIC
-- SCHEMA_CONTRACT
 - UNIT
-- ARCH_FITNESS
-- POSTGRES_ENV
-- SECRET_DEPENDENCY
 

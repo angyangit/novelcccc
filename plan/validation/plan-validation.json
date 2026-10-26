@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-26T15:05:48.741918+00:00",
+  "generated_at_utc": "2026-10-26T15:19:28.900283+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "FAIL",
+  "status": "PASS",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "78ffbf1ebcc9e21e8a9a9c0d9be3359767034370",
+  "validated_repository_revision": "223d5efe81e7cc22f23258d6404712185b266609",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -51,18 +51,9 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
-    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py",
-    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
-    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
   ],
-  "fatal_errors": [
-    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
-    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py",
-    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
-    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py"
-  ],
+  "fatal_errors": [],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

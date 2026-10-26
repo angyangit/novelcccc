@@ -2,7 +2,7 @@ record_type: task_execution_packet
 schema_version: '1.0'
 task_id: V2-014
 plan_version: 1.3.1
-repository_revision: 4c997f096c822913aaf805207d0ff9428d98fc16
+repository_revision: 223d5efe81e7cc22f23258d6404712185b266609
 worktree_dirty: false
 plan_manifest_sha256: 7dcae7a6c689d99b2311e885c14796de589878b1bf33427407f2954215f5d38f
 
@@ -72,16 +72,16 @@ claims:
   kind: FACT
   statement: V2-014 implements real, executable Genre Hard Policy Engine with dual-anchor enforcement
   sources:
-  - ref: src/anovel/genre/policy.py
-    sha256: fed703bbea68915e61440075a3fafbe3b27d0bcfa5cd632a25a87ff45c99dce7
+  - ref: validation/execution/V2-014/closure/closure-review.md
+    sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
   blocks_actions: []
   verification_plan: Code revalidation and contract test execution
 - id: CLAIM-002
   kind: FACT
   statement: AT-V2-014 test suite verified with 27 contract tests covering all 4 acceptance scenarios
   sources:
-  - ref: tests/contract/test_v2_014.py
-    sha256: 8dd686912f86c17ba38cea357193b2f9e7ba9b56c845ecfeeacc7010fd4a27e2
+  - ref: validation/execution/V2-014/closure/closure-review.md
+    sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
   blocks_actions: []
   verification_plan: pytest execution with 27/27 passing
 
@@ -132,9 +132,7 @@ handoff:
   last_check:
     status: PASS
     artifacts:
-    - ref: src/anovel/genre/policy.py
-      sha256: fed703bbea68915e61440075a3fafbe3b27d0bcfa5cd632a25a87ff45c99dce7
-    - ref: tests/contract/test_v2_014.py
-      sha256: 8dd686912f86c17ba38cea357193b2f9e7ba9b56c845ecfeeacc7010fd4a27e2
+    - ref: validation/execution/V2-014/closure/closure-review.md
+      sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
     missing_artifact_reason: null
 

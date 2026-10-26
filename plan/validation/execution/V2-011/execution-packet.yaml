@@ -52,8 +52,8 @@ inputs:
     ref: AI_EXECUTION_PROTOCOL.md
     sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
   - source_ref: machine/test-catalog.yaml
-    ref: machine/test-catalog.yaml
-    sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
+    ref: validation/execution/V2-011/snapshots/test-catalog-455d7b9.yaml
+    sha256: 6d85a2a711105f7b48ff3fbdfbcc0391716888088083988e3d1bd5c4ae2e153a
   - source_ref: machine/decision-register.yaml
     ref: validation/execution/V2-011/snapshots/decision-register-historical.yaml
     sha256: 416e1b3a392cf1121a608f453e399477154fe3b0a411696e99330d32242fd358

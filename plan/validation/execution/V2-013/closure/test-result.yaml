@@ -1,0 +1,23 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-013-TEST-912e6d6f
+evidence_type: TEST_RESULT
+status: PASS
+subject_id: V2-013
+revision: 912e6d6f33113101ef1f4b745b34724a39c55e63
+producer: github-actions-pytest
+executed_at: '2026-10-26T01:21:00Z'
+environment_fingerprint: github-actions-ubuntu-22.04-pytest-9.1.1
+command: uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+exit_code: 0
+pipeline_id: '40253812680'
+job_id: '121351232185'
+artifacts:
+- ref: validation/execution/V2-013/closure/closure-review.md
+  sha256: 93577a5b80f7593ccf8facaa5d552a18542ed147c44b13aef9ec634d36464ff1
+input_evidence_refs: []
+check_ids:
+- AT-V2-013-01
+- AT-V2-013-02
+- AT-V2-013-03
+- AT-V2-013-04

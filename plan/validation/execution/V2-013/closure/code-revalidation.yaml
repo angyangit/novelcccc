@@ -1,0 +1,19 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-013-CODE-912e6d6f
+evidence_type: CODE
+status: PASS
+subject_id: V2-013
+revision: 912e6d6f33113101ef1f4b745b34724a39c55e63
+producer: v2-013-retrospective-closure-validator
+executed_at: '2026-10-26T10:00:00Z'
+environment_fingerprint: retrospective-git-verification-darwin-24.1.0
+artifacts:
+- ref: validation/execution/V2-013/closure/closure-review.md
+  sha256: 93577a5b80f7593ccf8facaa5d552a18542ed147c44b13aef9ec634d36464ff1
+input_evidence_refs: []
+check_ids:
+- CODE-V2-013-IDENTITY-PY-EXISTS
+- CODE-V2-013-REGISTRY-PY-EXISTS
+- CODE-V2-013-BINDING-PY-EXISTS
+- CODE-V2-013-ADR-007-COMPLIANCE

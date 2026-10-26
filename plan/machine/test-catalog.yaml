@@ -277,7 +277,7 @@ suites:
 - id: AT-V2-013
   task_id: V2-013
   phase: P3
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/contract/test_v2_013.py
   scenarios:
   - id: AT-V2-013-01
@@ -288,7 +288,8 @@ suites:
     required_assertion: 全局只读目录绑定到项目后仍可追溯
   - id: AT-V2-013-04
     required_assertion: 显式 Pack 存在而可选策略无命中时保留原 ID/version/hash，不替换为第一条相近子流派
-  execution_evidence: []
+  execution_evidence:
+  - validation/execution/V2-013/closure/test-result.yaml
 - id: AT-V2-014
   task_id: V2-014
   phase: P3

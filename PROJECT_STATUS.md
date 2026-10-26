@@ -41,7 +41,7 @@ Do not treat a SHA written in this document as current authority.
 
 ANovelOS is an automatic-creation and reliable-production system for Chinese web fiction. The engineering objective is to improve reading competitiveness while keeping engineering verification, human reading outcomes, and market outcomes as separate evidence layers.
 
-The repository currently follows Plan v1.3.1 with a P0–P14 roadmap. P0 repository/governance foundations have a completed historical closure. P1 is the domain-foundation stage in which identity, relationship, character knowledge/intent, Event/Promise temporal semantics, and subsequent NarrativeDelta/Canon foundations are built under explicit ADR and acceptance gates.
+The repository currently follows Plan v1.3.1 with a P0–P14 roadmap. P0 (Repository & Governance), P1 (Domain Foundation), and P2 (Canon Persistence) have completed historical closures. P3 (Genre Kernel) is the current development phase.
 
 The following are stable historical facts, not live execution authorization:
 
@@ -50,7 +50,9 @@ The following are stable historical facts, not live execution authorization:
 - V2-006 closed Entity Relationship Tracking.
 - V2-061 closed Character Knowledge & Intent Core.
 - V2-007 closed Event Timeline Promise Core under ADR-003.
-- ADR-004 defines the finite change language and reducer preconditions consumed by later NarrativeDelta work.
+- V2-008 closed NarrativeDelta implementation under ADR-004.
+- V2-009 through V2-012 closed P2 Canon Persistence with PostgreSQL repository, transaction commit, idempotency, and snapshot rebuild.
+- V2-013 closed GenrePack Loader with identity verification, project binding, and extension validation under ADR-007.
 
 For whether any task/ADR above is currently OPEN, CLOSED, ACCEPTED, REQUIRED, READY, IN_PROGRESS, or otherwise actionable, read `plan/machine/*` live.
 
@@ -81,11 +83,15 @@ Historical closure tags preserved:
 
 Current operational repository and CI platform:
 
-- GitHub repository: `AY123/AiNoverCC`
+- GitHub repository: `https://github.com/angyangit/novelcccc.git`
 - Canonical branch: `main`
 - CI: GitHub Actions under `.github/workflows/`
 
-Historical GitLab CI evidence may remain inside historical closure artifacts for traceability. It is not current operational authority.
+**Historical repositories** (reference only, not current operational):
+- GitLab: `gitlab.com/angyang582821422/novelcccc`
+- Earlier GitHub: `github.com/AY123/AiNoverCC`
+
+Historical CI evidence may remain inside historical closure artifacts for traceability. It is not current operational authority.
 
 Common local validation commands:
 

@@ -1,7 +1,7 @@
 {
   "scope": "planning validator self-test only",
-  "generated_at_utc": "2026-10-25T06:14:48.751750+00:00",
-  "manifest_sha256": "4f0cd3d31fa3946a83c7a3cf85f2bd3641079bf6314dde5aac9436fa8dc8980e",
+  "generated_at_utc": "2026-10-26T03:45:50.896750+00:00",
+  "manifest_sha256": "7dcae7a6c689d99b2311e885c14796de589878b1bf33427407f2954215f5d38f",
   "status": "PASS",
   "cases": [
     {
@@ -47,7 +47,7 @@
         "TASK_START V2-006: dependency V2-005 not verified",
         "TASK_START V2-061: dependency V2-005 not verified",
         "TASK_START V2-007: dependency V2-005 not verified",
-        "PHASE_VERIFIED P1: tasks must be CLOSED"
+        "TASK_START V2-013: dependency V2-005 not verified"
       ]
     },
     {

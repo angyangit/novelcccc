@@ -2,7 +2,7 @@
 
 面向中文网文的自动创作与可靠生产项目。最终目标是提升作品的阅读竞争力；工程通过、真人阅读结果与市场成绩分别验证，不承诺爆款。
 
-当前为 **Plan v1.3.1**（治理修订：V2-006 任务身份调和）。P0 (Repository & Governance) 已验证完成，P1 (Domain Foundation) 为当前建设阶段。
+当前为 **Plan v1.3.1**（治理修订：V2-006 任务身份调和）。P0 (Repository & Governance)、P1 (Domain Foundation)、P2 (Canon Persistence) 已验证完成，P3 (Genre Kernel) 为当前建设阶段。
 
 **Canonical Repository**: `https://github.com/angyangit/novelcccc.git`  
 **Canonical Branch**: `main`
@@ -21,7 +21,7 @@ README 不再复制快速变化的 task / ADR / readiness / execution-packet / n
 
 `plan/machine/` 是动态事实唯一权威；README、`PROJECT_STATUS.md` 和其他人工摘要都不得覆盖它。当前 HEAD 也必须从 GitHub canonical repository 实时获取。
 
-稳定历史里程碑包括：P0 已闭环，V2-005、V2-006、V2-061、V2-007 已形成正式历史闭包。具体当前任务、当前 ADR、是否允许开工以及下一合法动作，始终以 `plan/machine/*` 为准。
+稳定历史里程碑包括：P0 已闭环，V2-001 through V2-013 已形成正式闭包。具体当前任务、当前 ADR、是否允许开工以及下一合法动作，始终以 `plan/machine/*` 为准。
 
 ## 从这里开始
 

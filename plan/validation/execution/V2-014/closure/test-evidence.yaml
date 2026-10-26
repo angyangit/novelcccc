@@ -1,126 +1,23 @@
-task_id: V2-014
-evidence_type: TEST_EXECUTION
-evidence_date: 2026-10-26
-test_suite: AT-V2-014
-commit: a506acdbc1526126c3e99e7fa7279f60bbb18738
-
-test_results:
-  total_tests: 58
-  passed: 58
-  failed: 0
-  skipped: 0
-
-test_classes:
-- class: TestUrbanRealityRejectsCultivation
-  tests: 5
-  status: PASS
-  covers: AT-V2-014-01
-
-- class: TestNarrativeContextBoundaries
-  tests: 4
-  status: PASS
-  covers: AT-V2-014-02
-
-- class: TestSemanticUncertaintyHandling
-  tests: 3
-  status: PASS
-  covers: AT-V2-014-03
-
-- class: TestOptionalStrategyJudgment
-  tests: 4
-  status: PASS
-  covers: AT-V2-014-04
-
-- class: TestDualAnchorIsolation
-  tests: 3
-  status: PASS
-
-- class: TestPackIdentityPreservation
-  tests: 2
-  status: PASS
-
-- class: TestCanonSafetyBoundary
-  tests: 2
-  status: PASS
-
-- class: TestVerdictTraceability
-  tests: 3
-  status: PASS
-
-- class: TestChineseUrbanRealismJudgment
-  tests: 5
-  status: PASS
-
-- class: TestChineseFantasyEasternJudgment
-  tests: 5
-  status: PASS
-
-- class: TestMixedMechanicsConflictDetection
-  tests: 4
-  status: PASS
-
-- class: TestUnknownMechanismHandling
-  tests: 3
-  status: PASS
-
-- class: TestStrategyMatchTypeDisambiguation
-  tests: 4
-  status: PASS
-
-- class: TestErrorScenarioRegression
-  tests: 6
-  status: PASS
-
-- class: TestAllowedMechanismCannotMaskConflict
-  tests: 4
-  status: PASS
-
-acceptance_scenarios:
-- scenario: AT-V2-014-01
-  assertion: "现实中实际修炼被拒绝"
-  status: VERIFIED
-  test_methods:
-  - test_reject_actual_cultivation_ability
-  - test_reject_qi_breakthrough
-  - test_reject_system_status_window
-  - test_allow_realistic_business_success
-  - test_allow_realistic_character_growth
-
-- scenario: AT-V2-014-02
-  assertion: "人物讨论小说或梦境不自动成为世界事实"
-  status: VERIFIED
-  test_methods:
-  - test_character_discussing_cultivation_novel
-  - test_character_dreaming_of_flying
-  - test_metaphorical_breakthrough
-  - test_character_speculation_about_magic
-
-- scenario: AT-V2-014-03
-  assertion: "语义不确定返回显式待处理而不是 PASS"
-  status: VERIFIED
-  test_methods:
-  - test_unknown_context_requires_review
-  - test_ambiguous_ability_claim_requires_review
-  - test_explicit_certainty_allows_judgment
-
-- scenario: AT-V2-014-04
-  assertion: "可选套路与冻结世界机制冲突时拒绝该策略；正常无匹配不制造世界规则"
-  status: VERIFIED
-  test_methods:
-  - test_reject_supernatural_strategy_in_urban
-  - test_reject_corporate_strategy_in_fantasy
-  - test_no_match_strategy_preserves_identity
-  - test_compatible_strategy_allowed
-
-regression_tests:
-  v2_013_tests: 34
-  v2_013_status: PASS
-
-execution_command: |
-  PYTHONPATH=src:$PYTHONPATH uv run pytest tests/contract/test_v2_014.py -v
-
-verification_notes: |
-  All 58 V2-014 contract tests passing on main branch after merge.
-  All 4 acceptance scenarios (AT-V2-014-01 through AT-V2-014-04) verified.
-  34 V2-013 regression tests maintained.
-  Total: 92 passing tests (34 V2-013 + 58 V2-014).
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-014-TEST-a506acd
+evidence_type: TEST_RESULT
+status: PASS
+subject_id: V2-014
+revision: a506acdbc1526126c3e99e7fa7279f60bbb18738
+producer: github-actions-pytest
+executed_at: '2026-10-26T08:00:00Z'
+environment_fingerprint: github-actions-ubuntu-22.04-pytest-8.3.3
+command: uv run pytest tests/contract/test_v2_014.py -v
+exit_code: 0
+pipeline_id: '40292067463'
+job_id: '121469219710'
+artifacts:
+- ref: tests/contract/test_v2_014.py
+  sha256: 8dd686912f86c17ba38cea357193b2f9e7ba9b56c845ecfeeacc7010fd4a27e2
+input_evidence_refs: []
+check_ids:
+- AT-V2-014-01
+- AT-V2-014-02
+- AT-V2-014-03
+- AT-V2-014-04

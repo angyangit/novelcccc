@@ -1,59 +1,21 @@
-task_id: V2-014
-evidence_type: CODE_DELIVERY
-evidence_date: 2026-10-26
-merge_commit: a506acdbc1526126c3e99e7fa7279f60bbb18738
-merge_message: "Merge PR #9: V2-014 Genre Hard Policy Engine"
-branch: impl/v2-014-genre-hard-policy
-pr_number: 9
-
-delivered_artifacts:
-- path: src/anovel/genre/policy.py
-  lines: 808
-  description: GenreHardPolicyEngine implementation with dual-anchor support
-  commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-
-- path: tests/contract/test_v2_014.py
-  lines: 1131
-  description: 58 contract tests covering all AT-V2-014 scenarios
-  commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-
-- path: plan/validation/execution/V2-014/execution-packet.yaml
-  lines: 131
-  description: Task definition and execution scope
-  commit: 5b163b438826885cbf9fe13ae9d742dfaf217792
-
-- path: src/anovel/genre/__init__.py
-  lines_changed: 43
-  description: Updated module exports for policy types
-  commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-
-implementation_commits:
-- commit: d3630039c2e5882a690be016114381592109d9e7
-  message: "feat(V2-014): Implement Genre Hard Policy Engine"
-
-- commit: 5b163b438826885cbf9fe13ae9d742dfaf217792
-  message: "docs(V2-014): Add execution packet for policy engine implementation"
-
-- commit: 21799c2506103c1379bcc144226c4b6c1e326365
-  message: "fix(V2-014): Add Chinese novel judgment support and correct execution packet"
-
-- commit: 1505683e45c23b4fcda65b22fbffceec85fdb242
-  message: "fix(V2-014): Implement mechanism-based validation to eliminate semantic errors"
-
-- commit: 382a9b902939cb2705454499514a76a9a247db1f
-  message: "fix(V2-014): Enforce rule priority, strengthen mechanism verification, disambiguate strategies"
-
-- commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-  message: "fix(V2-014): Prevent unknown strategy ALLOW leak and allowed mechanism conflict masking"
-
-verification:
-  files_match_expected: true
-  commits_in_main: true
-  no_unauthorized_files: true
-  scope_compliant: true
-
-notes: |
-  All V2-014 artifacts successfully merged to canonical main via standard merge commit.
-  Implementation includes 6 commits addressing initial implementation, Chinese language support,
-  semantic error fixes, rule priority enforcement, and final safety corrections.
-  Total: 808 lines of production code, 1131 lines of contract tests.
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-014-CODE-a506acd
+evidence_type: CODE
+status: PASS
+subject_id: V2-014
+revision: a506acdbc1526126c3e99e7fa7279f60bbb18738
+producer: github-pr-merge
+executed_at: '2026-10-26T08:00:00Z'
+environment_fingerprint: github-merge-pr-9-darwin-24.1.0
+artifacts:
+- ref: src/anovel/genre/policy.py
+  sha256: fed703bbea68915e61440075a3fafbe3b27d0bcfa5cd632a25a87ff45c99dce7
+- ref: tests/contract/test_v2_014.py
+  sha256: 8dd686912f86c17ba38cea357193b2f9e7ba9b56c845ecfeeacc7010fd4a27e2
+input_evidence_refs: []
+check_ids:
+- CODE-V2-014-POLICY-PY-EXISTS
+- CODE-V2-014-TEST-V2-014-PY-EXISTS
+- CODE-V2-014-ADR-007-COMPLIANCE
+- CODE-V2-014-DUAL-ANCHOR-IMPLEMENTATION

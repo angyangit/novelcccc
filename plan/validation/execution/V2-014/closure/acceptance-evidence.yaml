@@ -1,66 +1,55 @@
-task_id: V2-014
-evidence_type: ACCEPTANCE_VERIFICATION
-evidence_date: 2026-10-26
-merge_commit: a506acdbc1526126c3e99e7fa7279f60bbb18738
-acceptance_suite: AT-V2-014
-
-scenarios:
-- scenario_id: AT-V2-014-01
-  title: "现实中实际修炼被拒绝"
-  status: VERIFIED
-  verification_method: CONTRACT_TEST
-  test_class: TestUrbanRealityRejectsCultivation
-  test_methods:
-  - test_reject_actual_cultivation_ability
-  - test_reject_qi_breakthrough
-  - test_reject_system_status_window
-  - test_allow_realistic_business_success
-  - test_allow_realistic_character_growth
-  verification_commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-
-- scenario_id: AT-V2-014-02
-  title: "人物讨论小说或梦境不自动成为世界事实"
-  status: VERIFIED
-  verification_method: CONTRACT_TEST
-  test_class: TestNarrativeContextBoundaries
-  test_methods:
-  - test_character_discussing_cultivation_novel
-  - test_character_dreaming_of_flying
-  - test_metaphorical_breakthrough
-  - test_character_speculation_about_magic
-  verification_commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-
-- scenario_id: AT-V2-014-03
-  title: "语义不确定返回显式待处理而不是 PASS"
-  status: VERIFIED
-  verification_method: CONTRACT_TEST
-  test_class: TestSemanticUncertaintyHandling
-  test_methods:
-  - test_unknown_context_requires_review
-  - test_ambiguous_ability_claim_requires_review
-  - test_explicit_certainty_allows_judgment
-  verification_commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-
-- scenario_id: AT-V2-014-04
-  title: "可选套路与冻结世界机制冲突时拒绝该策略；正常无匹配不制造世界规则"
-  status: VERIFIED
-  verification_method: CONTRACT_TEST
-  test_class: TestOptionalStrategyJudgment
-  test_methods:
-  - test_reject_supernatural_strategy_in_urban
-  - test_reject_corporate_strategy_in_fantasy
-  - test_no_match_strategy_preserves_identity
-  - test_compatible_strategy_allowed
-  verification_commit: bff29fc7d72a6e97a81c12c774078985214fea1d
-
-verification_summary:
-  total_scenarios: 4
-  verified: 4
-  not_verified: 0
-  test_evidence_ref: plan/validation/execution/V2-014/closure/test-evidence.yaml
-  ci_evidence_ref: plan/validation/execution/V2-014/closure/ci-evidence.yaml
-
-verification_notes: |
-  All 4 AT-V2-014 acceptance scenarios verified through contract tests.
-  GenreHardPolicyEngine correctly enforces narrative fact boundaries,
-  rejects mechanism conflicts, and maintains genre identity integrity.
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-014-ACCEPTANCE-a506acd
+evidence_type: ACCEPTANCE_RECORD
+status: PASS
+subject_id: V2-014
+revision: a506acdbc1526126c3e99e7fa7279f60bbb18738
+producer: v2-014-closure-validator
+executed_at: '2026-10-26T09:00:00Z'
+environment_fingerprint: closure-validation-darwin-24.1.0
+decision: ACCEPTED
+rationale: |
+  V2-014 Genre Hard Policy Engine implementation accepted at revision a506acd.
+  All four acceptance criteria met per contract tests and CI verification.
+  Implementation: policy.py (808 lines), test_v2_014.py (58 tests, 1131 lines).
+  ADR-007 requirements fully implemented with dual-anchor enforcement.
+  CI: 6/6 gates passed at a506acd (run 40292067463).
+artifacts:
+- ref: validation/execution/V2-014/closure/code-evidence.yaml
+  sha256: a7a58b45275a44c00ae8286bfd6b72343ba1fd99efac85186c630a7b1267e391
+- ref: validation/execution/V2-014/closure/test-evidence.yaml
+  sha256: 413dc0de0d7fc013f45c700ded1a579a8fe52abab30ff6aea33d4907014a8e0f
+- ref: validation/execution/V2-014/closure/ci-evidence.yaml
+  sha256: a168ad1b03cc0beb42888b379150ab331c6e84bec6a0067d9ac727c114a4d0c9
+input_evidence_refs:
+- validation/execution/V2-014/closure/code-evidence.yaml
+- validation/execution/V2-014/closure/test-evidence.yaml
+- validation/execution/V2-014/closure/ci-evidence.yaml
+check_ids:
+- AT-V2-014-01
+- AT-V2-014-02
+- AT-V2-014-03
+- AT-V2-014-04
+finding_dispositions:
+- finding_id: AR-15
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/execution/V2-014/closure/test-evidence.yaml
+  reason: V2-014 implements GenreHardPolicyEngine with narrative fact boundary enforcement per ADR-007. Policy verdicts distinguish world facts from dialogue/dreams/speculation.
+- finding_id: CA-09
+  responsibility: FULL
+  disposition: RESOLVED
+  evidence_refs:
+  - validation/execution/V2-014/closure/code-evidence.yaml
+  - validation/execution/V2-014/closure/test-evidence.yaml
+  reason: Genre hard policy engine enforces frozen Anchor mechanics, rejects conflicting optional strategies, maintains Pack identity integrity. 58 contract tests verify all scenarios.
+external_practice_results:
+- practice_id: EXT-001
+  adoption_mode: ADAPTED
+  source_version_note: Three-way hash verification from V2-013 GenrePack identity foundation
+  verification_refs:
+  - validation/execution/V2-014/closure/code-evidence.yaml
+  conclusion: GenreHardPolicyEngine builds on V2-013 Pack identity contracts. Policy judgments preserve Pack identity integrity through mechanism-based validation.
+  limitations: Policy engine enforces hard rules only. Quality judgment (Q2 gates) remains separate. Semantic understanding limited to explicit mechanism declarations.

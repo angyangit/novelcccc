@@ -1037,7 +1037,7 @@ tasks:
   status: CLOSED
   execution_packet_ref: validation/execution/V2-014/execution-packet.yaml
   owner_role: genre-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P2
   required_decisions:
   - ADR-007

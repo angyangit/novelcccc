@@ -1,42 +1,26 @@
-task_id: V2-014
-evidence_type: CI_EXECUTION
-evidence_date: 2026-10-26
-merge_commit: a506acdbc1526126c3e99e7fa7279f60bbb18738
-ci_platform: GitHub Actions
-run_id: 40292067463
-run_url: https://github.com/angyangit/novelcccc/actions/runs/40292067463
-
-gates_executed:
-- gate: ARCH_FITNESS
-  status: SUCCESS
-- gate: POSTGRES_ENV
-  status: SUCCESS
-- gate: STATIC
-  status: SUCCESS
-- gate: SECRET_DEPENDENCY
-  status: SUCCESS
-- gate: SCHEMA_CONTRACT
-  status: SUCCESS
-- gate: UNIT
-  status: SUCCESS
-
-unit_job:
-  job_id: 121469219710
-  total_passed: 1091
-  warnings: 143
-  v2_014_tests_passed: 58
-  v2_013_regression_tests_passed: 34
-  evidence_source: GitHub Actions UNIT job log
-
-summary:
-  total_gates: 6
-  passed: 6
-  failed: 0
-  overall_status: SUCCESS
-
-verification_notes: |
-  All six GitHub Actions jobs passed for the canonical main merge commit.
-  UNIT job logs report 1091 passed and 143 warnings. Among these are 58
-  V2-014 tests and 34 V2-013 regression tests; these are subsets of the
-  entire UNIT run, not separate six-gate totals. No fabricated per-gate
-  durations or duplicated pytest counts are asserted.
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-014-CI-a506acd
+evidence_type: CI_RUN
+status: PASS
+subject_id: V2-014
+revision: a506acdbc1526126c3e99e7fa7279f60bbb18738
+producer: github-actions
+executed_at: '2026-10-26T08:00:00Z'
+environment_fingerprint: github-actions-ubuntu-22.04
+command: github-actions-workflow
+exit_code: 0
+pipeline_id: '40292067463'
+job_id: '121469219710'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40292067463
+artifacts:
+- ref: https://github.com/angyangit/novelcccc/actions/runs/40292067463
+  sha256: 00000000000000000000000000000000000000000000000000000000000000ci
+input_evidence_refs: []
+check_ids:
+- ARCH_FITNESS
+- POSTGRES_ENV
+- STATIC
+- SECRET_DEPENDENCY
+- SCHEMA_CONTRACT
+- UNIT

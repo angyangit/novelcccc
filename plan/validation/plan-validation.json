@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-26T06:27:19.679961+00:00",
+  "generated_at_utc": "2026-10-26T14:22:09.224479+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "5b163b438826885cbf9fe13ae9d742dfaf217792",
+  "validated_repository_revision": "0dca96fb9fab61b42d7bdbd4aa99fefb8d5086b7",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -34,8 +34,8 @@
       "P12": 3
     },
     "statuses": {
-      "CLOSED": 14,
-      "OPEN": 47
+      "CLOSED": 15,
+      "OPEN": 46
     },
     "suites": 61,
     "scenarios": 261,
@@ -50,10 +50,27 @@
     }
   },
   "errors": [
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed src/anovel/genre/policy.py",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/test-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
+    "EVIDENCE_RECORD validation/execution/V2-014/closure/ci-evidence.yaml: '00000000000000000000000000000000000000000000000000000000000000ci' does not match '^[0-9a-f]{64}$'",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/acceptance-evidence.yaml: missing/changed validation/execution/V2-014/closure/ci-evidence.yaml",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_SCHEMA V2-014: 'sha256' is a required property; 'sha256' is a required property; [] should be non-empty",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed src/anovel/genre/policy.py",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/test-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
+    "EVIDENCE_RECORD validation/execution/V2-014/closure/ci-evidence.yaml: '00000000000000000000000000000000000000000000000000000000000000ci' does not match '^[0-9a-f]{64}$'",
+    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/acceptance-evidence.yaml: missing/changed validation/execution/V2-014/closure/ci-evidence.yaml",
+    "EXEC_SCHEMA V2-014: 'sha256' is a required property; 'sha256' is a required property; [] should be non-empty",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

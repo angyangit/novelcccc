@@ -13,8 +13,8 @@ exit_code: 0
 pipeline_id: '40292067463'
 job_id: '121469219710'
 artifacts:
-- ref: tests/contract/test_v2_014.py
-  sha256: 8dd686912f86c17ba38cea357193b2f9e7ba9b56c845ecfeeacc7010fd4a27e2
+- ref: validation/execution/V2-014/closure/closure-review.md
+  sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
 input_evidence_refs: []
 check_ids:
 - AT-V2-014-01

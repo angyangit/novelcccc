@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-26T14:22:09.224479+00:00",
+  "generated_at_utc": "2026-10-26T15:05:48.741918+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
   "status": "FAIL",
   "not_certified": [
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "0dca96fb9fab61b42d7bdbd4aa99fefb8d5086b7",
+  "validated_repository_revision": "78ffbf1ebcc9e21e8a9a9c0d9be3359767034370",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "7dcae7a6c689d99b2311e885c14796de589878b1bf33427407f2954215f5d38f",
+  "manifest_sha256": "81df6b4e961c07b0290328a8d42974f768021ca72b4414142093e29e4fb50c0b",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -50,26 +50,18 @@
     }
   },
   "errors": [
-    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed src/anovel/genre/policy.py",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/test-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
-    "EVIDENCE_RECORD validation/execution/V2-014/closure/ci-evidence.yaml: '00000000000000000000000000000000000000000000000000000000000000ci' does not match '^[0-9a-f]{64}$'",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/acceptance-evidence.yaml: missing/changed validation/execution/V2-014/closure/ci-evidence.yaml",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_SCHEMA V2-014: 'sha256' is a required property; 'sha256' is a required property; [] should be non-empty",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
+    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py",
+    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
+    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py"
   ],
   "fatal_errors": [
-    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed src/anovel/genre/policy.py",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/code-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/test-evidence.yaml: missing/changed tests/contract/test_v2_014.py",
-    "EVIDENCE_RECORD validation/execution/V2-014/closure/ci-evidence.yaml: '00000000000000000000000000000000000000000000000000000000000000ci' does not match '^[0-9a-f]{64}$'",
-    "EVIDENCE_ARTIFACT validation/execution/V2-014/closure/acceptance-evidence.yaml: missing/changed validation/execution/V2-014/closure/ci-evidence.yaml",
-    "EXEC_SCHEMA V2-014: 'sha256' is a required property; 'sha256' is a required property; [] should be non-empty",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
+    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py",
+    "EXEC_INPUT V2-014: missing/changed artifact src/anovel/genre/policy.py",
+    "EXEC_INPUT V2-014: missing/changed artifact tests/contract/test_v2_014.py"
   ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",

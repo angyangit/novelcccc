@@ -17,11 +17,11 @@ rationale: |
   CI: 6/6 gates passed at a506acd (run 40292067463).
 artifacts:
 - ref: validation/execution/V2-014/closure/code-evidence.yaml
-  sha256: a7a58b45275a44c00ae8286bfd6b72343ba1fd99efac85186c630a7b1267e391
+  sha256: 9bbe35bc858ae7832dcc1d4a5c143b827e4dce4a18cfb1f970f7408714727288
 - ref: validation/execution/V2-014/closure/test-evidence.yaml
-  sha256: 413dc0de0d7fc013f45c700ded1a579a8fe52abab30ff6aea33d4907014a8e0f
+  sha256: c38cf0a5316810b370ab3ce118c8df809780ae72a5d7eab52ae2019eec187ca0
 - ref: validation/execution/V2-014/closure/ci-evidence.yaml
-  sha256: a168ad1b03cc0beb42888b379150ab331c6e84bec6a0067d9ac727c114a4d0c9
+  sha256: d41b9a712d7c0f27232535b3994c5e38131610bb6bfac11421d855e817a242b8
 input_evidence_refs:
 - validation/execution/V2-014/closure/code-evidence.yaml
 - validation/execution/V2-014/closure/test-evidence.yaml

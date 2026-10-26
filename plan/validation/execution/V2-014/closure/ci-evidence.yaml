@@ -14,8 +14,8 @@ pipeline_id: '40292067463'
 job_id: '121469219710'
 pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40292067463
 artifacts:
-- ref: https://github.com/angyangit/novelcccc/actions/runs/40292067463
-  sha256: 00000000000000000000000000000000000000000000000000000000000000ci
+- ref: validation/execution/V2-014/closure/closure-review.md
+  sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
 input_evidence_refs: []
 check_ids:
 - ARCH_FITNESS

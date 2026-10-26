@@ -67,6 +67,9 @@ class NarrativeFact:
         source_evidence: Where this fact comes from (chapter_id, line_range, etc.)
         fact_type: Category of fact (character_ability, world_mechanism, etc.)
         metadata: Additional context (character_id, belief_holder, etc.)
+        mechanism_type: Optional explicit mechanism declaration (e.g., "supernatural_cultivation", "realistic_business")
+        mechanism_confirmed: Whether mechanism is explicitly confirmed in source (not inference)
+        mechanism_source: Evidence source for mechanism claim (if mechanism_type provided)
     """
 
     fact_id: str
@@ -75,6 +78,9 @@ class NarrativeFact:
     source_evidence: str
     fact_type: str
     metadata: dict[str, str] | None = None
+    mechanism_type: str | None = None
+    mechanism_confirmed: bool = False
+    mechanism_source: str | None = None
 
 
 @dataclass(frozen=True)
@@ -241,134 +247,197 @@ class GenreHardPolicyEngine:
 
         Urban reality anchor: strict real-world mechanics, no supernatural abilities.
         """
-        # Keywords suggesting supernatural abilities in reality (English + Chinese)
-        supernatural_keywords = [
-            # English
-            "cultivat",  # matches cultivate, cultivation
-            "spiritual energy",
-            "qi",
-            "breakthrough",
-            "realm",
-            "immortal",
-            "magic",
-            "spell",
-            "enchant",
-            "transmigrat",
-            "reincarnate",
-            "level up",
-            # Chinese
+        fact_lower = fact.description.lower()
+
+        # Step 1: Check explicit mechanism declarations first
+        if fact.mechanism_type and fact.mechanism_confirmed:
+            if fact.mechanism_type in [
+                "supernatural_cultivation",
+                "supernatural_ability",
+                "game_system",
+                "transmigration",
+                "reincarnation",
+                "magic_system",
+            ]:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REJECT,
+                    fact_id=fact.fact_id,
+                    rule_id="urban.business.realistic:no-supernatural",
+                    rationale=f"Urban reality does not permit confirmed {fact.mechanism_type}",
+                    conflicting_mechanics=["world_mechanics.realistic_constraints"],
+                    diagnostic={
+                        "mechanism_type": fact.mechanism_type,
+                        "mechanism_source": fact.mechanism_source or "unknown",
+                    },
+                )
+            elif fact.mechanism_type in ["realistic_business", "realistic_skill"]:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.ALLOW,
+                    fact_id=fact.fact_id,
+                    rule_id="urban.business.realistic:realistic-mechanics",
+                    rationale=f"Confirmed {fact.mechanism_type} consistent with urban reality",
+                    diagnostic={"mechanism_type": fact.mechanism_type},
+                )
+
+        # Step 2: Check for explicit supernatural language (confirmed even without mechanism_type)
+        confirmed_supernatural_phrases = [
+            "修炼成仙",
+            "获得了超自然能力",
+            "获得超自然能力",
+            "cultivate to immortal",
+            "gained supernatural",
+            "acquired supernatural",
+            "possess supernatural",
+        ]
+        for phrase in confirmed_supernatural_phrases:
+            if phrase in fact.description or phrase in fact_lower:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REJECT,
+                    fact_id=fact.fact_id,
+                    rule_id="urban.business.realistic:no-supernatural",
+                    rationale=f"Urban reality does not permit confirmed supernatural abilities (found: {phrase})",
+                    conflicting_mechanics=["world_mechanics.realistic_constraints"],
+                    diagnostic={
+                        "confirmed_phrase": phrase,
+                        "fact_type": fact.fact_type,
+                    },
+                )
+
+        # Step 3: Context-aware keyword filtering (keywords as auxiliary hints only)
+        # Check for strong cultivation indicators first (these override business context)
+
+        strong_cultivation_keywords = [
             "修炼",
             "修仙",
             "灵气",
-            "突破",
             "筑基",
             "金丹",
             "元婴",
             "化神",
-            "境界",
-            "仙",
             "内功",
             "任督二脉",
             "真气",
             "法术",
             "神通",
+            "cultivat",
+            "spiritual energy",
+            "foundation establishment",
+            "golden core",
+            "nascent soul",
+            "qi",  # Added standalone qi
         ]
 
-        fact_lower = fact.description.lower()
+        ability_indicators = [
+            "能够",
+            "可以",
+            "能够吸收",
+            "可以吸收",
+            "吸收灵气",
+            "吸收 qi",
+            "打通任督",
+            "发现自己可以",
+            "can cultivate",
+            "can sense",
+            "can absorb",
+            "absorb qi",
+            "absorbing qi",
+            "achieved breakthrough",
+            "sense qi",
+            "channel",
+            "possess",
+            "possessed",
+        ]
 
-        # Check for supernatural ability claims
-        for keyword in supernatural_keywords:
-            if (
-                keyword in fact_lower or keyword in fact.description
-            ):  # Check both cases for Chinese
-                # Check if this is about ability/mechanism vs just terminology
-                ability_indicators = [
-                    # English
-                    "can",
-                    "able to",
-                    "power",
-                    "ability",
-                    "skill",
-                    "energy",
-                    "channel",
-                    "absorb",
-                    "refine",
-                    "breakthrough to",
-                    # Chinese
-                    "能够",
-                    "可以",
-                    "拥有",
-                    "吸收",
-                    "打通",
-                    "发现自己",
-                ]
+        # Check for cultivation + ability claim combination
+        found_cultivation = any(
+            kw in fact.description or kw in fact_lower
+            for kw in strong_cultivation_keywords
+        )
+        found_ability = any(
+            ind in fact.description or ind in fact_lower for ind in ability_indicators
+        )
 
-                is_ability_claim = any(
-                    indicator in fact_lower or indicator in fact.description
-                    for indicator in ability_indicators
+        if found_cultivation and found_ability:
+            return PolicyJudgment(
+                verdict=PolicyVerdict.REJECT,
+                fact_id=fact.fact_id,
+                rule_id="urban.business.realistic:no-supernatural",
+                rationale="Urban reality does not permit supernatural cultivation abilities",
+                conflicting_mechanics=["world_mechanics.realistic_constraints"],
+                diagnostic={
+                    "detection_method": "keyword_hint",
+                    "fact_type": fact.fact_type,
+                },
+            )
+
+        # Business-specific false positive filtering
+        # Only filter "突破" in business metaphor context, not general cultivation
+        business_metaphor_patterns = [
+            ("突破", ["销售瓶颈", "业绩", "市场"]),
+            ("系统", ["系统性", "数字化升级"]),
+        ]
+
+        for keyword, business_indicators in business_metaphor_patterns:
+            if keyword in fact.description:
+                # Check if this is business metaphor usage
+                is_business_metaphor = any(
+                    bi in fact.description for bi in business_indicators
                 )
+                if is_business_metaphor:
+                    # This is a false positive - business metaphor, not cultivation
+                    continue  # Don't reject
 
-                if is_ability_claim:
+        # Check for game system mechanics (avoid false positive from "系统性")
+        game_system_phrases = [
+            "状态窗口",
+            "游戏系统",
+            "status window",
+            "game system",
+            "system window",
+        ]
+        # Only reject if it's game system, not "系统性" business term
+        if "系统性" not in fact.description:
+            for phrase in game_system_phrases:
+                if phrase in fact.description or phrase in fact_lower:
                     return PolicyJudgment(
                         verdict=PolicyVerdict.REJECT,
                         fact_id=fact.fact_id,
                         rule_id="urban.business.realistic:no-supernatural",
-                        rationale=f"Urban reality does not permit actual supernatural abilities (found: {keyword})",
+                        rationale=f"Urban reality does not permit game system mechanics (found: {phrase})",
                         conflicting_mechanics=["world_mechanics.realistic_constraints"],
-                        diagnostic={"keyword": keyword, "fact_type": fact.fact_type},
+                        diagnostic={"keyword": phrase, "fact_type": fact.fact_type},
                     )
 
-        # Check for system/status window mechanics (English + Chinese)
-        system_keywords = [
-            "status window",
-            "system window",
-            "game system",
-            "状态窗口",
-            "系统",
-            "游戏系统",
-        ]
-        for keyword in system_keywords:
-            if keyword in fact_lower or keyword in fact.description:
-                return PolicyJudgment(
-                    verdict=PolicyVerdict.REJECT,
-                    fact_id=fact.fact_id,
-                    rule_id="urban.business.realistic:no-supernatural",
-                    rationale=f"Urban reality does not permit game system mechanics (found: {keyword})",
-                    conflicting_mechanics=["world_mechanics.realistic_constraints"],
-                    diagnostic={"keyword": keyword, "fact_type": fact.fact_type},
-                )
-
-        # If semantic judgment is uncertain, require review
-        # (This is where more sophisticated analysis would go in production)
+        # Step 4: Handle ambiguous ability claims - require review instead of auto-allow
         if fact.fact_type in ["character_ability", "world_mechanism"]:
-            # Check if we have sufficient evidence to make definitive judgment
-            # Exception: if metadata has certainty OR description contains clear realistic skill indicators
-            has_certainty = fact.metadata and "certainty" in fact.metadata
-
-            # Realistic skill indicators (learning, practice, mentorship)
-            realistic_skill_indicators = [
-                "practice",
-                "mentorship",
-                "learned",
-                "studied",
-                "trained",
-                "mastered",
-            ]
-            has_realistic_context = any(
-                indicator in fact_lower for indicator in realistic_skill_indicators
-            )
-
-            if not has_certainty and not has_realistic_context:
-                return PolicyJudgment(
-                    verdict=PolicyVerdict.REVIEW_REQUIRED,
-                    fact_id=fact.fact_id,
-                    rule_id=None,
-                    rationale="Insufficient evidence to definitively judge world mechanics compliance",
-                    diagnostic={
-                        "reason": "semantic_uncertainty",
-                        "fact_type": fact.fact_type,
-                    },
+            # If mechanism is explicitly unconfirmed or no mechanism declaration at all
+            if not fact.mechanism_confirmed:
+                # Check for ambiguous ability language (including English "unusual abilities")
+                ambiguous_ability_indicators = [
+                    "特殊能力",
+                    "获得了能力",
+                    "unusual abilit",
+                    "special ability",
+                    "gained ability",
+                    "acquired power",
+                    "possessed",
+                ]
+                has_ambiguous_ability = any(
+                    indicator in fact.description or indicator in fact_lower
+                    for indicator in ambiguous_ability_indicators
                 )
+
+                if has_ambiguous_ability:
+                    return PolicyJudgment(
+                        verdict=PolicyVerdict.REVIEW_REQUIRED,
+                        fact_id=fact.fact_id,
+                        rule_id=None,
+                        rationale="Insufficient evidence to definitively judge mechanism compliance",
+                        diagnostic={
+                            "reason": "semantic_uncertainty",
+                            "fact_type": fact.fact_type,
+                        },
+                    )
 
         # Default: allow realistic urban/business facts
         return PolicyJudgment(
@@ -386,54 +455,127 @@ class GenreHardPolicyEngine:
         """
         fact_lower = fact.description.lower()
 
-        # Modern corporate mechanisms that conflict with fantasy setting (English + Chinese)
+        # Step 1: Check explicit mechanism declarations first
+        if fact.mechanism_type and fact.mechanism_confirmed:
+            if fact.mechanism_type in [
+                "modern_corporate",
+                "modern_finance",
+                "stock_market",
+                "venture_capital",
+            ]:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REJECT,
+                    fact_id=fact.fact_id,
+                    rule_id="fantasy.eastern.progression:no-modern-corporate",
+                    rationale=f"Fantasy eastern world does not permit confirmed {fact.mechanism_type}",
+                    conflicting_mechanics=["world_mechanics.social_structure"],
+                    diagnostic={
+                        "mechanism_type": fact.mechanism_type,
+                        "mechanism_source": fact.mechanism_source or "unknown",
+                    },
+                )
+            elif fact.mechanism_type in [
+                "cultivation_system",
+                "fantasy_commerce",
+                "sect_organization",
+            ]:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.ALLOW,
+                    fact_id=fact.fact_id,
+                    rule_id="fantasy.eastern.progression:cultivation-mechanics",
+                    rationale=f"Confirmed {fact.mechanism_type} consistent with fantasy eastern world",
+                    diagnostic={"mechanism_type": fact.mechanism_type},
+                )
+
+        # Step 2: Check for confirmed modern corporate mechanisms
+        confirmed_modern_corporate = [
+            "现代股份制公司",
+            "发行股票",
+            "建立董事会",
+            "成为董事会",
+            "风险投资",
+            "venture capital",
+            "modern corporation",
+            "stock issuance",
+            "board of directors",
+        ]
+        for phrase in confirmed_modern_corporate:
+            if phrase in fact.description or phrase in fact_lower:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REJECT,
+                    fact_id=fact.fact_id,
+                    rule_id="fantasy.eastern.progression:no-modern-corporate",
+                    rationale=f"Fantasy eastern world does not permit modern corporate mechanisms (found: {phrase})",
+                    conflicting_mechanics=["world_mechanics.social_structure"],
+                    diagnostic={
+                        "confirmed_phrase": phrase,
+                        "fact_type": fact.fact_type,
+                    },
+                )
+
+        # Step 3: Context-aware keyword filtering
+        # Fantasy commerce context (legitimate trade) vs modern corporate context
+
+        fantasy_commerce_context = [
+            "商会",
+            "拍卖",
+            "售卖",
+            "交易",
+            "灵石",
+            "灵药",
+            "仙剑",
+            "法宝",
+            "merchant guild",
+            "auction",
+            "trade",
+            "spiritual stone",
+        ]
+        has_fantasy_commerce = any(
+            indicator in fact.description or indicator in fact_lower
+            for indicator in fantasy_commerce_context
+        )
+
+        # If it's fantasy commerce (e.g., "灵药上市售卖"), don't reject as modern IPO
+        # "上市" in fantasy context means "put on market/listing for sale", not stock IPO
+        if has_fantasy_commerce:
+            # Allow fantasy commerce - "上市" here means marketplace listing
+            return PolicyJudgment(
+                verdict=PolicyVerdict.ALLOW,
+                fact_id=fact.fact_id,
+                rule_id="fantasy.eastern.progression:fantasy-commerce",
+                rationale="Fantasy commerce and trade allowed in fantasy eastern Pack",
+                diagnostic={"context": "fantasy_commerce"},
+            )
+
+        # Modern corporate keywords (only check if NOT fantasy commerce context)
         modern_corporate_keywords = [
-            # English
+            "股份制",
+            "股票",
+            "董事会",
+            "风险投资",
+            "现代公司",
             "stock",
-            "equity",
             "shareholder",
             "corporation",
             "board of directors",
-            "quarterly earnings",
-            "ipo",
             "venture capital",
-            "startup funding",
-            # Chinese
-            "股份制",
-            "股票",
-            "股权",
-            "董事会",
-            "上市",
-            "风险投资",
-            "现代股份",
+            "ipo",
+            "equity",  # Added equity as modern corporate keyword
         ]
 
-        # Check for undeclared modern corporate mechanisms
         for keyword in modern_corporate_keywords:
             if keyword in fact_lower or keyword in fact.description:
                 return PolicyJudgment(
                     verdict=PolicyVerdict.REJECT,
                     fact_id=fact.fact_id,
                     rule_id="fantasy.eastern.progression:no-modern-corporate",
-                    rationale=f"Fantasy eastern world does not include modern corporate mechanisms (found: {keyword})",
+                    rationale=f"Fantasy eastern world does not permit modern corporate mechanisms (found: {keyword})",
                     conflicting_mechanics=["world_mechanics.social_structure"],
                     diagnostic={"keyword": keyword, "fact_type": fact.fact_type},
                 )
 
-        # Cultivation/fantasy mechanics are allowed (English + Chinese)
+        # Step 4: Allow cultivation/fantasy mechanics
         fantasy_keywords = [
-            # English
-            "cultivate",
-            "cultivation",
-            "spiritual energy",
-            "qi",
-            "breakthrough",
-            "realm",
-            "sect",
-            "dao",
-            "immortal",
-            "nascent soul",
-            # Chinese
             "修炼",
             "修仙",
             "灵气",
@@ -444,6 +586,16 @@ class GenreHardPolicyEngine:
             "仙",
             "金丹",
             "元婴",
+            "闭关",
+            "cultivate",
+            "cultivation",
+            "spiritual energy",
+            "qi",
+            "breakthrough",
+            "realm",
+            "sect",
+            "dao",
+            "immortal",
         ]
 
         for keyword in fantasy_keywords:
@@ -452,7 +604,8 @@ class GenreHardPolicyEngine:
                     verdict=PolicyVerdict.ALLOW,
                     fact_id=fact.fact_id,
                     rule_id="fantasy.eastern.progression:cultivation-mechanics",
-                    rationale=f"Cultivation mechanics allowed in fantasy eastern Pack (found: {keyword})",
+                    rationale="Cultivation mechanics allowed in fantasy eastern Pack",
+                    diagnostic={"keyword": keyword},
                 )
 
         # Default: allow if consistent with fantasy world

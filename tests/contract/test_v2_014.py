@@ -571,3 +571,177 @@ class TestVerdictTraceability:
         assert len(judgment.rationale) > 0
         assert judgment.diagnostic is not None
         assert "reason" in judgment.diagnostic
+
+
+# --- Chinese Novel Judgment Tests ---
+
+
+class TestChineseUrbanRealismJudgment:
+    """Chinese urban realistic novel judgment scenarios."""
+
+    def test_reject_chinese_cultivation_in_urban(self, urban_engine):
+        """都市现实世界中，主角实际吸收灵气、突破筑基：REJECT"""
+        fact = NarrativeFact(
+            fact_id="zh-urban-001",
+            description="陈伟能够吸收周围的灵气，突破到了筑基期",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-3:line-100",
+            fact_type="character_ability",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.REJECT
+        assert "urban.business.realistic:no-supernatural" in judgment.rule_id
+        assert judgment.conflicting_mechanics is not None
+
+    def test_allow_chinese_dream_cultivation(self, urban_engine):
+        """都市角色梦见御剑飞行：不得视为真实世界污染"""
+        fact = NarrativeFact(
+            fact_id="zh-urban-002",
+            description="在梦中，李明御剑飞行，穿梭于云海之间",
+            context_type=FactContextType.DREAM_SEQUENCE,
+            source_evidence="chapter-5:line-67",
+            fact_type="dream_content",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert "context" in judgment.rationale.lower()
+        assert judgment.diagnostic["context_type"] == "DREAM_SEQUENCE"
+
+    def test_allow_chinese_discussing_cultivation_novel(self, urban_engine):
+        """都市角色讨论修仙小说：不得误拒绝"""
+        fact = NarrativeFact(
+            fact_id="zh-urban-003",
+            description="王浩向同事推荐了一本修仙小说，讲述主角从凡人修炼到仙帝的故事",
+            context_type=FactContextType.CHARACTER_DIALOGUE,
+            source_evidence="chapter-2:line-45",
+            fact_type="dialogue",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert judgment.diagnostic["context_type"] == "CHARACTER_DIALOGUE"
+
+    def test_allow_chinese_realistic_business_financing(self, urban_engine):
+        """都市世界真实公司融资及股权调整：ALLOW"""
+        fact = NarrativeFact(
+            fact_id="zh-urban-004",
+            description="经过三轮谈判，公司完成了A轮融资，投资方获得了20%的股权",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-8:line-123",
+            fact_type="business_event",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert judgment.rule_id == "urban.business.realistic:realistic-mechanics"
+
+    def test_review_required_chinese_ambiguous_ability(self, urban_engine):
+        """机制未知、事实来源不可信或证据不足：REVIEW_REQUIRED"""
+        fact = NarrativeFact(
+            fact_id="zh-urban-005",
+            description="张三拥有某种特殊的能力",
+            context_type=FactContextType.UNKNOWN,
+            source_evidence="chapter-4:line-90",
+            fact_type="character_ability",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.REVIEW_REQUIRED
+        assert judgment.diagnostic["reason"] == "unknown_context"
+
+
+class TestChineseFantasyEasternJudgment:
+    """Chinese fantasy eastern novel judgment scenarios."""
+
+    def test_allow_chinese_cultivation_in_fantasy(self, fantasy_engine):
+        """玄幻世界合法境界修炼：不得误拒绝"""
+        fact = NarrativeFact(
+            fact_id="zh-fantasy-001",
+            description="经过三个月闭关修炼，林峰终于突破到了金丹期",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-10:line-200",
+            fact_type="character_progression",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert "cultivation" in judgment.rule_id or "fantasy" in judgment.rule_id
+
+    def test_allow_chinese_merchant_guild_trade(self, fantasy_engine):
+        """玄幻世界商会交易：不得误拒绝"""
+        fact = NarrativeFact(
+            fact_id="zh-fantasy-002",
+            description="天宝商会在拍卖会上以五百万灵石的价格拍下了这把仙剑",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-7:line-156",
+            fact_type="business_event",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+
+    def test_reject_chinese_modern_corporate_in_fantasy(self, fantasy_engine):
+        """玄幻世界确定引入未声明的现代公司股权机制：REJECT"""
+        fact = NarrativeFact(
+            fact_id="zh-fantasy-003",
+            description="宗门建立了现代股份制公司，长老会成为董事会，发行股票融资",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-12:line-234",
+            fact_type="world_mechanism",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.REJECT
+        assert "modern" in judgment.rationale.lower() or "corporate" in judgment.rationale.lower()
+        assert judgment.conflicting_mechanics is not None
+
+    def test_allow_chinese_sect_competition(self, fantasy_engine):
+        """玄幻世界宗门竞争与资源争夺：ALLOW"""
+        fact = NarrativeFact(
+            fact_id="zh-fantasy-004",
+            description="青云宗与天剑门为了争夺灵脉资源，在边境发生了激烈冲突",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-15:line-300",
+            fact_type="faction_conflict",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+
+    def test_chinese_cross_genre_pollution_detection(self, urban_engine, fantasy_engine):
+        """验证中文场景下的跨题材污染检测"""
+        # Urban world: reject cultivation ability
+        urban_cultivation = NarrativeFact(
+            fact_id="zh-cross-001",
+            description="主角发现自己可以修炼内功，打通了任督二脉",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-1:line-50",
+            fact_type="character_ability",
+        )
+
+        # Fantasy world: allow cultivation
+        fantasy_cultivation = NarrativeFact(
+            fact_id="zh-cross-002",
+            description="主角发现自己可以修炼内功，打通了任督二脉",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-1:line-50",
+            fact_type="character_ability",
+        )
+
+        urban_judgment = urban_engine.judge_fact(urban_cultivation)
+        fantasy_judgment = fantasy_engine.judge_fact(fantasy_cultivation)
+
+        # Same content, different verdicts based on Pack
+        assert urban_judgment.verdict == PolicyVerdict.REJECT
+        assert fantasy_judgment.verdict == PolicyVerdict.ALLOW

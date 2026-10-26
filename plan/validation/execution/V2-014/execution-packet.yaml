@@ -107,8 +107,8 @@ review_notes:
 - REVIEW_REQUIRED verdict explicitly flags semantic uncertainty
 
 change_review:
-  scope_revision: d3630032f8d7b8e5c4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1
-  scope_ref: impl/v2-014-genre-hard-policy branch HEAD
+  scope_revision: d3630039c2e5882a690be016114381592109d9e7
+  scope_ref: V2-014 implementation commit (d363003)
 
 handoff:
   current_step: Implementation complete, ready for PR creation and remote CI

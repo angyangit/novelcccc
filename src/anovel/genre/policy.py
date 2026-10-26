@@ -22,7 +22,7 @@ Out of scope:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 
 from anovel.genre.identity import GenrePackIdentity
@@ -31,7 +31,7 @@ from anovel.genre.registry import GenrePackRegistry
 # --- Verdict Types ---
 
 
-class PolicyVerdict(str, Enum):
+class PolicyVerdict(StrEnum):
     """Policy judgment verdict."""
 
     ALLOW = "ALLOW"
@@ -39,7 +39,7 @@ class PolicyVerdict(str, Enum):
     REVIEW_REQUIRED = "REVIEW_REQUIRED"
 
 
-class FactContextType(str, Enum):
+class FactContextType(StrEnum):
     """Type of narrative context for a fact claim."""
 
     WORLD_FACT = "WORLD_FACT"  # Actual event in story world
@@ -183,7 +183,7 @@ class GenreHardPolicyEngine:
         self.pack_metadata = registry.get_pack(
             pack_identity.pack_id,
             pack_identity.version,
-            expected_hash=pack_identity.content_hash,
+            pack_identity.content_hash,
         )
 
         # Extract pack_id for rule routing
@@ -241,8 +241,9 @@ class GenreHardPolicyEngine:
 
         Urban reality anchor: strict real-world mechanics, no supernatural abilities.
         """
-        # Keywords suggesting supernatural abilities in reality
+        # Keywords suggesting supernatural abilities in reality (English + Chinese)
         supernatural_keywords = [
+            # English
             "cultivat",  # matches cultivate, cultivation
             "spiritual energy",
             "qi",
@@ -255,15 +256,34 @@ class GenreHardPolicyEngine:
             "transmigrat",
             "reincarnate",
             "level up",
+            # Chinese
+            "修炼",
+            "修仙",
+            "灵气",
+            "突破",
+            "筑基",
+            "金丹",
+            "元婴",
+            "化神",
+            "境界",
+            "仙",
+            "内功",
+            "任督二脉",
+            "真气",
+            "法术",
+            "神通",
         ]
 
         fact_lower = fact.description.lower()
 
         # Check for supernatural ability claims
         for keyword in supernatural_keywords:
-            if keyword in fact_lower:
+            if (
+                keyword in fact_lower or keyword in fact.description
+            ):  # Check both cases for Chinese
                 # Check if this is about ability/mechanism vs just terminology
                 ability_indicators = [
+                    # English
                     "can",
                     "able to",
                     "power",
@@ -274,10 +294,18 @@ class GenreHardPolicyEngine:
                     "absorb",
                     "refine",
                     "breakthrough to",
+                    # Chinese
+                    "能够",
+                    "可以",
+                    "拥有",
+                    "吸收",
+                    "打通",
+                    "发现自己",
                 ]
 
                 is_ability_claim = any(
-                    indicator in fact_lower for indicator in ability_indicators
+                    indicator in fact_lower or indicator in fact.description
+                    for indicator in ability_indicators
                 )
 
                 if is_ability_claim:
@@ -290,10 +318,17 @@ class GenreHardPolicyEngine:
                         diagnostic={"keyword": keyword, "fact_type": fact.fact_type},
                     )
 
-        # Check for system/status window mechanics
-        system_keywords = ["status window", "system window", "game system"]
+        # Check for system/status window mechanics (English + Chinese)
+        system_keywords = [
+            "status window",
+            "system window",
+            "game system",
+            "状态窗口",
+            "系统",
+            "游戏系统",
+        ]
         for keyword in system_keywords:
-            if keyword in fact_lower:
+            if keyword in fact_lower or keyword in fact.description:
                 return PolicyJudgment(
                     verdict=PolicyVerdict.REJECT,
                     fact_id=fact.fact_id,
@@ -351,8 +386,9 @@ class GenreHardPolicyEngine:
         """
         fact_lower = fact.description.lower()
 
-        # Modern corporate mechanisms that conflict with fantasy setting
+        # Modern corporate mechanisms that conflict with fantasy setting (English + Chinese)
         modern_corporate_keywords = [
+            # English
             "stock",
             "equity",
             "shareholder",
@@ -362,11 +398,19 @@ class GenreHardPolicyEngine:
             "ipo",
             "venture capital",
             "startup funding",
+            # Chinese
+            "股份制",
+            "股票",
+            "股权",
+            "董事会",
+            "上市",
+            "风险投资",
+            "现代股份",
         ]
 
         # Check for undeclared modern corporate mechanisms
         for keyword in modern_corporate_keywords:
-            if keyword in fact_lower:
+            if keyword in fact_lower or keyword in fact.description:
                 return PolicyJudgment(
                     verdict=PolicyVerdict.REJECT,
                     fact_id=fact.fact_id,
@@ -376,8 +420,9 @@ class GenreHardPolicyEngine:
                     diagnostic={"keyword": keyword, "fact_type": fact.fact_type},
                 )
 
-        # Cultivation/fantasy mechanics are allowed
+        # Cultivation/fantasy mechanics are allowed (English + Chinese)
         fantasy_keywords = [
+            # English
             "cultivate",
             "cultivation",
             "spiritual energy",
@@ -388,10 +433,21 @@ class GenreHardPolicyEngine:
             "dao",
             "immortal",
             "nascent soul",
+            # Chinese
+            "修炼",
+            "修仙",
+            "灵气",
+            "突破",
+            "境界",
+            "宗门",
+            "道",
+            "仙",
+            "金丹",
+            "元婴",
         ]
 
         for keyword in fantasy_keywords:
-            if keyword in fact_lower:
+            if keyword in fact_lower or keyword in fact.description:
                 return PolicyJudgment(
                     verdict=PolicyVerdict.ALLOW,
                     fact_id=fact.fact_id,

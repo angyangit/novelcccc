@@ -1034,18 +1034,22 @@ tasks:
   - 不绕过前置阶段门禁
   - 只实现两个冻结 Anchor，不扩展 30 个题材包
   - 不把关键词计数当事实硬裁判
-  status: OPEN
-  execution_packet_ref: null
+  status: CLOSED
+  execution_packet_ref: plan/validation/execution/V2-014/execution-packet.yaml
   owner_role: genre-maintainer
   readiness: PLANNED
   start_gate: G-P2
   required_decisions:
   - ADR-007
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - plan/validation/execution/V2-014/closure/code-evidence.yaml
+    tests:
+    - plan/validation/execution/V2-014/closure/test-evidence.yaml
+    ci:
+    - plan/validation/execution/V2-014/closure/ci-evidence.yaml
+    acceptance:
+    - plan/validation/execution/V2-014/closure/acceptance-evidence.yaml
   related_findings:
   - AR-15
   - CA-09

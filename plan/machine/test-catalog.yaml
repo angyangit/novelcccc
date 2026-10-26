@@ -293,7 +293,7 @@ suites:
 - id: AT-V2-014
   task_id: V2-014
   phase: P3
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/contract/test_v2_014.py
   scenarios:
   - id: AT-V2-014-01
@@ -304,7 +304,9 @@ suites:
     required_assertion: 语义不确定返回显式待处理而不是 PASS
   - id: AT-V2-014-04
     required_assertion: 可选套路与冻结世界机制冲突时拒绝该策略；正常无匹配不制造世界规则
-  execution_evidence: []
+  execution_evidence:
+  - plan/validation/execution/V2-014/closure/test-evidence.yaml
+  - plan/validation/execution/V2-014/closure/acceptance-evidence.yaml
 - id: AT-V2-015
   task_id: V2-015
   phase: P3

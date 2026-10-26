@@ -29,6 +29,7 @@ from anovel.genre.identity import (
 from anovel.genre.registry import (
     GenrePackHashMismatchError,
     GenrePackRegistry,
+    UndeclaredExtensionError,
     UnknownPackError,
     UnknownVersionError,
 )
@@ -389,3 +390,94 @@ class TestWorldAnchorValidation:
 
         assert urban.world_anchors[0] == "urban.business.realistic"
         assert fantasy.world_anchors[0] == "fantasy.eastern.progression"
+
+
+class TestGetPackOverloads:
+    """Test get_pack overloaded interface per ADR-007."""
+
+    def test_get_pack_with_identity_object(self, registry, urban_pack_identity):
+        """Positive: Original get_pack(GenrePackIdentity) still works."""
+        metadata = registry.get_pack(urban_pack_identity)
+        assert metadata.identity.pack_id == "urban.business.realistic"
+
+    def test_get_pack_with_separate_args_and_hash(self, registry):
+        """Positive: get_pack(pack_id, version, hash) simplified interface."""
+        metadata = registry.get_pack(
+            "urban.business.realistic",
+            "1.0.0",
+            "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336",
+        )
+        assert metadata.identity.pack_id == "urban.business.realistic"
+
+    def test_get_pack_without_hash_uses_registry(self, registry):
+        """Positive: get_pack(pack_id, version) uses registry hash."""
+        metadata = registry.get_pack("urban.business.realistic", "1.0.0")
+        assert metadata.identity.pack_id == "urban.business.realistic"
+        assert (
+            metadata.identity.content_hash
+            == "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336"
+        )
+
+    def test_get_pack_with_wrong_hash_rejected(self, registry):
+        """Negative: get_pack with wrong hash raises error."""
+        with pytest.raises(GenrePackHashMismatchError):
+            registry.get_pack("urban.business.realistic", "1.0.0", "0" * 64)
+
+    def test_get_pack_without_version_raises_error(self, registry):
+        """Negative: get_pack(pack_id) without version raises TypeError."""
+        with pytest.raises(TypeError) as exc_info:
+            registry.get_pack("urban.business.realistic")  # type: ignore
+        assert "version is required" in str(exc_info.value)
+
+
+class TestExtensionNamespaceValidation:
+    """Test extension namespace validation in ProjectGenreBindingService."""
+
+    def test_validate_declared_extension(self, binding_service, urban_pack_identity):
+        """Positive: Validate declared extension namespace."""
+        project_id = ProjectId("project-ext-001")
+        binding_service.bind_pack(project_id, urban_pack_identity)
+
+        # urban pack declares "urban" and "business" namespaces
+        assert binding_service.validate_extension_namespace(project_id, "urban")
+        assert binding_service.validate_extension_namespace(project_id, "business")
+
+    def test_validate_undeclared_extension_rejected(
+        self, binding_service, urban_pack_identity
+    ):
+        """Negative: Undeclared extension namespace rejected."""
+        project_id = ProjectId("project-ext-002")
+        binding_service.bind_pack(project_id, urban_pack_identity)
+
+        # "fantasy" is not declared in urban pack
+        with pytest.raises(UndeclaredExtensionError) as exc_info:
+            binding_service.validate_extension_namespace(project_id, "fantasy")
+
+        assert "fantasy" in str(exc_info.value).lower()
+
+    def test_validate_extension_for_unbound_project(self, binding_service):
+        """Negative: Validation for unbound project raises error."""
+        project_id = ProjectId("unbound-ext-project")
+
+        with pytest.raises(ProjectNotBoundError):
+            binding_service.validate_extension_namespace(project_id, "urban")
+
+    def test_both_packs_have_different_extensions(
+        self, binding_service, urban_pack_identity, fantasy_pack_identity
+    ):
+        """Positive: Different packs have different valid extensions."""
+        urban_project = ProjectId("project-urban")
+        fantasy_project = ProjectId("project-fantasy")
+
+        binding_service.bind_pack(urban_project, urban_pack_identity)
+        binding_service.bind_pack(fantasy_project, fantasy_pack_identity)
+
+        # Urban pack has "urban", "business"
+        assert binding_service.validate_extension_namespace(urban_project, "urban")
+        with pytest.raises(UndeclaredExtensionError):
+            binding_service.validate_extension_namespace(urban_project, "fantasy")
+
+        # Fantasy pack has "fantasy", "eastern"
+        assert binding_service.validate_extension_namespace(fantasy_project, "fantasy")
+        with pytest.raises(UndeclaredExtensionError):
+            binding_service.validate_extension_namespace(fantasy_project, "urban")

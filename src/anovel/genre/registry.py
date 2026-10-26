@@ -20,6 +20,7 @@ Registry YAML format:
 from __future__ import annotations
 
 from pathlib import Path
+from typing import overload
 
 import yaml
 
@@ -216,18 +217,39 @@ class GenrePackRegistry:
 
         return cls(registry_path, specs_root, index)
 
-    def get_pack(self, pack_identity: GenrePackIdentity) -> GenrePackMetadata:
+    @overload
+    def get_pack(self, pack_identity: GenrePackIdentity, /) -> GenrePackMetadata: ...
+
+    @overload
+    def get_pack(
+        self, pack_id: str, version: str, expected_hash: str | None = None, /
+    ) -> GenrePackMetadata: ...
+
+    def get_pack(
+        self,
+        pack_identity: GenrePackIdentity | str,
+        version: str | None = None,
+        expected_hash: str | None = None,
+    ) -> GenrePackMetadata:
         """
         Get Pack metadata with three-way hash verification.
 
+        Supports two calling conventions per ADR-007:
+        1. get_pack(GenrePackIdentity(...))  # Original interface
+        2. get_pack(pack_id, version, expected_hash=None)  # Simplified interface
+
+        If expected_hash is None, uses registry's declared hash.
+
         Performs strict validation:
         1. Check Pack exists in registry
-        2. Verify caller hash matches registry hash
+        2. Verify caller hash matches registry hash (if provided)
         3. Load Pack file and verify content hash
         4. Validate extension namespaces
 
         Args:
-            pack_identity: Pack identity with (pack_id, version, content_hash)
+            pack_identity_or_id: GenrePackIdentity object OR pack_id string
+            version: Semantic version (required if pack_id string)
+            expected_hash: Expected content hash (optional, uses registry hash if None)
 
         Returns:
             GenrePackMetadata with validated identity
@@ -238,29 +260,68 @@ class GenrePackRegistry:
             GenrePackHashMismatchError: If caller hash != registry hash
             RegistryPackFileMismatchError: If file hash != registry hash
             UndeclaredExtensionError: If Pack uses undeclared extension
+
+        Examples:
+            >>> # Original interface
+            >>> identity = GenrePackIdentity("urban.business.realistic", "1.0.0", hash)
+            >>> metadata = registry.get_pack(identity)
+            >>>
+            >>> # Simplified interface with hash
+            >>> metadata = registry.get_pack("urban.business.realistic", "1.0.0", hash)
+            >>>
+            >>> # Simplified interface without hash (uses registry hash)
+            >>> metadata = registry.get_pack("urban.business.realistic", "1.0.0")
         """
+        # Determine calling convention
+        if isinstance(pack_identity, GenrePackIdentity):
+            # Original interface: get_pack(GenrePackIdentity)
+            pack_identity_obj = pack_identity
+        else:
+            # Simplified interface: get_pack(pack_id, version, expected_hash=None)
+            if version is None:
+                raise TypeError(
+                    "version is required when calling get_pack(pack_id, version, ...)"
+                )
+            pack_id = pack_identity
+
+            # If no expected_hash provided, lookup from registry
+            if expected_hash is None:
+                key = (pack_id, version)
+                if key not in self._index:
+                    if pack_id not in {k[0] for k in self._index.keys()}:
+                        raise UnknownPackError(pack_id)
+                    available_versions = [
+                        v for pid, v in self._index.keys() if pid == pack_id
+                    ]
+                    raise UnknownVersionError(pack_id, version, available_versions)
+                expected_hash = self._index[key].identity.content_hash
+
+            # Construct identity
+            pack_identity_obj = GenrePackIdentity(pack_id, version, expected_hash)
+
+        # Proceed with validation (original logic)
         # Step 1: Registry lookup
-        key = (pack_identity.pack_id, pack_identity.version)
-        if pack_identity.pack_id not in {k[0] for k in self._index.keys()}:
-            raise UnknownPackError(pack_identity.pack_id)
+        key = (pack_identity_obj.pack_id, pack_identity_obj.version)
+        if pack_identity_obj.pack_id not in {k[0] for k in self._index.keys()}:
+            raise UnknownPackError(pack_identity_obj.pack_id)
 
         if key not in self._index:
             available_versions = [
-                v for pid, v in self._index.keys() if pid == pack_identity.pack_id
+                v for pid, v in self._index.keys() if pid == pack_identity_obj.pack_id
             ]
             raise UnknownVersionError(
-                pack_identity.pack_id, pack_identity.version, available_versions
+                pack_identity_obj.pack_id, pack_identity_obj.version, available_versions
             )
 
         registry_metadata = self._index[key]
         registry_hash = registry_metadata.identity.content_hash
 
         # Step 2: Caller hash verification
-        caller_hash = pack_identity.content_hash
+        caller_hash = pack_identity_obj.content_hash
         if caller_hash != registry_hash:
             raise GenrePackHashMismatchError(
-                pack_identity.pack_id,
-                pack_identity.version,
+                pack_identity_obj.pack_id,
+                pack_identity_obj.version,
                 caller_hash,
                 registry_hash,
             )
@@ -287,20 +348,20 @@ class GenrePackRegistry:
         unknown_fields = set(pack_content.keys()) - KNOWN_PACK_FIELDS
         if unknown_fields:
             raise ValueError(
-                f"Pack {pack_identity.pack_id} contains unknown top-level fields: {unknown_fields}"
+                f"Pack {pack_identity_obj.pack_id} contains unknown top-level fields: {unknown_fields}"
             )
 
         # Validate content_hash field exists in Pack file
         if "content_hash" not in pack_content:
             raise ValueError(
-                f"Pack {pack_identity.pack_id} missing required 'content_hash' field"
+                f"Pack {pack_identity_obj.pack_id} missing required 'content_hash' field"
             )
 
         # Verify Pack file's declared content_hash matches registry
         pack_declared_hash = pack_content["content_hash"]
         if pack_declared_hash != registry_hash:
             raise ValueError(
-                f"Pack {pack_identity.pack_id} declares content_hash {pack_declared_hash[:8]}..., "
+                f"Pack {pack_identity_obj.pack_id} declares content_hash {pack_declared_hash[:8]}..., "
                 f"but registry declares {registry_hash[:8]}..."
             )
 
@@ -318,8 +379,8 @@ class GenrePackRegistry:
 
         if registry_hash != file_hash:
             raise RegistryPackFileMismatchError(
-                pack_identity.pack_id,
-                pack_identity.version,
+                pack_identity_obj.pack_id,
+                pack_identity_obj.version,
                 registry_hash,
                 file_hash,
             )
@@ -334,7 +395,7 @@ class GenrePackRegistry:
 
         if declared_namespaces != schema_namespaces:
             raise ValueError(
-                f"Extension namespace mismatch for {pack_identity.pack_id}: "
+                f"Extension namespace mismatch for {pack_identity_obj.pack_id}: "
                 f"declared {declared_namespaces}, schemas define {schema_namespaces}"
             )
 
@@ -343,12 +404,12 @@ class GenrePackRegistry:
         if registry_metadata.world_anchors:
             if len(registry_metadata.world_anchors) != 1:
                 raise ValueError(
-                    f"Pack {pack_identity.pack_id} must have exactly one world_anchor in P3, "
+                    f"Pack {pack_identity_obj.pack_id} must have exactly one world_anchor in P3, "
                     f"got {len(registry_metadata.world_anchors)}"
                 )
-            if registry_metadata.world_anchors[0] != pack_identity.pack_id:
+            if registry_metadata.world_anchors[0] != pack_identity_obj.pack_id:
                 raise ValueError(
-                    f"Pack {pack_identity.pack_id} world_anchor must match pack_id, "
+                    f"Pack {pack_identity_obj.pack_id} world_anchor must match pack_id, "
                     f"got '{registry_metadata.world_anchors[0]}'"
                 )
 

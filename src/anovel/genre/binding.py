@@ -187,3 +187,47 @@ class ProjectGenreBindingService:
                 if version is None or binding.pack_identity.version == version:
                     results.append(binding)
         return results
+
+    def validate_extension_namespace(
+        self, project_id: ProjectId, namespace: str
+    ) -> bool:
+        """
+        Validate if project's bound Pack declares the given extension namespace.
+
+        Per ADR-007, extensions must be explicitly declared in Pack's
+        extension_namespaces. Unknown extensions are rejected.
+
+        Args:
+            project_id: Project to check
+            namespace: Extension namespace to validate
+
+        Returns:
+            True if namespace is declared in project's Pack
+
+        Raises:
+            ProjectNotBoundError: If project has no binding
+            UndeclaredExtensionError: If namespace not declared in Pack
+
+        Example:
+            >>> service.validate_extension_namespace(
+            ...     ProjectId("proj-1"), "urban"
+            ... )
+            True
+        """
+        # Get project binding
+        binding = self.get_binding(project_id)
+
+        # Get Pack metadata from registry
+        metadata = self.registry.get_pack(binding.pack_identity)
+
+        # Check if namespace is declared
+        if namespace not in metadata.extension_namespaces:
+            from anovel.genre.registry import UndeclaredExtensionError
+
+            raise UndeclaredExtensionError(
+                binding.pack_identity.pack_id,
+                binding.pack_identity.version,
+                namespace,
+            )
+
+        return True

@@ -137,6 +137,7 @@ class StrategyJudgment:
         rule_id: Which Pack rule was applied
         rationale: Why strategy is allowed or conflicts
         pack_identity_preserved: Whether Pack identity remains unchanged
+        diagnostic: Additional structured information (e.g., match_type: NO_MATCH, VERIFIED_COMPATIBLE, UNKNOWN)
     """
 
     verdict: Literal[PolicyVerdict.ALLOW, PolicyVerdict.REJECT]
@@ -144,6 +145,7 @@ class StrategyJudgment:
     rule_id: str | None
     rationale: str
     pack_identity_preserved: bool
+    diagnostic: dict[str, str] | None = None
 
 
 # --- Policy Engine ---
@@ -251,6 +253,20 @@ class GenreHardPolicyEngine:
 
         # Step 1: Check explicit mechanism declarations first
         if fact.mechanism_type and fact.mechanism_confirmed:
+            # Validate mechanism_source exists when mechanism is claimed as confirmed
+            if not fact.mechanism_source:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REVIEW_REQUIRED,
+                    fact_id=fact.fact_id,
+                    rule_id=None,
+                    rationale="Confirmed mechanism lacks verifiable source",
+                    diagnostic={
+                        "reason": "missing_mechanism_source",
+                        "mechanism_type": fact.mechanism_type,
+                    },
+                )
+
+            # Check for known conflicting mechanisms
             if fact.mechanism_type in [
                 "supernatural_cultivation",
                 "supernatural_ability",
@@ -267,7 +283,7 @@ class GenreHardPolicyEngine:
                     conflicting_mechanics=["world_mechanics.realistic_constraints"],
                     diagnostic={
                         "mechanism_type": fact.mechanism_type,
-                        "mechanism_source": fact.mechanism_source or "unknown",
+                        "mechanism_source": fact.mechanism_source,
                     },
                 )
             elif fact.mechanism_type in ["realistic_business", "realistic_skill"]:
@@ -277,6 +293,18 @@ class GenreHardPolicyEngine:
                     rule_id="urban.business.realistic:realistic-mechanics",
                     rationale=f"Confirmed {fact.mechanism_type} consistent with urban reality",
                     diagnostic={"mechanism_type": fact.mechanism_type},
+                )
+            else:
+                # Unknown mechanism_type - cannot verify compliance
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REVIEW_REQUIRED,
+                    fact_id=fact.fact_id,
+                    rule_id=None,
+                    rationale=f"Unknown mechanism_type '{fact.mechanism_type}' cannot be verified against Pack rules",
+                    diagnostic={
+                        "reason": "unknown_mechanism_type",
+                        "mechanism_type": fact.mechanism_type,
+                    },
                 )
 
         # Step 2: Check for explicit supernatural language (confirmed even without mechanism_type)
@@ -387,7 +415,7 @@ class GenreHardPolicyEngine:
                     # This is a false positive - business metaphor, not cultivation
                     continue  # Don't reject
 
-        # Check for game system mechanics (avoid false positive from "系统性")
+        # Check for game system mechanics (check specific phrases, not whole-fact filtering)
         game_system_phrases = [
             "状态窗口",
             "游戏系统",
@@ -395,18 +423,16 @@ class GenreHardPolicyEngine:
             "game system",
             "system window",
         ]
-        # Only reject if it's game system, not "系统性" business term
-        if "系统性" not in fact.description:
-            for phrase in game_system_phrases:
-                if phrase in fact.description or phrase in fact_lower:
-                    return PolicyJudgment(
-                        verdict=PolicyVerdict.REJECT,
-                        fact_id=fact.fact_id,
-                        rule_id="urban.business.realistic:no-supernatural",
-                        rationale=f"Urban reality does not permit game system mechanics (found: {phrase})",
-                        conflicting_mechanics=["world_mechanics.realistic_constraints"],
-                        diagnostic={"keyword": phrase, "fact_type": fact.fact_type},
-                    )
+        for phrase in game_system_phrases:
+            if phrase in fact.description or phrase in fact_lower:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REJECT,
+                    fact_id=fact.fact_id,
+                    rule_id="urban.business.realistic:no-supernatural",
+                    rationale=f"Urban reality does not permit game system mechanics (found: {phrase})",
+                    conflicting_mechanics=["world_mechanics.realistic_constraints"],
+                    diagnostic={"keyword": phrase, "fact_type": fact.fact_type},
+                )
 
         # Step 4: Handle ambiguous ability claims - require review instead of auto-allow
         if fact.fact_type in ["character_ability", "world_mechanism"]:
@@ -457,6 +483,20 @@ class GenreHardPolicyEngine:
 
         # Step 1: Check explicit mechanism declarations first
         if fact.mechanism_type and fact.mechanism_confirmed:
+            # Validate mechanism_source exists when mechanism is claimed as confirmed
+            if not fact.mechanism_source:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REVIEW_REQUIRED,
+                    fact_id=fact.fact_id,
+                    rule_id=None,
+                    rationale="Confirmed mechanism lacks verifiable source",
+                    diagnostic={
+                        "reason": "missing_mechanism_source",
+                        "mechanism_type": fact.mechanism_type,
+                    },
+                )
+
+            # Check for known conflicting mechanisms
             if fact.mechanism_type in [
                 "modern_corporate",
                 "modern_finance",
@@ -471,7 +511,7 @@ class GenreHardPolicyEngine:
                     conflicting_mechanics=["world_mechanics.social_structure"],
                     diagnostic={
                         "mechanism_type": fact.mechanism_type,
-                        "mechanism_source": fact.mechanism_source or "unknown",
+                        "mechanism_source": fact.mechanism_source,
                     },
                 )
             elif fact.mechanism_type in [
@@ -485,6 +525,18 @@ class GenreHardPolicyEngine:
                     rule_id="fantasy.eastern.progression:cultivation-mechanics",
                     rationale=f"Confirmed {fact.mechanism_type} consistent with fantasy eastern world",
                     diagnostic={"mechanism_type": fact.mechanism_type},
+                )
+            else:
+                # Unknown mechanism_type - cannot verify compliance
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REVIEW_REQUIRED,
+                    fact_id=fact.fact_id,
+                    rule_id=None,
+                    rationale=f"Unknown mechanism_type '{fact.mechanism_type}' cannot be verified against Pack rules",
+                    diagnostic={
+                        "reason": "unknown_mechanism_type",
+                        "mechanism_type": fact.mechanism_type,
+                    },
                 )
 
         # Step 2: Check for confirmed modern corporate mechanisms
@@ -513,9 +565,40 @@ class GenreHardPolicyEngine:
                     },
                 )
 
-        # Step 3: Context-aware keyword filtering
-        # Fantasy commerce context (legitimate trade) vs modern corporate context
+        # Step 3: Check for hard conflicts BEFORE context-based allowances
+        # Modern corporate keywords that must be checked before fantasy commerce context
+        modern_corporate_keywords = [
+            "股份制",
+            "股票",
+            "董事会",
+            "股东大会",
+            "风险投资",
+            "现代公司",
+            "证券",
+            "stock",
+            "shareholder",
+            "corporation",
+            "board of directors",
+            "venture capital",
+            "ipo",
+            "equity",
+            "securities",
+        ]
 
+        # Check for modern corporate mechanisms FIRST (before fantasy commerce context)
+        for keyword in modern_corporate_keywords:
+            if keyword in fact_lower or keyword in fact.description:
+                return PolicyJudgment(
+                    verdict=PolicyVerdict.REJECT,
+                    fact_id=fact.fact_id,
+                    rule_id="fantasy.eastern.progression:no-modern-corporate",
+                    rationale=f"Fantasy eastern world does not permit modern corporate mechanisms (found: {keyword})",
+                    conflicting_mechanics=["world_mechanics.social_structure"],
+                    diagnostic={"keyword": keyword, "fact_type": fact.fact_type},
+                )
+
+        # Step 4: Context-aware filtering for legitimate fantasy commerce
+        # Fantasy commerce context (legitimate trade) - only check AFTER conflicts ruled out
         fantasy_commerce_context = [
             "商会",
             "拍卖",
@@ -535,7 +618,7 @@ class GenreHardPolicyEngine:
             for indicator in fantasy_commerce_context
         )
 
-        # If it's fantasy commerce (e.g., "灵药上市售卖"), don't reject as modern IPO
+        # If it's fantasy commerce (e.g., "灵药上市售卖"), allow as marketplace listing
         # "上市" in fantasy context means "put on market/listing for sale", not stock IPO
         if has_fantasy_commerce:
             # Allow fantasy commerce - "上市" here means marketplace listing
@@ -546,33 +629,6 @@ class GenreHardPolicyEngine:
                 rationale="Fantasy commerce and trade allowed in fantasy eastern Pack",
                 diagnostic={"context": "fantasy_commerce"},
             )
-
-        # Modern corporate keywords (only check if NOT fantasy commerce context)
-        modern_corporate_keywords = [
-            "股份制",
-            "股票",
-            "董事会",
-            "风险投资",
-            "现代公司",
-            "stock",
-            "shareholder",
-            "corporation",
-            "board of directors",
-            "venture capital",
-            "ipo",
-            "equity",  # Added equity as modern corporate keyword
-        ]
-
-        for keyword in modern_corporate_keywords:
-            if keyword in fact_lower or keyword in fact.description:
-                return PolicyJudgment(
-                    verdict=PolicyVerdict.REJECT,
-                    fact_id=fact.fact_id,
-                    rule_id="fantasy.eastern.progression:no-modern-corporate",
-                    rationale=f"Fantasy eastern world does not permit modern corporate mechanisms (found: {keyword})",
-                    conflicting_mechanics=["world_mechanics.social_structure"],
-                    diagnostic={"keyword": keyword, "fact_type": fact.fact_type},
-                )
 
         # Step 4: Allow cultivation/fantasy mechanics
         fantasy_keywords = [
@@ -620,49 +676,105 @@ class GenreHardPolicyEngine:
         """
         Judge whether an optional narrative strategy conflicts with frozen Pack mechanics.
 
-        If strategy has no match, Pack identity is preserved (no automatic fallback).
-        If strategy conflicts with world mechanics, it is rejected.
+        Distinguishes between:
+        - CONFLICT: Strategy conflicts with Pack mechanics (REJECT)
+        - VERIFIED_COMPATIBLE: Strategy explicitly compatible with Pack (ALLOW)
+        - NO_MATCH: Strategy has no applicable mechanics for this Pack (ALLOW, Pack preserved)
+        - UNKNOWN: Strategy mechanics cannot be verified (ALLOW with caution flag)
 
         Args:
             strategy: Optional narrative strategy to evaluate
 
         Returns:
-            StrategyJudgment with verdict and Pack identity preservation status
+            StrategyJudgment with verdict, Pack identity preservation, and match_type diagnostic
         """
+        has_relevant_mechanics = False
+
         # Check if strategy proposes mechanics that conflict with Pack
         if self.pack_id == "urban.business.realistic":
-            # Reject strategies introducing supernatural mechanics
-            if any(
-                key in strategy.proposed_mechanics
-                for key in ["cultivation", "magic_system", "supernatural_abilities"]
-            ):
+            # Check for supernatural mechanics
+            supernatural_keys = [
+                "cultivation",
+                "magic_system",
+                "supernatural_abilities",
+            ]
+            if any(key in strategy.proposed_mechanics for key in supernatural_keys):
+                has_relevant_mechanics = True
                 return StrategyJudgment(
                     verdict=PolicyVerdict.REJECT,
                     strategy_id=strategy.strategy_id,
                     rule_id="urban.business.realistic:no-supernatural-strategies",
                     rationale="Strategy introduces supernatural mechanics conflicting with realistic world",
                     pack_identity_preserved=True,
+                    diagnostic={"match_type": "CONFLICT"},
+                )
+
+            # Check for compatible mechanics
+            realistic_keys = [
+                "business_operations",
+                "realistic_skills",
+                "social_dynamics",
+            ]
+            if any(key in strategy.proposed_mechanics for key in realistic_keys):
+                has_relevant_mechanics = True
+                return StrategyJudgment(
+                    verdict=PolicyVerdict.ALLOW,
+                    strategy_id=strategy.strategy_id,
+                    rule_id="urban.business.realistic:strategy-compatible",
+                    rationale="Strategy explicitly compatible with realistic urban mechanics",
+                    pack_identity_preserved=True,
+                    diagnostic={"match_type": "VERIFIED_COMPATIBLE"},
                 )
 
         elif self.pack_id == "fantasy.eastern.progression":
-            # Reject strategies introducing modern corporate mechanics
-            if any(
-                key in strategy.proposed_mechanics
-                for key in ["corporate_structure", "equity_system", "modern_finance"]
-            ):
+            # Check for modern corporate mechanics
+            corporate_keys = ["corporate_structure", "equity_system", "modern_finance"]
+            if any(key in strategy.proposed_mechanics for key in corporate_keys):
+                has_relevant_mechanics = True
                 return StrategyJudgment(
                     verdict=PolicyVerdict.REJECT,
                     strategy_id=strategy.strategy_id,
                     rule_id="fantasy.eastern.progression:no-modern-corporate-strategies",
                     rationale="Strategy introduces modern corporate mechanics conflicting with fantasy world",
                     pack_identity_preserved=True,
+                    diagnostic={"match_type": "CONFLICT"},
                 )
 
-        # Strategy has no match or is compatible - Pack identity preserved
+            # Check for compatible mechanics
+            fantasy_keys = [
+                "cultivation_progression",
+                "sect_mechanics",
+                "spiritual_resources",
+            ]
+            if any(key in strategy.proposed_mechanics for key in fantasy_keys):
+                has_relevant_mechanics = True
+                return StrategyJudgment(
+                    verdict=PolicyVerdict.ALLOW,
+                    strategy_id=strategy.strategy_id,
+                    rule_id="fantasy.eastern.progression:strategy-compatible",
+                    rationale="Strategy explicitly compatible with fantasy eastern mechanics",
+                    pack_identity_preserved=True,
+                    diagnostic={"match_type": "VERIFIED_COMPATIBLE"},
+                )
+
+        # Check if strategy has unknown mechanics that cannot be verified
+        if strategy.proposed_mechanics and not has_relevant_mechanics:
+            # Strategy has mechanics but they're not recognized
+            return StrategyJudgment(
+                verdict=PolicyVerdict.ALLOW,
+                strategy_id=strategy.strategy_id,
+                rule_id=None,
+                rationale="Strategy mechanics unknown; Pack identity preserved but verification incomplete",
+                pack_identity_preserved=True,
+                diagnostic={"match_type": "UNKNOWN"},
+            )
+
+        # Strategy has no match - no applicable mechanics for this Pack
         return StrategyJudgment(
             verdict=PolicyVerdict.ALLOW,
             strategy_id=strategy.strategy_id,
-            rule_id=f"{self.pack_id}:strategy-compatible",
-            rationale="Strategy compatible with Pack mechanics or has no match (Pack identity preserved)",
+            rule_id=f"{self.pack_id}:no-match",
+            rationale="Strategy has no applicable mechanics for this Pack (Pack identity preserved)",
             pack_identity_preserved=True,
+            diagnostic={"match_type": "NO_MATCH"},
         )

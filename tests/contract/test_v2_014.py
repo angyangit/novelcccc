@@ -702,7 +702,10 @@ class TestChineseFantasyEasternJudgment:
         judgment = fantasy_engine.judge_fact(fact)
 
         assert judgment.verdict == PolicyVerdict.REJECT
-        assert "modern" in judgment.rationale.lower() or "corporate" in judgment.rationale.lower()
+        assert (
+            "modern" in judgment.rationale.lower()
+            or "corporate" in judgment.rationale.lower()
+        )
         assert judgment.conflicting_mechanics is not None
 
     def test_allow_chinese_sect_competition(self, fantasy_engine):
@@ -719,7 +722,9 @@ class TestChineseFantasyEasternJudgment:
 
         assert judgment.verdict == PolicyVerdict.ALLOW
 
-    def test_chinese_cross_genre_pollution_detection(self, urban_engine, fantasy_engine):
+    def test_chinese_cross_genre_pollution_detection(
+        self, urban_engine, fantasy_engine
+    ):
         """验证中文场景下的跨题材污染检测"""
         # Urban world: reject cultivation ability
         urban_cultivation = NarrativeFact(
@@ -745,3 +750,294 @@ class TestChineseFantasyEasternJudgment:
         # Same content, different verdicts based on Pack
         assert urban_judgment.verdict == PolicyVerdict.REJECT
         assert fantasy_judgment.verdict == PolicyVerdict.ALLOW
+
+
+class TestMixedMechanicsConflictDetection:
+    """Test that conflicts are detected even when mixed with legitimate content."""
+
+    def test_fantasy_commerce_with_stock_trading_rejected(self, fantasy_engine):
+        """Fantasy commerce + modern stock mechanisms must reject the conflict."""
+        fact = NarrativeFact(
+            fact_id="mixed-001",
+            description="青云商会以灵石结算股票交易，并设立现代股东大会",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-10:line-200",
+            fact_type="world_mechanism",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        # Must REJECT due to modern corporate mechanisms, not ALLOW due to commerce context
+        assert judgment.verdict == PolicyVerdict.REJECT
+        assert "stock" in judgment.rationale.lower() or "股票" in judgment.rationale
+
+    def test_fantasy_legitimate_spirit_stone_trade_allowed(self, fantasy_engine):
+        """Pure fantasy commerce without modern mechanisms should be allowed."""
+        fact = NarrativeFact(
+            fact_id="mixed-002",
+            description="青云商会以灵石结算灵药交易",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-10:line-100",
+            fact_type="business_event",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+
+    def test_urban_systematic_upgrade_with_game_system_rejected(self, urban_engine):
+        """Legitimate business term + game system must reject the game system."""
+        fact = NarrativeFact(
+            fact_id="mixed-003",
+            description="公司完成系统性数字化升级后，主角开启游戏系统，获得超自然属性面板",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-5:line-100",
+            fact_type="world_mechanism",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        # Must REJECT due to game system, despite "系统性" being present
+        assert judgment.verdict == PolicyVerdict.REJECT
+        assert (
+            "game system" in judgment.rationale.lower()
+            or "游戏系统" in judgment.rationale
+        )
+
+    def test_urban_pure_systematic_upgrade_allowed(self, urban_engine):
+        """Pure business digitization without game mechanics should be allowed."""
+        fact = NarrativeFact(
+            fact_id="mixed-004",
+            description="公司完成系统性数字化升级",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-5:line-50",
+            fact_type="business_event",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+
+
+class TestUnknownMechanismHandling:
+    """Test that unknown mechanisms do not auto-ALLOW."""
+
+    def test_confirmed_mechanism_without_source_requires_review(self, urban_engine):
+        """Confirmed mechanism lacking source cannot be verified."""
+        fact = NarrativeFact(
+            fact_id="unknown-mech-001",
+            description="Character exhibits unusual behavior",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-3:line-50",
+            fact_type="character_ability",
+            mechanism_type="unverified_ability",
+            mechanism_confirmed=True,
+            mechanism_source=None,  # Missing source
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.REVIEW_REQUIRED
+        assert judgment.diagnostic["reason"] == "missing_mechanism_source"
+
+    def test_unknown_mechanism_type_requires_review(self, urban_engine):
+        """Unknown mechanism_type cannot be verified against Pack rules."""
+        fact = NarrativeFact(
+            fact_id="unknown-mech-002",
+            description="Character uses quantum entanglement abilities",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-4:line-80",
+            fact_type="character_ability",
+            mechanism_type="quantum_mechanics",
+            mechanism_confirmed=True,
+            mechanism_source="chapter-4:verified",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.REVIEW_REQUIRED
+        assert judgment.diagnostic["reason"] == "unknown_mechanism_type"
+
+    def test_verified_realistic_mechanism_allowed(self, urban_engine):
+        """Properly verified realistic mechanism is allowed."""
+        fact = NarrativeFact(
+            fact_id="unknown-mech-003",
+            description="Character masters negotiation skills",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-5:line-100",
+            fact_type="character_ability",
+            mechanism_type="realistic_skill",
+            mechanism_confirmed=True,
+            mechanism_source="chapter-5:training-arc",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert judgment.diagnostic["mechanism_type"] == "realistic_skill"
+
+
+class TestStrategyMatchTypeDisambiguation:
+    """Test that strategy results clearly distinguish match types."""
+
+    def test_conflicting_strategy_rejected(self, urban_engine):
+        """Conflicting strategy returns CONFLICT match type."""
+        strategy = OptionalStrategy(
+            strategy_id="strat-conflict",
+            description="Introduce cultivation system",
+            source="retrieval:template-123",
+            proposed_mechanics={"cultivation": "qi_absorption"},
+        )
+
+        judgment = urban_engine.judge_optional_strategy(strategy)
+
+        assert judgment.verdict == PolicyVerdict.REJECT
+        assert judgment.diagnostic["match_type"] == "CONFLICT"
+        assert judgment.pack_identity_preserved
+
+    def test_compatible_strategy_verified(self, urban_engine):
+        """Compatible strategy returns VERIFIED_COMPATIBLE match type."""
+        strategy = OptionalStrategy(
+            strategy_id="strat-compatible",
+            description="Enhance business operations",
+            source="retrieval:template-456",
+            proposed_mechanics={"business_operations": "supply_chain_optimization"},
+        )
+
+        judgment = urban_engine.judge_optional_strategy(strategy)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert judgment.diagnostic["match_type"] == "VERIFIED_COMPATIBLE"
+        assert judgment.pack_identity_preserved
+
+    def test_no_match_strategy_identified(self, urban_engine):
+        """Strategy with no applicable mechanics returns NO_MATCH."""
+        strategy = OptionalStrategy(
+            strategy_id="strat-no-match",
+            description="Unrelated narrative device",
+            source="retrieval:template-789",
+            proposed_mechanics={},  # No mechanics
+        )
+
+        judgment = urban_engine.judge_optional_strategy(strategy)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert judgment.diagnostic["match_type"] == "NO_MATCH"
+        assert judgment.pack_identity_preserved
+
+    def test_unknown_mechanics_flagged(self, urban_engine):
+        """Strategy with unknown mechanics returns UNKNOWN match type."""
+        strategy = OptionalStrategy(
+            strategy_id="strat-unknown",
+            description="Introduce alien technology",
+            source="retrieval:template-999",
+            proposed_mechanics={"alien_tech": "faster_than_light"},
+        )
+
+        judgment = urban_engine.judge_optional_strategy(strategy)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert judgment.diagnostic["match_type"] == "UNKNOWN"
+        assert judgment.pack_identity_preserved
+        assert "unknown" in judgment.rationale.lower()
+
+
+class TestErrorScenarioRegression:
+    """Regression tests for previously identified semantic errors."""
+
+    def test_system_upgrade_not_game_system(self, urban_engine):
+        """'系统性数字化升级' should not be rejected as game system."""
+        fact = NarrativeFact(
+            fact_id="error-a1",
+            description="公司正在进行系统性数字化升级",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="test:line-1",
+            fact_type="business_event",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict != PolicyVerdict.REJECT, (
+            f"Incorrectly rejected legitimate business term: {judgment.rationale}"
+        )
+
+    def test_breakthrough_sales_not_cultivation(self, urban_engine):
+        """'突破销售瓶颈' should not be rejected as cultivation breakthrough."""
+        fact = NarrativeFact(
+            fact_id="error-a2",
+            description="他可以突破销售瓶颈，争取更好的经营业绩",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="test:line-2",
+            fact_type="business_event",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict != PolicyVerdict.REJECT, (
+            f"Incorrectly rejected business metaphor: {judgment.rationale}"
+        )
+
+    def test_confirmed_cultivation_to_immortal_rejected(self, urban_engine):
+        """'修炼成仙，正式获得了超自然能力' must be rejected."""
+        fact = NarrativeFact(
+            fact_id="error-b1",
+            description="主角修炼成仙，正式获得了超自然能力",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="test:line-3",
+            fact_type="character_ability",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.REJECT, (
+            f"Failed to reject confirmed supernatural: {judgment.verdict}"
+        )
+
+    def test_unconfirmed_mechanism_requires_review(self, urban_engine):
+        """Unconfirmed mechanisms must not auto-ALLOW."""
+        fact = NarrativeFact(
+            fact_id="error-b2",
+            description="主角获得了特殊能力",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="test:line-4",
+            fact_type="character_ability",
+            metadata={},
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict != PolicyVerdict.ALLOW, (
+            f"Incorrectly allowed unconfirmed mechanism: {judgment.rationale}"
+        )
+
+    def test_spiritual_medicine_listing_not_ipo(self, fantasy_engine):
+        """'商会将灵药上市售卖' should not be rejected as modern IPO."""
+        fact = NarrativeFact(
+            fact_id="error-c1",
+            description="青云商会将新炼制的灵药上市售卖",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="test:line-5",
+            fact_type="business_event",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict != PolicyVerdict.REJECT, (
+            f"Incorrectly rejected fantasy commerce: {judgment.rationale}"
+        )
+
+    def test_confirmed_modern_corporate_rejected(self, fantasy_engine):
+        """'现代股份制公司，发行股票并建立董事会' must be rejected."""
+        fact = NarrativeFact(
+            fact_id="error-c2",
+            description="宗门新增现代股份制公司，发行股票并建立董事会",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="test:line-6",
+            fact_type="world_mechanism",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.REJECT, (
+            f"Failed to reject modern corporate: {judgment.verdict}"
+        )

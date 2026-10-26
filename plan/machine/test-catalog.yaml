@@ -305,8 +305,8 @@ suites:
   - id: AT-V2-014-04
     required_assertion: 可选套路与冻结世界机制冲突时拒绝该策略；正常无匹配不制造世界规则
   execution_evidence:
-  - plan/validation/execution/V2-014/closure/test-evidence.yaml
-  - plan/validation/execution/V2-014/closure/acceptance-evidence.yaml
+  - validation/execution/V2-014/closure/test-evidence.yaml
+  - validation/execution/V2-014/closure/acceptance-evidence.yaml
 - id: AT-V2-015
   task_id: V2-015
   phase: P3

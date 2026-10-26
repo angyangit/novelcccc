@@ -1,0 +1,33 @@
+# GenrePack Registry
+#
+# Central registry for all GenrePack definitions.
+# Each Pack entry declares identity (pack_id, version, content_hash),
+# file path, extension namespaces, and world anchors.
+#
+# ADR-007 Three-way Hash Verification:
+# 1. Registry declares content_hash
+# 2. Pack file content computes to same hash
+# 3. Caller provides matching hash for binding
+#
+# P3 Phase: Two frozen Anchor Packs
+
+packs:
+  - pack_id: "urban.business.realistic"
+    version: "1.0.0"
+    content_hash: "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336"
+    pack_file_path: "genres/urban_business_realistic_v1.yaml"
+    extension_namespaces:
+      - "urban"
+      - "business"
+    world_anchors:
+      - "urban.business.realistic"
+
+  - pack_id: "fantasy.eastern.progression"
+    version: "1.0.0"
+    content_hash: "6e835c0a4197cbae2e88ee55b52201f7af47f3ca8bfb3088f776cc5e21598757"
+    pack_file_path: "genres/fantasy_eastern_progression_v1.yaml"
+    extension_namespaces:
+      - "fantasy"
+      - "eastern"
+    world_anchors:
+      - "fantasy.eastern.progression"

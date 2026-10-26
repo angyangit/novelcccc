@@ -1,0 +1,106 @@
+# Fantasy Eastern Progression GenrePack v1.0.0
+
+pack_id: "fantasy.eastern.progression"
+version: "1.0.0"
+
+# Extension schemas define genre-specific state fields
+extension_schemas:
+  - namespace: "fantasy"
+    fields:
+      - name: "realm_type"
+        type: "string"
+        description: "Cultivation realm classification"
+        constraints:
+          enum: ["mortal", "spiritual", "immortal", "divine"]
+      - name: "magic_affinity"
+        type: "string"
+        description: "Primary elemental affinity"
+        constraints:
+          enum: ["fire", "water", "earth", "metal", "wood", "lightning", "wind"]
+
+  - namespace: "eastern"
+    fields:
+      - name: "cultivation_level"
+        type: "string"
+        description: "Current cultivation stage"
+        constraints:
+          enum: ["qi_refining", "foundation_establishment", "core_formation", "nascent_soul", "spirit_severing"]
+      - name: "sect_affiliation"
+        type: "string"
+        description: "Sect or faction affiliation"
+        constraints:
+          enum: ["righteous", "demonic", "neutral", "independent"]
+      - name: "dao_comprehension"
+        type: "integer"
+        description: "Dao comprehension level (0-100)"
+        constraints:
+          min: 0
+          max: 100
+
+# State transition rules (stub for P3)
+transition_rules:
+  - from_state: "eastern.cultivation_level=qi_refining"
+    to_state: "eastern.cultivation_level=foundation_establishment"
+    preconditions:
+      - "eastern.dao_comprehension >= 20"
+      - "consumed_breakthrough_pill == true"
+    cost:
+      resource: "spiritual_energy"
+      amount: "1000"
+
+  - from_state: "fantasy.realm_type=mortal"
+    to_state: "fantasy.realm_type=spiritual"
+    preconditions:
+      - "eastern.cultivation_level >= foundation_establishment"
+    cost:
+      resource: "tribulation_survival"
+      amount: "1"
+
+# World mechanics define genre-specific rules
+world_mechanics:
+  power_system:
+    type: "cultivation"
+    progression_method: "resource_accumulation"
+    power_ceiling: "divine_realm"
+
+  social_structure:
+    hierarchy_type: "strength_based"
+    mobility: "merit_and_fortune"
+    sect_importance: "critical"
+
+  time_flow:
+    unit: "year"
+    pace: "accelerated"
+    cultivation_time_dilation: true
+
+  conflict_resolution:
+    violence_prevalence: "high"
+    honor_importance: "moderate"
+    revenge_cycle: "common"
+
+# Quality rubric for story evaluation (stub for P3)
+quality_rubric:
+  cultivation_logic:
+    weight: 0.4
+    criteria:
+      - "consistent_power_scaling"
+      - "meaningful_breakthrough_conditions"
+      - "believable_resource_economy"
+
+  character_journey:
+    weight: 0.3
+    criteria:
+      - "dao_comprehension_depth"
+      - "relationship_with_sect"
+      - "moral_transformation"
+
+  world_immersion:
+    weight: 0.3
+    criteria:
+      - "rich_cultivation_world"
+      - "faction_dynamics"
+      - "mystical_atmosphere"
+
+# Content hash computed using canonical_hash (ADR-005)
+# This field is excluded from hash computation (ADR-007)
+content_hash: "6e835c0a4197cbae2e88ee55b52201f7af47f3ca8bfb3088f776cc5e21598757"

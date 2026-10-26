@@ -1,0 +1,100 @@
+# Urban Business Realistic GenrePack v1.0.0
+
+pack_id: "urban.business.realistic"
+version: "1.0.0"
+
+# Extension schemas define genre-specific state fields
+extension_schemas:
+  - namespace: "urban"
+    fields:
+      - name: "location_type"
+        type: "string"
+        description: "Urban location category (downtown, suburb, industrial)"
+        constraints:
+          enum: ["downtown", "suburb", "industrial", "residential"]
+      - name: "population_density"
+        type: "string"
+        description: "Population density level"
+        constraints:
+          enum: ["high", "medium", "low"]
+
+  - namespace: "business"
+    fields:
+      - name: "company_type"
+        type: "string"
+        description: "Type of business entity"
+        constraints:
+          enum: ["startup", "corporation", "small_business", "enterprise"]
+      - name: "revenue_scale"
+        type: "string"
+        description: "Business revenue scale"
+        constraints:
+          enum: ["seed", "growing", "established", "mature"]
+      - name: "employee_count_tier"
+        type: "string"
+        description: "Employee count tier"
+        constraints:
+          enum: ["solo", "small_team", "mid_size", "large"]
+
+# State transition rules (stub for P3)
+transition_rules:
+  - from_state: "business.revenue_scale=seed"
+    to_state: "business.revenue_scale=growing"
+    preconditions:
+      - "minimum_customer_count >= 10"
+      - "monthly_revenue > 0"
+    cost:
+      resource: "time"
+      amount: "6_months"
+
+  - from_state: "urban.location_type=residential"
+    to_state: "urban.location_type=downtown"
+    preconditions:
+      - "funding_available >= 50000"
+    cost:
+      resource: "capital"
+      amount: "50000"
+
+# World mechanics define genre-specific rules
+world_mechanics:
+  economic_system:
+    currency: "USD"
+    market_dynamics: "competitive"
+    regulation_level: "moderate"
+
+  social_structure:
+    hierarchy_type: "meritocratic"
+    mobility: "high"
+    networking_importance: "critical"
+
+  time_flow:
+    unit: "day"
+    pace: "realistic"
+    seasons: true
+
+# Quality rubric for story evaluation (stub for P3)
+quality_rubric:
+  business_authenticity:
+    weight: 0.4
+    criteria:
+      - "realistic_market_dynamics"
+      - "credible_business_challenges"
+      - "authentic_corporate_culture"
+
+  character_development:
+    weight: 0.3
+    criteria:
+      - "professional_growth_arc"
+      - "relationship_dynamics"
+      - "ethical_dilemmas"
+
+  plot_coherence:
+    weight: 0.3
+    criteria:
+      - "logical_progression"
+      - "stakes_escalation"
+      - "resolution_satisfaction"
+
+# Content hash computed using canonical_hash (ADR-005)
+# This field is excluded from hash computation (ADR-007)
+content_hash: "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336"

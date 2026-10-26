@@ -28,16 +28,16 @@ delivered_artifacts:
   commit: bff29fc7d72a6e97a81c12c774078985214fea1d
 
 implementation_commits:
-- commit: d36300312e6b0cbb9f6e8a9acba1595ab0f81c68
+- commit: d3630039c2e5882a690be016114381592109d9e7
   message: "feat(V2-014): Implement Genre Hard Policy Engine"
 
 - commit: 5b163b438826885cbf9fe13ae9d742dfaf217792
   message: "docs(V2-014): Add execution packet for policy engine implementation"
 
-- commit: 21799c2d08edb54a20ce4aea6d3a27e5bb47d59d
+- commit: 21799c2506103c1379bcc144226c4b6c1e326365
   message: "fix(V2-014): Add Chinese novel judgment support and correct execution packet"
 
-- commit: 1505683c0c8e42e8abea3f4d4de88bc5c3e9e8a7
+- commit: 1505683e45c23b4fcda65b22fbffceec85fdb242
   message: "fix(V2-014): Implement mechanism-based validation to eliminate semantic errors"
 
 - commit: 382a9b902939cb2705454499514a76a9a247db1f

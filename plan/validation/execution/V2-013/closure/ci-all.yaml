@@ -8,10 +8,10 @@ revision: 912e6d6f33113101ef1f4b745b34724a39c55e63
 producer: github-actions
 executed_at: '2026-10-26T01:21:00Z'
 environment_fingerprint: github-actions-ubuntu-22.04
-command: github-actions-workflow-all-gates
+command: github-actions-workflow
 exit_code: 0
 pipeline_id: '40253812680'
-job_id: '121351232185'
+job_id: '40253812680'
 pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40253812680
 artifacts:
 - ref: validation/execution/V2-013/closure/closure-review.md
@@ -24,3 +24,4 @@ check_ids:
 - ARCH_FITNESS
 - POSTGRES_ENV
 - SECRET_DEPENDENCY
+

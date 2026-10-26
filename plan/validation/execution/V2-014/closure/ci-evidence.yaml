@@ -4,37 +4,29 @@ evidence_date: 2026-10-26
 merge_commit: a506acdbc1526126c3e99e7fa7279f60bbb18738
 ci_platform: GitHub Actions
 run_id: 40292067463
-run_url: https://github.com/ayyang666/AIANovelOS/actions/runs/40292067463
+run_url: https://github.com/angyangit/novelcccc/actions/runs/40292067463
 
 gates_executed:
-- gate: validate-structure
+- gate: ARCH_FITNESS
   status: SUCCESS
-  duration: 8s
+- gate: POSTGRES_ENV
+  status: SUCCESS
+- gate: STATIC
+  status: SUCCESS
+- gate: SECRET_DEPENDENCY
+  status: SUCCESS
+- gate: SCHEMA_CONTRACT
+  status: SUCCESS
+- gate: UNIT
+  status: SUCCESS
 
-- gate: pytest-unit
-  status: SUCCESS
-  duration: 12s
-  tests_run: 92
-  tests_passed: 92
-  coverage: not_measured
-
-- gate: pytest-contract
-  status: SUCCESS
-  duration: 15s
-  tests_run: 92
-  tests_passed: 92
-
-- gate: type-check
-  status: SUCCESS
-  duration: 6s
-
-- gate: lint
-  status: SUCCESS
-  duration: 5s
-
-- gate: plan-validation
-  status: SUCCESS
-  duration: 4s
+unit_job:
+  job_id: 121469219710
+  total_passed: 1091
+  warnings: 143
+  v2_014_tests_passed: 58
+  v2_013_regression_tests_passed: 34
+  evidence_source: GitHub Actions UNIT job log
 
 summary:
   total_gates: 6
@@ -43,7 +35,8 @@ summary:
   overall_status: SUCCESS
 
 verification_notes: |
-  All CI gates passed on main branch after PR #9 merge.
-  Total 92 tests (34 V2-013 + 58 V2-014) passed across unit and contract suites.
-  No type errors, no lint violations, plan structure validated.
-  Clean merge to canonical main.
+  All six GitHub Actions jobs passed for the canonical main merge commit.
+  UNIT job logs report 1091 passed and 143 warnings. Among these are 58
+  V2-014 tests and 34 V2-013 regression tests; these are subsets of the
+  entire UNIT run, not separate six-gate totals. No fabricated per-gate
+  durations or duplicated pytest counts are asserted.

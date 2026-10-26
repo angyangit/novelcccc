@@ -42,3 +42,8 @@ build/
 .adr-007-*.md
 .pr-description.md
 .local-reports/
+# Local work files - not for PR
+.canonical-authority-*.md
+.p3-entry-*.md
+.pr5-*.md
+.v2-013-*.md

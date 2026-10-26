@@ -87,8 +87,8 @@ finding_dispositions:
   reason: Snapshot rebuild and projection service implemented; canon_snapshot table for accelerated recovery; cross-project
     isolation enforced; 3 acceptance scenarios pass; finding DA-11 addressed
 artifacts:
-- ref: machine/test-catalog.yaml
-  sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
+- ref: validation/execution/V2-012/snapshots/test-catalog-455d7b9.yaml
+  sha256: 6d85a2a711105f7b48ff3fbdfbcc0391716888088083988e3d1bd5c4ae2e153a
 input_evidence_refs:
 - validation/tasks/V2-012/code-evidence.yaml
 - validation/tasks/V2-012/test-evidence.yaml

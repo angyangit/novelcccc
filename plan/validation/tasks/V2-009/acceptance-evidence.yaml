@@ -132,8 +132,8 @@ finding_dispositions:
   reason: Canon persistence schema and repository implemented at revision 455d7b9; PostgreSQL integration tests pass; finding
     DA-11 addressed by V2-009 implementation
 artifacts:
-- ref: machine/test-catalog.yaml
-  sha256: 3622dc31edc247354075f14bfebe5213fe4aedb88f6a52fc9525b3485793ef0a
+- ref: validation/execution/V2-009/snapshots/test-catalog-455d7b9.yaml
+  sha256: 6d85a2a711105f7b48ff3fbdfbcc0391716888088083988e3d1bd5c4ae2e153a
 input_evidence_refs:
 - validation/tasks/V2-009/code-evidence.yaml
 - validation/tasks/V2-009/test-evidence.yaml

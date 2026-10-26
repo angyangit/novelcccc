@@ -287,13 +287,10 @@ class GenreHardPolicyEngine:
                     },
                 )
             elif fact.mechanism_type in ["realistic_business", "realistic_skill"]:
-                return PolicyJudgment(
-                    verdict=PolicyVerdict.ALLOW,
-                    fact_id=fact.fact_id,
-                    rule_id="urban.business.realistic:realistic-mechanics",
-                    rationale=f"Confirmed {fact.mechanism_type} consistent with urban reality",
-                    diagnostic={"mechanism_type": fact.mechanism_type},
-                )
+                # Allowed mechanism type detected, but must still check for conflicts
+                # in the same fact description before allowing
+                # Continue to conflict checks below instead of returning early
+                pass
             else:
                 # Unknown mechanism_type - cannot verify compliance
                 return PolicyJudgment(
@@ -465,6 +462,20 @@ class GenreHardPolicyEngine:
                         },
                     )
 
+        # If we had a confirmed realistic mechanism and reached here, all conflict checks passed
+        if (
+            fact.mechanism_type
+            and fact.mechanism_confirmed
+            and fact.mechanism_type in ["realistic_business", "realistic_skill"]
+        ):
+            return PolicyJudgment(
+                verdict=PolicyVerdict.ALLOW,
+                fact_id=fact.fact_id,
+                rule_id="urban.business.realistic:realistic-mechanics",
+                rationale=f"Confirmed {fact.mechanism_type} passed all conflict checks",
+                diagnostic={"mechanism_type": fact.mechanism_type},
+            )
+
         # Default: allow realistic urban/business facts
         return PolicyJudgment(
             verdict=PolicyVerdict.ALLOW,
@@ -519,13 +530,10 @@ class GenreHardPolicyEngine:
                 "fantasy_commerce",
                 "sect_organization",
             ]:
-                return PolicyJudgment(
-                    verdict=PolicyVerdict.ALLOW,
-                    fact_id=fact.fact_id,
-                    rule_id="fantasy.eastern.progression:cultivation-mechanics",
-                    rationale=f"Confirmed {fact.mechanism_type} consistent with fantasy eastern world",
-                    diagnostic={"mechanism_type": fact.mechanism_type},
-                )
+                # Allowed mechanism type detected, but must still check for conflicts
+                # in the same fact description before allowing
+                # Continue to conflict checks below instead of returning early
+                pass
             else:
                 # Unknown mechanism_type - cannot verify compliance
                 return PolicyJudgment(
@@ -664,6 +672,25 @@ class GenreHardPolicyEngine:
                     diagnostic={"keyword": keyword},
                 )
 
+        # If we had a confirmed fantasy mechanism and reached here, all conflict checks passed
+        if (
+            fact.mechanism_type
+            and fact.mechanism_confirmed
+            and fact.mechanism_type
+            in [
+                "cultivation_system",
+                "fantasy_commerce",
+                "sect_organization",
+            ]
+        ):
+            return PolicyJudgment(
+                verdict=PolicyVerdict.ALLOW,
+                fact_id=fact.fact_id,
+                rule_id="fantasy.eastern.progression:cultivation-mechanics",
+                rationale=f"Confirmed {fact.mechanism_type} passed all conflict checks",
+                diagnostic={"mechanism_type": fact.mechanism_type},
+            )
+
         # Default: allow if consistent with fantasy world
         return PolicyJudgment(
             verdict=PolicyVerdict.ALLOW,
@@ -745,6 +772,7 @@ class GenreHardPolicyEngine:
                 "cultivation_progression",
                 "sect_mechanics",
                 "spiritual_resources",
+                "sect_rivalry",
             ]
             if any(key in strategy.proposed_mechanics for key in fantasy_keys):
                 has_relevant_mechanics = True
@@ -759,12 +787,12 @@ class GenreHardPolicyEngine:
 
         # Check if strategy has unknown mechanics that cannot be verified
         if strategy.proposed_mechanics and not has_relevant_mechanics:
-            # Strategy has mechanics but they're not recognized
+            # Strategy has mechanics but they're not recognized - reject for safety
             return StrategyJudgment(
-                verdict=PolicyVerdict.ALLOW,
+                verdict=PolicyVerdict.REJECT,
                 strategy_id=strategy.strategy_id,
                 rule_id=None,
-                rationale="Strategy mechanics unknown; Pack identity preserved but verification incomplete",
+                rationale="Strategy mechanics unknown and cannot be verified; rejected for safety",
                 pack_identity_preserved=True,
                 diagnostic={"match_type": "UNKNOWN"},
             )

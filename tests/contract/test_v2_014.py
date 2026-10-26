@@ -926,7 +926,7 @@ class TestStrategyMatchTypeDisambiguation:
         assert judgment.pack_identity_preserved
 
     def test_unknown_mechanics_flagged(self, urban_engine):
-        """Strategy with unknown mechanics returns UNKNOWN match type."""
+        """Strategy with unknown mechanics is rejected for safety."""
         strategy = OptionalStrategy(
             strategy_id="strat-unknown",
             description="Introduce alien technology",
@@ -936,7 +936,7 @@ class TestStrategyMatchTypeDisambiguation:
 
         judgment = urban_engine.judge_optional_strategy(strategy)
 
-        assert judgment.verdict == PolicyVerdict.ALLOW
+        assert judgment.verdict == PolicyVerdict.REJECT
         assert judgment.diagnostic["match_type"] == "UNKNOWN"
         assert judgment.pack_identity_preserved
         assert "unknown" in judgment.rationale.lower()
@@ -1041,3 +1041,91 @@ class TestErrorScenarioRegression:
         assert judgment.verdict == PolicyVerdict.REJECT, (
             f"Failed to reject modern corporate: {judgment.verdict}"
         )
+
+
+class TestAllowedMechanismCannotMaskConflict:
+    """Test that allowed mechanism_type does not mask hard conflicts in same fact."""
+
+    def test_urban_realistic_business_with_game_system_rejected(self, urban_engine):
+        """Realistic business mechanism cannot mask game system conflict."""
+        fact = NarrativeFact(
+            fact_id="mask-urban-001",
+            description="公司获得融资，同时主角开启游戏系统获得超自然属性面板",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-10:line-200",
+            fact_type="world_mechanism",
+            mechanism_type="realistic_business",
+            mechanism_confirmed=True,
+            mechanism_source="chapter-10:verified",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        # Must REJECT due to game system, even though realistic_business is allowed
+        assert judgment.verdict == PolicyVerdict.REJECT, (
+            f"Allowed mechanism masked conflict: {judgment.rationale}"
+        )
+        assert (
+            "game system" in judgment.rationale.lower()
+            or "游戏系统" in judgment.rationale
+        )
+
+    def test_fantasy_commerce_with_stock_market_rejected(self, fantasy_engine):
+        """Fantasy commerce mechanism cannot mask modern corporate conflict."""
+        fact = NarrativeFact(
+            fact_id="mask-fantasy-001",
+            description="商会以灵石完成交易，同时发行现代股票并建立董事会",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-8:line-150",
+            fact_type="world_mechanism",
+            mechanism_type="fantasy_commerce",
+            mechanism_confirmed=True,
+            mechanism_source="chapter-8:verified",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        # Must REJECT due to modern corporate, even though fantasy_commerce is allowed
+        assert judgment.verdict == PolicyVerdict.REJECT, (
+            f"Allowed mechanism masked conflict: {judgment.rationale}"
+        )
+        assert (
+            "stock" in judgment.rationale.lower()
+            or "股票" in judgment.rationale
+            or "董事会" in judgment.rationale
+            or "corporate" in judgment.rationale.lower()
+        )
+
+    def test_urban_realistic_skill_without_conflict_allowed(self, urban_engine):
+        """Pure realistic skill without conflicts should be allowed."""
+        fact = NarrativeFact(
+            fact_id="mask-urban-002",
+            description="通过培训掌握了数据分析技能",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-5:line-100",
+            fact_type="character_ability",
+            mechanism_type="realistic_skill",
+            mechanism_confirmed=True,
+            mechanism_source="chapter-5:training-arc",
+        )
+
+        judgment = urban_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW
+
+    def test_fantasy_cultivation_without_conflict_allowed(self, fantasy_engine):
+        """Pure cultivation system without conflicts should be allowed."""
+        fact = NarrativeFact(
+            fact_id="mask-fantasy-002",
+            description="修炼突破至金丹境界",
+            context_type=FactContextType.WORLD_FACT,
+            source_evidence="chapter-12:line-300",
+            fact_type="character_ability",
+            mechanism_type="cultivation_system",
+            mechanism_confirmed=True,
+            mechanism_source="chapter-12:breakthrough",
+        )
+
+        judgment = fantasy_engine.judge_fact(fact)
+
+        assert judgment.verdict == PolicyVerdict.ALLOW

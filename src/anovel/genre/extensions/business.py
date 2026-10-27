@@ -112,9 +112,7 @@ class EquityPosition:
 
     def __post_init__(self):
         if not (Decimal("0.0") <= self.percentage <= Decimal("100.0")):
-            raise ValueError(
-                f"Equity percentage must be 0-100, got {self.percentage}"
-            )
+            raise ValueError(f"Equity percentage must be 0-100, got {self.percentage}")
 
 
 @dataclass(frozen=True)
@@ -326,7 +324,10 @@ class BusinessStateValidator:
 
         for keyword in supernatural_keywords:
             if keyword in fact_lower:
-                return True, f"Realistic anchor rejects supernatural mechanism: {keyword}"
+                return (
+                    True,
+                    f"Realistic anchor rejects supernatural mechanism: {keyword}",
+                )
 
         return False, None
 

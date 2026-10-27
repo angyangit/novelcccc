@@ -427,7 +427,9 @@ class ProgressionStateValidator:
 
         desc_lower = description.lower()
 
-        has_modern = any(kw in description or kw in desc_lower for kw in modern_corporate)
+        has_modern = any(
+            kw in description or kw in desc_lower for kw in modern_corporate
+        )
         has_fantasy = any(
             kw in description or kw in desc_lower for kw in fantasy_commerce
         )

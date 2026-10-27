@@ -1,0 +1,318 @@
+record_type: story_fixture
+status: DRAFT
+fixture_id: fantasy_eastern_cultivation_v1
+genre_pack_id: fantasy.eastern.progression
+genre_pack_version: "1.0.0"
+genre_pack_hash: "6e835c0a4197cbae2e88ee55b52201f7af47f3ca8bfb3088f776cc5e21598757"
+partition: development
+human_review_ref: null
+
+title: "逆天修仙：资源与抉择"
+synopsis: |
+  王林，一位散修，意外获得古修士洞府中的筑基丹和残缺功法。
+  他目前处于炼气九层，只需一枚筑基丹即可尝试突破筑基期。
+  但他的道侣柳梦因修炼走火入魔，急需天心草和筑基丹修复经脉。
+  天宝商会长老提出交易：用筑基丹换取三年护卫契约。
+  王林必须在自己突破、救治道侣和保持自由之间做出选择。
+
+initial_facts:
+  - fact_id: wang_realm
+    description: "王林炼气九层，道韵20，距离筑基一步之遥"
+    fact_type: cultivation_state
+    story_time: "修真历2380年春"
+
+  - fact_id: initial_resources
+    description: "王林拥有筑基丹1枚，下品灵石300块，残缺功法《太玄真诀》"
+    fact_type: resource_state
+    story_time: "修真历2380年春"
+
+  - fact_id: liu_injury
+    description: "柳梦走火入魔，经脉受损，需要天心草和筑基丹修复"
+    fact_type: character_condition
+    story_time: "修真历2380年夏"
+
+  - fact_id: tianbao_offer
+    description: "天宝商会长老提出：用筑基丹换取王林三年护卫服务"
+    fact_type: transaction_proposal
+    story_time: "修真历2380年夏"
+
+characters:
+  - character_id: wang_lin
+    name: 王林
+    role: protagonist
+    occupation: 散修（独立修士）
+    age: 25
+    initial_state:
+      cultivation_level: qi_refining_9
+      dao_comprehension: 20
+      resources:
+        - type: pill
+          item: 筑基丹
+          count: 1
+        - type: spirit_stone
+          item: 下品灵石
+          count: 300
+        - type: technique
+          item: 《太玄真诀》（残缺）
+          completeness: 60%
+      knowledge:
+        - "筑基成功率约70%，失败可能道基受损"
+        - "柳梦伤势严重，需天心草和筑基丹双重治疗"
+        - "天宝商会护卫契约包含生死战任务"
+      goals:
+        - "突破筑基期，增强实力"
+        - "治疗柳梦，履行道侣之责"
+        - "保持修行自由，不受束缚"
+      personality: "冷静理性，重情重义，追求大道，但不轻易妥协"
+
+  - character_id: liu_meng
+    name: 柳梦
+    role: deuteragonist
+    occupation: 散修，王林道侣
+    age: 23
+    initial_state:
+      cultivation_level: qi_refining_7
+      condition: 走火入魔，经脉受损
+      knowledge:
+        - "自己的伤势需要天心草和筑基丹"
+        - "不愿王林为自己牺牲筑基机会"
+        - "天宝商会护卫契约危险性极高"
+      goals:
+        - "恢复修为"
+        - "不拖累王林前途"
+      personality: "善良坚韧，不愿成为他人负担，暗中寻找其他解决方案"
+
+  - character_id: elder_zhao
+    name: 赵长老
+    role: antagonist
+    occupation: 天宝商会执事长老
+    age: 156
+    initial_state:
+      cultivation_level: core_formation_3
+      knowledge:
+        - "王林拥有筑基丹和残缺高阶功法"
+        - "商会近期需要散修护卫处理危险任务"
+        - "同时有另外两名散修在谈判类似契约"
+      goals:
+        - "以最低成本招募散修护卫"
+        - "获取王林的残缺功法进行研究"
+      personality: "精明算计，善于利用他人弱点，但遵守契约规则"
+
+relationships:
+  - character_a: wang_lin
+    character_b: liu_meng
+    relationship_type: dao_companion
+    trust_level: high
+    conflict_potential: medium
+    description: "结为道侣三年，互相扶持修炼，但对彼此牺牲的底线有分歧"
+
+  - character_a: wang_lin
+    character_b: elder_zhao
+    relationship_type: transaction_negotiation
+    trust_level: low
+    conflict_potential: high
+    description: "商业谈判关系，赵长老掌握资源和信息优势"
+
+world_boundaries:
+  cultivation_constraints:
+    - "筑基需要筑基丹或特殊机缘"
+    - "炼气至筑基是第一道大坎，失败可能道基受损"
+    - "道韵需达到20以上才有筑基资格"
+    - "资源有限，灵石和丹药需要明确来源"
+
+  progression_rules:
+    - "修为进阶必须按炼气→筑基→结丹→元婴→化神顺序"
+    - "跨境界战斗极其困难"
+    - "能力使用消耗灵力，需要恢复时间"
+
+  world_mechanics:
+    - "商会、拍卖、灵石交易是合法修真界制度"
+    - "契约一旦签订具有法力约束"
+    - "宗门和散修存在实力和资源差距"
+
+  prohibited_mechanisms:
+    - "现代股份制公司结构"
+    - "证券市场和IPO"
+    - "现代金融衍生品"
+
+  allowed_fantasy_elements:
+    - "灵石货币体系"
+    - "商会和拍卖行"
+    - "修真资源交易"
+    - "宗门贡献点系统"
+
+protagonist_goal:
+  primary: "在3个月内解决筑基和救治柳梦的两难困境"
+  constraints:
+    - "只有1枚筑基丹，无法同时用于突破和治疗"
+    - "天心草价值200块中品灵石，目前无法支付"
+    - "时间紧迫：柳梦伤势每月恶化，3个月后不可逆"
+  success_criteria:
+    - "王林成功筑基或保留筑基机会"
+    - "柳梦伤势得到有效治疗"
+    - "不签订过于苛刻的长期契约"
+
+conflict_engine:
+  core_dilemma: "自身突破 vs 救治道侣 vs 保持自由"
+  escalation_mechanism:
+    - stage: initial
+      trigger: "柳梦走火入魔，需要筑基丹"
+      pressure: "唯一筑基丹面临两种用途"
+    - stage: intensified
+      trigger: "天宝商会提出护卫契约，可获得天心草和筑基丹"
+      pressure: "三年自由vs即刻解决资源困境"
+    - stage: climax
+      trigger: "柳梦伤势恶化，只剩1个月窗口期"
+      pressure: "必须立即决策，其他散修即将接受商会契约"
+
+choice_costs:
+  - choice: "自己使用筑基丹突破"
+    immediate_gain: "70%概率成功筑基，实力大增"
+    immediate_cost: "无法治疗柳梦，道侣可能经脉永久受损"
+    delayed_consequences:
+      - "柳梦修为废除，两人关系破裂"
+      - "王林内疚和道心裂痕"
+      - "筑基后面临更强对手，失去伙伴"
+
+  - choice: "用筑基丹救治柳梦"
+    immediate_gain: "柳梦伤势稳定，关系维系"
+    immediate_cost: "失去唯一筑基机会，仍需300灵石买天心草"
+    delayed_consequences:
+      - "继续停留炼气期，面临寿元压力（炼气期寿命120年，已25岁）"
+      - "需要数年积累才能再获筑基丹"
+      - "柳梦恢复后实力可能超过王林"
+
+  - choice: "接受商会护卫契约"
+    immediate_gain: "获得天心草+额外筑基丹，两全其美"
+    immediate_cost: "签订三年生死契约，丧失修炼自由"
+    delayed_consequences:
+      - "商会护卫任务危险，死亡率30%"
+      - "三年内无法自主选择修炼方向"
+      - "契约可能包含隐藏条款（残缺功法归商会研究）"
+
+  - choice: "寻找第三条路（秘境探索/其他交易）"
+    immediate_gain: "保持自由和筑基机会"
+    immediate_cost: "时间紧迫，风险极高，成功率未知"
+    delayed_consequences:
+      - "可能错过所有机会"
+      - "秘境探索可能遇到更强敌人"
+      - "柳梦伤势恶化到不可逆程度"
+
+opponent_adaptation:
+  - trigger: "王林试图寻找其他资源渠道"
+    zhao_response: "降低契约年限至两年，但增加功法研究条款"
+    market_response: "其他散修竞争同一批资源，价格上涨"
+
+  - trigger: "王林提出修改契约条款"
+    zhao_response: "同意部分修改，但坚持生死战条款不可删除"
+    liu_meng_response: "暗中联系其他商会，但条件更苛刻"
+
+reader_promises:
+  - promise_type: cultivation_progression
+    content: "修为提升遵循真实代价，无系统金手指"
+    fulfillment_timing: "全书持续"
+
+  - promise_type: relationship_stakes
+    content: "王林与柳梦的选择将深刻影响两人关系和未来道路"
+    fulfillment_timing: "第一卷结束前"
+
+  - promise_type: resource_economy
+    content: "灵石、丹药、功法等资源稀缺且有明确获取成本"
+    fulfillment_timing: "全书持续"
+
+secrets_and_knowers:
+  - secret_id: secret_01
+    content: "赵长老已知《太玄真诀》完整版在某位元婴真君手中，想通过王林的残缺版推断功法核心"
+    knowers: [elder_zhao]
+    potential_reveal: "第12章，通过商会内部对话揭示"
+    impact: "解释赵长老为何如此看重王林"
+
+  - secret_id: secret_02
+    content: "柳梦走火入魔的真实原因是她发现了一处古修洞府入口，但被人暗算"
+    knowers: [liu_meng]
+    potential_reveal: "第15章，柳梦伤愈后坦白"
+    impact: "提供另一条资源获取路径，引出新的危险和机遇"
+
+  - secret_id: secret_03
+    content: "商会护卫契约有50%生还率，但成功者通常能获得结丹期资源"
+    knowers: [elder_zhao]
+    potential_reveal: "第18章，通过其他护卫经历间接展示"
+    impact: "契约风险高但回报也高，不是单纯陷阱"
+
+reader_reveal_constraints:
+  - constraint_type: knowledge_boundary
+    description: "读者知道赵长老对《太玄真诀》的真实目的，但王林不知道"
+    narrative_purpose: "制造紧张感，让读者担心王林陷入更深圈套"
+
+  - constraint_type: dramatic_irony
+    description: "读者看到柳梦隐藏古修洞府线索，但王林认为只有商会契约一条路"
+    narrative_purpose: "为后续情节反转埋伏笔，保持悬念"
+
+first_arc_plan:
+  arc_title: "筑基之路"
+  chapters: 18
+  key_beats:
+    - chapter: 1-3
+      content: "王林炼气九层，获得筑基丹，准备闭关突破"
+      state_changes:
+        - "获得古修洞府资源"
+        - "道韵从15提升至20"
+
+    - chapter: 4-6
+      content: "柳梦走火入魔，王林筑基计划搁置"
+      state_changes:
+        - "柳梦修为跌落至炼气五层"
+        - "王林灵石消耗至200块（购买疗伤丹药）"
+
+    - chapter: 7-10
+      content: "寻求治疗方案，遇到天宝商会赵长老"
+      state_changes:
+        - "了解契约条款和隐藏风险"
+        - "与其他散修接触，了解商会信誉"
+
+    - chapter: 11-14
+      content: "内心挣扎，尝试寻找第三条路，但时间紧迫"
+      state_changes:
+        - "柳梦伤势恶化"
+        - "灵石降至100块"
+        - "发现秘境线索但风险极高"
+
+    - chapter: 15-16
+      content: "王林做出决策，承担相应代价"
+      state_changes:
+        - "若选择契约：签订契约，获得资源，开始护卫任务"
+        - "若选择秘境：进入古修洞府，面对未知危险"
+        - "若选择自己筑基：筑基成功，但柳梦道基受损"
+
+    - chapter: 17-18
+      content: "决策后果显现，引出第二卷冲突"
+      state_changes:
+        - "修为变化"
+        - "关系变化"
+        - "新的敌人或机遇出现"
+        - "未解决的线索（如《太玄真诀》完整版）"
+
+bootstrap_receipt_ref: null
+
+notes: |
+  此故事样本设计目标：
+  1. 展示fantasy.eastern.progression Pack的修炼状态跟踪
+  2. 体现境界、资源、代价的显式约束
+  3. 主角面临修真世界真实困境，选择有代价
+  4. 允许合法修真商业（商会、灵石交易）
+  5. 拒绝现代公司制度污染
+  6. 角色知识边界与秘密揭示有计划
+
+  可验证状态转移：
+  - 修为变化（炼气九层 → 筑基初期 or 停滞）
+  - 资源变化（筑基丹1枚 → 0枚，灵石300 → 100 → ?）
+  - 道侣伤势（走火入魔 → 稳定 or 恶化）
+  - 契约状态（自由 → 三年契约束缚）
+  - 关系变化（道侣trust: high → ? 基于选择）
+
+  为V2-017 Contract Compiler准备的信息：
+  - 主角目标有多重约束和冲突
+  - 关键决策有明确前置条件（资源、时间、修为）
+  - 状态变化可追溯到具体选择
+  - 知识边界和秘密可编译为Contract约束
+  - 修真世界规则（境界序列、资源成本）可形式化

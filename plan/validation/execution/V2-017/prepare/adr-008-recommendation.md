@@ -209,7 +209,7 @@ class ReplanProposal:
 **Proposed by:** Claude Opus 4.7 (V2-017 PREPARE)  
 **Decision date:** Pending  
 **Accepted by:** Pending Owner approval  
-**Status:** PROPOSED → ACCEPTED (after Owner review)
+**Status:** PROPOSED (awaiting acceptance before IMPLEMENT)
 
 ---
 

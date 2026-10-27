@@ -4,12 +4,14 @@ task_id: V2-017
 plan_version: 1.3.1
 repository_revision: 99b59810cc9e4d5c0164e13add8dbc465dbd84dc
 worktree_dirty: false
-plan_manifest_sha256: null
+plan_manifest_sha256: 81df6b4e961c07b0290328a8d42974f768021ca72b4414142093e29e4fb50c0b
 
 environment:
   fingerprint: prepare-phase-darwin-24.1.0
-  runtime_versions: {}
+  runtime_versions:
+    python: 3.9.6
   ci_context: prepare-only
+  database_image: postgres:17-alpine
 
 implementer: claude-opus-4.7
 verifier: owner
@@ -66,7 +68,7 @@ claims:
   statement: V2-017 minimal architecture designed with 5 modules (planning models/versions/replanning, contracts models/compiler)
   sources:
   - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
-    sha256: to_be_computed
+    sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
   blocks_actions: []
   verification_plan: Design review and interface contract validation
 - id: CLAIM-002
@@ -74,7 +76,7 @@ claims:
   statement: All 8 AT-V2-017 scenarios mapped to concrete test strategies with positive/negative cases
   sources:
   - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
-    sha256: to_be_computed
+    sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
   blocks_actions: []
   verification_plan: Test mapping completeness review
 - id: CLAIM-003
@@ -82,7 +84,7 @@ claims:
   statement: Story fixtures will receive human review before IMPLEMENT phase, populating human_review_ref
   sources:
   - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
-    sha256: to_be_computed
+    sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
   blocks_actions:
   - V2-017 IMPLEMENT requires validated fixtures per AT-V2-017-04
   verification_plan: Owner fixture review process
@@ -138,5 +140,5 @@ handoff:
     status: PASS
     artifacts:
     - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
-      sha256: to_be_computed
+      sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
     missing_artifact_reason: null

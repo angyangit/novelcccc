@@ -29,7 +29,7 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Literal
 
-from anovel.domain import EntityId, ProjectId
+from anovel.domain import EntityId
 
 
 class RealmType(StrEnum):
@@ -391,26 +391,6 @@ class ProgressionStateValidator:
         Returns:
             True if allowed fantasy commerce
         """
-        # Allowed fantasy commerce keywords
-        fantasy_commerce = [
-            "灵石",
-            "spirit stone",
-            "商会",
-            "merchant guild",
-            "拍卖",
-            "auction",
-            "交易",
-            "trade",
-            "市场",
-            "market",
-            "宝物",
-            "treasure",
-            "丹药",
-            "pill",
-            "法器",
-            "artifact",
-        ]
-
         # Modern corporate mechanisms (not in fantasy world)
         modern_corporate = [
             "股份制",
@@ -430,10 +410,6 @@ class ProgressionStateValidator:
         has_modern = any(
             kw in description or kw in desc_lower for kw in modern_corporate
         )
-        has_fantasy = any(
-            kw in description or kw in desc_lower for kw in fantasy_commerce
-        )
-
         # Reject if modern corporate detected
         if has_modern:
             return False

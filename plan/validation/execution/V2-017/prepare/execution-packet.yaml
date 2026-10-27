@@ -4,7 +4,7 @@ task_id: V2-017
 plan_version: 1.3.1
 repository_revision: 99b59810cc9e4d5c0164e13add8dbc465dbd84dc
 worktree_dirty: false
-plan_manifest_sha256: 81df6b4e961c07b0290328a8d42974f768021ca72b4414142093e29e4fb50c0b
+plan_manifest_sha256: 9e31c0501c06c840cacab2c883cb711db6a11874b2bb4fb1d7a8865594172c0f
 
 environment:
   fingerprint: prepare-phase-darwin-24.1.0
@@ -27,36 +27,53 @@ scope: |
 action: PREPARE
 
 inputs:
-- source_ref: plan/machine/implementation-backlog.yaml
-  ref: plan/machine/implementation-backlog.yaml
-  sha256: cc25ca35f082e521b46ae73ce6e3cf0c654153bb49a610a2d23cc1a197dcb82a
-- source_ref: plan/machine/test-catalog.yaml
-  ref: plan/machine/test-catalog.yaml
+- source_ref: machine/implementation-backlog.yaml
+  ref: machine/implementation-backlog.yaml
+  sha256: 8d6878cf9754aceb0d3a93005037372c836b35dc77551d5637f0b6a4ec824560
+- source_ref: machine/test-catalog.yaml
+  ref: machine/test-catalog.yaml
   sha256: 51ee21a4424471f450a2c6cdf5db13b7f3f607211b99d5791665864677519b1e
-- source_ref: plan/task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
-  ref: plan/task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
+- source_ref: machine/decision-register.yaml
+  ref: machine/decision-register.yaml
+  sha256: f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2
+- source_ref: machine/ai-execution-policy.yaml
+  ref: machine/ai-execution-policy.yaml
+  sha256: feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171
+- source_ref: task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
+  ref: task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
   sha256: f0aa985aff4c34f1589bed8184c34ff932b470e05f557646c72e5e25a00d820d
-- source_ref: plan/03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
-  ref: plan/03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+- source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
   sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
-- source_ref: plan/04_GENRE_AND_STORY_FIXTURES.md
-  ref: plan/04_GENRE_AND_STORY_FIXTURES.md
+- source_ref: 04_GENRE_AND_STORY_FIXTURES.md
+  ref: 04_GENRE_AND_STORY_FIXTURES.md
   sha256: 9263d85a9dfb0f1645253b1df22c4473210dc4ac9cf8ece0d56ae56cf394cae0
-- source_ref: specs/fixtures/urban_business_startup_v1.yaml
-  ref: specs/fixtures/urban_business_startup_v1.yaml
-  sha256: 59608fc59696c2b14a1782c3ac5a4ecfa12c3526d757b51f57d383300ed5e34c
-- source_ref: specs/fixtures/fantasy_eastern_cultivation_v1.yaml
-  ref: specs/fixtures/fantasy_eastern_cultivation_v1.yaml
-  sha256: 34b56a83b329e1bcf4dbc0b2a38a5203d62e645055ff253108d21caa1927bbf6
+- source_ref: 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  ref: 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  sha256: b1f8d4cfae960fce8223e93cebbf30189742bf0945f8cc79fe7b550eedbc8281
+- source_ref: AI_EXECUTION_PROTOCOL.md
+  ref: AI_EXECUTION_PROTOCOL.md
+  sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
 
 expected_outputs:
-- plan/validation/execution/V2-017/prepare/prepare-review.md
-- plan/validation/execution/V2-017/prepare/execution-packet.yaml
-- plan/validation/execution/V2-017/prepare/adr-008-recommendation.md
+- validation/execution/V2-017/prepare/prepare-review.md
+- validation/execution/V2-017/prepare/execution-packet.yaml
+- validation/execution/V2-017/prepare/adr-008-recommendation.md
+- src/anovel/contracts/compiler.py
+- specs/fixtures/stories
+- tests/contract/test_v2_017.py
+- src/anovel/planning/models.py
+- src/anovel/planning/versions.py
+- src/anovel/planning/replanning.py
+- src/anovel/contracts/models.py
 
 allowed_paths:
-- plan/validation/execution/V2-017/prepare/
-- plan/machine/implementation-backlog.yaml
+- validation/execution/V2-017/prepare/
+- machine/implementation-backlog.yaml
+- src/anovel/contracts/
+- src/anovel/planning/
+- specs/fixtures/
+- tests/contract/
 
 required_decisions:
 - ADR-004
@@ -67,7 +84,7 @@ claims:
   kind: FACT
   statement: V2-017 minimal architecture designed with 5 modules (planning models/versions/replanning, contracts models/compiler)
   sources:
-  - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
+  - ref: validation/execution/V2-017/prepare/prepare-review.md
     sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
   blocks_actions: []
   verification_plan: Design review and interface contract validation
@@ -75,7 +92,7 @@ claims:
   kind: FACT
   statement: All 8 AT-V2-017 scenarios mapped to concrete test strategies with positive/negative cases
   sources:
-  - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
+  - ref: validation/execution/V2-017/prepare/prepare-review.md
     sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
   blocks_actions: []
   verification_plan: Test mapping completeness review
@@ -83,11 +100,10 @@ claims:
   kind: ASSUMPTION
   statement: Story fixtures will receive human review before IMPLEMENT phase, populating human_review_ref
   sources:
-  - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
+  - ref: validation/execution/V2-017/prepare/prepare-review.md
     sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
-  blocks_actions:
-  - V2-017 IMPLEMENT requires validated fixtures per AT-V2-017-04
-  verification_plan: Owner fixture review process
+  blocks_actions: []
+  verification_plan: Owner fixture review process required before IMPLEMENT
 
 estimate:
   range: actual-completed
@@ -95,7 +111,7 @@ estimate:
   assumptions:
   - PREPARE phase completes design, does not implement code
   - V2-015/016 extensions provide necessary state types
-  - ADR-008 recommendation sufficient for IMPLEMENT start
+  - ADR-008 formal acceptance required before IMPLEMENT
   confidence: actual-result
 
 budget:
@@ -114,7 +130,7 @@ stop_conditions:
 
 review_notes:
 - PREPARE phase delivers design, not implementation
-- Both story fixtures remain DRAFT (human_review_ref: null) - blocker for production
+- Both story fixtures remain DRAFT (human_review_ref null) - blocker for production
 - ADR-008 decisions required before IMPLEMENT
 - All V2-015/016 dependencies satisfied
 - NarrativeDelta operations reused (no parallel state language)
@@ -135,10 +151,10 @@ handoff:
   - ADR-008 formal acceptance
   - Story fixture human review (both remain DRAFT)
   - Owner approval of PREPARE design
-  next_action: IMPLEMENT
+  next_action: PREPARE
   last_check:
     status: PASS
     artifacts:
-    - ref: plan/validation/execution/V2-017/prepare/prepare-review.md
+    - ref: validation/execution/V2-017/prepare/prepare-review.md
       sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
     missing_artifact_reason: null

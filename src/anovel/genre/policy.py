@@ -274,6 +274,7 @@ class GenreHardPolicyEngine:
                 "transmigration",
                 "reincarnation",
                 "magic_system",
+                "rebirth_system",
             ]:
                 return PolicyJudgment(
                     verdict=PolicyVerdict.REJECT,

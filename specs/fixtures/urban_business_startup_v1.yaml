@@ -1,0 +1,271 @@
+record_type: story_fixture
+status: DRAFT
+fixture_id: urban_business_startup_v1
+genre_pack_id: urban.business.realistic
+genre_pack_version: "1.0.0"
+genre_pack_hash: "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336"
+partition: development
+human_review_ref: null
+
+title: "资本博弈：创业者的抉择"
+synopsis: |
+  张明，一位技术出身的创业者，创立了科技公司"明智科技"。
+  公司研发的AI数据分析平台获得市场认可，但资金链紧张。
+  风险投资人王总提出融资方案：注资500万，但要求30%股权和董事会席位。
+  联合创始人李华坚决反对股权稀释，认为会失去控制权。
+  张明必须在融资扩张和保持控制权之间做出选择。
+
+initial_facts:
+  - fact_id: company_founded
+    description: "张明于2024年1月创立明智科技，注册资本100万元"
+    fact_type: world_event
+    story_time: "2024-01"
+
+  - fact_id: initial_equity
+    description: "张明持有70%股权，联合创始人李华持有30%股权"
+    fact_type: equity_state
+    story_time: "2024-01"
+
+  - fact_id: initial_capital
+    description: "公司账户余额50万元，月运营成本20万元"
+    fact_type: resource_state
+    story_time: "2024-06"
+
+  - fact_id: product_launch
+    description: "AI数据分析平台beta版上线，获得15家企业客户试用"
+    fact_type: business_milestone
+    story_time: "2024-04"
+
+characters:
+  - character_id: zhang_ming
+    name: 张明
+    role: protagonist
+    occupation: CEO兼技术负责人
+    age: 32
+    initial_state:
+      equity_percentage: 70.0
+      knowledge:
+        - "公司只有3个月运营资金"
+        - "王总的投资条款包含对赌协议"
+        - "李华强烈反对稀释股权"
+      goals:
+        - "保证公司生存并扩大规模"
+        - "维护团队稳定和核心控制权"
+      personality: "理性务实，技术能力强，但商业谈判经验不足"
+
+  - character_id: li_hua
+    name: 李华
+    role: co_founder
+    occupation: 联合创始人兼运营总监
+    age: 35
+    initial_state:
+      equity_percentage: 30.0
+      knowledge:
+        - "公司资金紧张"
+        - "自己不认同王总的商业理念"
+        - "有其他潜在投资人在接触"
+      goals:
+        - "保持创始团队控制权"
+        - "避免被资本绑架"
+      personality: "原则性强，重视团队价值观，风险厌恶"
+
+  - character_id: wang_zong
+    name: 王总
+    role: antagonist
+    occupation: 风险投资人
+    age: 45
+    initial_state:
+      equity_percentage: 0.0
+      knowledge:
+        - "明智科技的技术有市场价值"
+        - "创始团队缺乏融资经验"
+        - "同赛道有3家竞争对手已获投"
+      goals:
+        - "以合理估值获得可观股权"
+        - "推动公司快速增长实现退出"
+      personality: "经验丰富，善于谈判，追求回报最大化"
+
+relationships:
+  - character_a: zhang_ming
+    character_b: li_hua
+    relationship_type: co_founder
+    trust_level: high
+    conflict_potential: medium
+    description: "共同创业2年，理念基本一致，但对融资策略有分歧"
+
+  - character_a: zhang_ming
+    character_b: wang_zong
+    relationship_type: investor_founder
+    trust_level: low
+    conflict_potential: high
+    description: "初次商业接触，存在信息不对称和利益博弈"
+
+world_boundaries:
+  realistic_constraints:
+    - "股权总和不能超过100%"
+    - "公司运营需要持续资金支持"
+    - "融资需要满足法律和财务合规要求"
+    - "商业决策受市场竞争和时机影响"
+
+  prohibited_mechanisms:
+    - "超自然能力或系统辅助"
+    - "穿越重生改变决策"
+    - "修炼或法术解决商业问题"
+
+  allowed_realistic_elements:
+    - "商业谈判和博弈"
+    - "市场分析和战略决策"
+    - "人际关系和信任建立"
+    - "资金、股权等资源约束"
+
+protagonist_goal:
+  primary: "在3个月内完成融资，确保公司生存"
+  constraints:
+    - "不能完全失去控制权"
+    - "必须保持团队稳定"
+    - "需要在估值和条款上达成平衡"
+  success_criteria:
+    - "获得足够运营资金（至少300万）"
+    - "保持创始团队合计持股超过51%"
+    - "避免触发强制对赌条款"
+
+conflict_engine:
+  core_dilemma: "融资扩张 vs 控制权保留"
+  escalation_mechanism:
+    - stage: initial
+      trigger: "资金只够支撑3个月"
+      pressure: "时间紧迫，必须快速决策"
+    - stage: intensified
+      trigger: "李华威胁如果接受王总条款就退出"
+      pressure: "团队分裂风险"
+    - stage: climax
+      trigger: "竞争对手获得融资，开始价格战"
+      pressure: "市场窗口期缩短，融资条件可能恶化"
+
+choice_costs:
+  - choice: "接受王总融资方案"
+    immediate_gain: "获得500万资金，18个月运营保障"
+    immediate_cost: "股权稀释至49%，失去绝对控制权"
+    delayed_consequences:
+      - "王总进入董事会，重大决策需其同意"
+      - "对赌协议压力：18个月内营收需达3000万"
+      - "李华可能因失望离职"
+
+  - choice: "拒绝融资，寻求其他方案"
+    immediate_gain: "保持控制权，团队稳定"
+    immediate_cost: "3个月后资金链断裂风险"
+    delayed_consequences:
+      - "错过市场窗口期"
+      - "团队士气受现金流压力影响"
+      - "可能被迫接受更差的融资条件"
+
+  - choice: "接受部分融资+收入分成模式"
+    immediate_gain: "获得部分资金，保留更多股权"
+    immediate_cost: "未来收入分成压力，融资额不足"
+    delayed_consequences:
+      - "仍需后续融资"
+      - "收入分成影响长期利润"
+      - "投资人可能不接受此方案"
+
+opponent_adaptation:
+  - trigger: "张明试图寻找其他投资人"
+    wang_response: "降低估值要求，但增加业绩对赌条款"
+    market_response: "其他投资人观望，不愿快速决策"
+
+  - trigger: "张明接受融资但要求修改条款"
+    wang_response: "同意小幅修改，但坚持核心条款"
+    li_hua_response: "态度缓和，但警告不能完全妥协"
+
+reader_promises:
+  - promise_type: narrative_arc
+    content: "张明的选择将决定公司命运和团队关系"
+    fulfillment_timing: "第一卷结束前"
+
+  - promise_type: business_realism
+    content: "商业决策遵循现实逻辑，没有系统或金手指"
+    fulfillment_timing: "全书持续"
+
+  - promise_type: character_growth
+    content: "张明将从技术创业者成长为成熟商业领导者"
+    fulfillment_timing: "跨越多卷的长期承诺"
+
+secrets_and_knowers:
+  - secret_id: secret_01
+    content: "王总已经在接触同赛道另一家公司，如果张明不接受，资金将投向竞争对手"
+    knowers: [wang_zong]
+    potential_reveal: "第8章，通过市场消息间接揭示"
+    impact: "增加张明的决策压力和时间紧迫感"
+
+  - secret_id: secret_02
+    content: "李华私下联系了天使投资人陈女士，对方愿意以更优条件投资，但需要1个月尽调"
+    knowers: [li_hua]
+    potential_reveal: "第10章，李华主动告知张明"
+    impact: "提供第三条路径，但需承担时间风险"
+
+reader_reveal_constraints:
+  - constraint_type: knowledge_boundary
+    description: "读者知道王总在同时谈判多个项目，但张明不知道"
+    narrative_purpose: "制造紧张感和戏剧张力"
+
+  - constraint_type: dramatic_irony
+    description: "读者看到李华已有备选方案，但张明认为只有接受或拒绝两个选择"
+    narrative_purpose: "为后续情节反转埋伏笔"
+
+first_arc_plan:
+  arc_title: "融资困局"
+  chapters: 15
+  key_beats:
+    - chapter: 1-3
+      content: "公司现状、资金压力、王总提出融资方案"
+      state_changes:
+        - "王总从陌生人变为潜在投资人"
+        - "公司账户余额从50万降至30万"
+
+    - chapter: 4-7
+      content: "团队内部分歧，李华强烈反对，张明左右为难"
+      state_changes:
+        - "张明与李华信任度降低"
+        - "尝试寻找其他投资人，但进展缓慢"
+
+    - chapter: 8-10
+      content: "竞争对手获得融资，市场压力增大"
+      state_changes:
+        - "市场窗口期缩短"
+        - "李华揭示备选投资人方案"
+
+    - chapter: 11-13
+      content: "与王总、陈女士分别谈判，权衡利弊"
+      state_changes:
+        - "获得两份具体投资协议"
+        - "公司账户余额降至15万，接近危险线"
+
+    - chapter: 14-15
+      content: "张明做出最终决策，承担相应代价"
+      state_changes:
+        - "股权结构变化"
+        - "获得资金注入"
+        - "团队关系重新定义"
+        - "引出第二卷冲突：履行业绩承诺"
+
+bootstrap_receipt_ref: null
+
+notes: |
+  此故事样本设计目标：
+  1. 展示urban.business.realistic Pack的状态跟踪能力
+  2. 体现股权、资金等资源的显式约束
+  3. 主角面临真实商业困境，需付出代价
+  4. 选择产生后续影响，为下一章埋下冲突
+  5. 角色知识边界清晰，秘密揭示有规划
+  6. 无超自然元素，符合现实Anchor规则
+
+  可验证状态转移：
+  - 股权比例变化（张明70% → 融资后49%）
+  - 资金池变化（50万 → 15万 → +500万）
+  - 关系变化（张明-李华信任度 high → medium → ?）
+  - 董事会构成变化（创始人 → 创始人+投资人）
+
+  为V2-017 Contract Compiler准备的信息：
+  - 主角目标明确且有约束
+  - 关键决策点有清晰前置条件
+  - 状态变化有证据和时间锚点
+  - 人物知识边界可编译为Contract约束

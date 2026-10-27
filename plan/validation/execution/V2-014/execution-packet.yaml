@@ -2,7 +2,7 @@ record_type: task_execution_packet
 schema_version: '1.0'
 task_id: V2-014
 plan_version: 1.3.1
-repository_revision: 44d7abf5bbac24e486ca707ec12e343ac578e052
+repository_revision: 5d67c9ad80a2dd3b73fae53e70e41536e2bbaf07
 worktree_dirty: false
 plan_manifest_sha256: 7dcae7a6c689d99b2311e885c14796de589878b1bf33427407f2954215f5d38f
 
@@ -10,6 +10,7 @@ environment:
   fingerprint: darwin-24.1.0-python-3.12.14
   runtime_versions:
     python: 3.12.14
+  database_image: postgres:17-alpine
   ci_context: local-development
 
 implementer: claude-opus-4.7
@@ -43,12 +44,16 @@ action: IMPLEMENT
 
 inputs:
 - source_ref: machine/implementation-backlog.yaml
-  sha256: 090a349f3cdd03fc2bb6d2eb63bd398aee25f6ec07ce84f2e6ae483134c78b7e
+  ref: machine/implementation-backlog.yaml
+  sha256: cc25ca35f082e521b46ae73ce6e3cf0c654153bb49a610a2d23cc1a197dcb82a
 - source_ref: machine/test-catalog.yaml
-  sha256: d004f7eac2be3a471c300918ba9fc517391c0efda0ddb53941a1da800a31543f
+  ref: machine/test-catalog.yaml
+  sha256: 51ee21a4424471f450a2c6cdf5db13b7f3f607211b99d5791665864677519b1e
 - source_ref: machine/decision-register.yaml
+  ref: machine/decision-register.yaml
   sha256: f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2
 - source_ref: decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
+  ref: decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
   sha256: e59822c28420b1fdf5030f376ad53e632d44e2d26ebe81e59133c4aa3695eb38
 
 expected_outputs:
@@ -67,14 +72,16 @@ claims:
   kind: FACT
   statement: V2-014 implements real, executable Genre Hard Policy Engine with dual-anchor enforcement
   sources:
-  - ref: src/anovel/genre/policy.py
+  - ref: validation/execution/V2-014/closure/closure-review.md
+    sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
   blocks_actions: []
   verification_plan: Code revalidation and contract test execution
 - id: CLAIM-002
   kind: FACT
   statement: AT-V2-014 test suite verified with 27 contract tests covering all 4 acceptance scenarios
   sources:
-  - ref: tests/contract/test_v2_014.py
+  - ref: validation/execution/V2-014/closure/closure-review.md
+    sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
   blocks_actions: []
   verification_plan: pytest execution with 27/27 passing
 
@@ -111,21 +118,21 @@ change_review:
   scope_ref: V2-014 implementation commit (d363003)
 
 handoff:
-  current_step: Implementation complete, ready for PR creation and remote CI
+  current_step: IMPLEMENT
   completed_steps:
-  - Created src/anovel/genre/policy.py (467 lines)
-  - Created tests/contract/test_v2_014.py (27 tests, 574 lines)
+  - Created src/anovel/genre/policy.py (808 lines)
+  - Created tests/contract/test_v2_014.py (58 tests, 1131 lines)
   - Updated src/anovel/genre/__init__.py exports
-  - All 27 V2-014 tests passing
+  - All 58 V2-014 tests passing
   - All 34 V2-013 regression tests passing
-  - All 226 architecture fitness tests passing
-  - Plan validation passing
-  pending_items:
-  - Push branch to remote
-  - Create PR
-  - Verify remote CI (6 gates)
-  next_action: CREATE_PR
+  - Merged to main via PR #9
+  - CI verified (6/6 gates SUCCESS)
+  pending_items: []
+  next_action: IMPLEMENT
   last_check:
     status: PASS
-    artifacts: []
-    missing_artifact_reason: Artifacts to be created in closure phase
+    artifacts:
+    - ref: validation/execution/V2-014/closure/closure-review.md
+      sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
+    missing_artifact_reason: null
+

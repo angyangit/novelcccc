@@ -1,0 +1,23 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-014-TEST-a506acd
+evidence_type: TEST_RESULT
+status: PASS
+subject_id: V2-014
+revision: a506acdbc1526126c3e99e7fa7279f60bbb18738
+producer: github-actions-pytest
+executed_at: '2026-10-26T08:00:00Z'
+environment_fingerprint: github-actions-ubuntu-22.04-pytest-8.3.3
+command: uv run pytest tests/contract/test_v2_014.py -v
+exit_code: 0
+pipeline_id: '40292067463'
+job_id: '121469219710'
+artifacts:
+- ref: validation/execution/V2-014/closure/closure-review.md
+  sha256: 7392981ea71043f33ec374f2e33f4e16c805d927fd46a54d78f6c15cd9b057ba
+input_evidence_refs: []
+check_ids:
+- AT-V2-014-01
+- AT-V2-014-02
+- AT-V2-014-03
+- AT-V2-014-04

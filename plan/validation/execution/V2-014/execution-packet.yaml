@@ -44,8 +44,8 @@ action: IMPLEMENT
 
 inputs:
 - source_ref: machine/implementation-backlog.yaml
-  ref: machine/implementation-backlog.yaml
-  sha256: 8d6878cf9754aceb0d3a93005037372c836b35dc77551d5637f0b6a4ec824560
+  ref: validation/execution/V2-014/snapshots/implementation-backlog-78ffbf1.yaml
+  sha256: cc25ca35f082e521b46ae73ce6e3cf0c654153bb49a610a2d23cc1a197dcb82a
 - source_ref: machine/test-catalog.yaml
   ref: machine/test-catalog.yaml
   sha256: 51ee21a4424471f450a2c6cdf5db13b7f3f607211b99d5791665864677519b1e

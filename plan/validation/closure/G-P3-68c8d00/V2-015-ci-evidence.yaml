@@ -6,12 +6,12 @@ subject_id: V2-015
 producer: GitHub Actions Run 40468278925
 pipeline_id: '40468278925'
 pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40468278925
-job_id: '121051322834'
+job_id: unit-postgres_env-static-schema_contract-secret_dependency-arch_fitness
 revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
 status: PASS
-executed_at: '2026-10-27T04:17:03Z'
+executed_at: '2026-10-27T07:56:25Z'
 environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
-command: uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+command: GitHub Actions workflow with 6 parallel jobs (UNIT:122075111291, POSTGRES_ENV:122075113820, STATIC:122075113394, SCHEMA_CONTRACT:122075113443, SECRET_DEPENDENCY:122075112709, ARCH_FITNESS:122075162705)
 exit_code: 0
 check_ids:
   - ARCH_FITNESS

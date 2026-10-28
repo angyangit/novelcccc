@@ -5,8 +5,8 @@ evidence_type: TEST_RESULT
 subject_id: V2-016
 revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
 status: PASS
-producer: GitHub Actions Run 40468278925 Job 121051322834
-executed_at: '2026-10-27T04:17:25Z'
+producer: GitHub Actions Run 40468278925 Job 122075111291
+executed_at: '2026-10-27T07:56:25Z'
 environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
 command: uv run pytest tests/contract/test_v2_016.py -v --tb=short
 exit_code: 0

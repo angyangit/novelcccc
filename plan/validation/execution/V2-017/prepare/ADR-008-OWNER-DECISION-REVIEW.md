@@ -144,32 +144,37 @@ ADR-008 lists invalidation triggers but doesn't specify **scope of invalidation*
 - Author updates protagonist goal in SeriesVision
 - Does this invalidate all 100 chapters? Or only chapters explicitly referencing that goal?
 
-**Proposed Clarification:**
+**Required Clarification:**
 
 Add to ADR-008 Section 4:
 
 ```markdown
-### Invalidation Scope Rules
+### 4.1 Invalidation Scope Rules
 
-**Full Series Invalidation:**
-- GenrePack ID changed (urban → fantasy)
-- SeriesVision core conflict fundamentally altered
-- Canon parent lost (data corruption, requires rebuild)
+**Immediate Invalidation (Eager Detection):**
+- Canon parent changes → immediately invalidate all compiled contracts bound to old parent
+- No deferred invalidation: detection must happen before any downstream use
+- Incremental recompilation allowed, but stale contracts cannot remain valid
 
-**Cascade Invalidation:**
-- Canon parent advances (chapter N committed) → invalidate N+1
-- Chapter N+1 recompiled with new parent → if successful, invalidate N+2
-- Continue until recompilation stable or explicit stop
+**Dependency-Based Invalidation:**
+- GenrePack version/hash changed → invalidate contracts UNLESS verifiable compatibility proof exists
+- State type changes → invalidate only contracts with preconditions/transitions using affected types
+- Compatibility must be explicit (schema version, migration path), not assumed
 
-**Partial Invalidation:**
-- GenrePack version/hash changed → only chapters using affected state types
-- Character goal adjusted → only chapters with goal in required_transitions
-- Knowledge boundary changed → only chapters with that knowledge constraint
+**Contract State Boundaries:**
+- **Committed Canon chapters**: Immutable, cannot be invalidated (history is frozen)
+- **Compiled but uncommitted contracts**: Subject to invalidation when inputs change
+- **Adjustable future plans**: Can be modified without invalidation (not yet compiled)
 
-**No Invalidation:**
-- Typo fixes in chapter titles
-- Metadata updates (synopsis, notes)
-- Comments in SeriesVision
+**Metadata Exemptions:**
+- Synopsis, title, comments exempt ONLY if proven not to participate in compilation
+- Exemption requires verification: field not referenced in any RequiredTransition or Precondition
+- No silent assumptions: if uncertain, trigger invalidation
+
+**Invalidation Audit Trail:**
+- Every InvalidationRecord must specify: which input changed, affected contracts, dependency chain
+- Scope justification required (why these contracts, not others)
+- No batch invalidation without per-contract dependency analysis
 ```
 
 **Why This Matters for Long-Form Fiction:**
@@ -337,25 +342,50 @@ At chapter 50:
 
 ## Part 5: Recommended Owner Decision
 
-### Option A: ACCEPT (with Invalidation Scope Clarification) — RECOMMENDED
+### Option A: AMEND (Add Invalidation Scope Rules) — RECOMMENDED
 
-**Action:** Accept ADR-008 with addition of Invalidation Scope Rules to Section 4.
+**Action:** Accept ADR-008 with addition of precise Invalidation Scope Rules to Section 4.
 
 **Changes Required:**
 1. Add "Invalidation Scope Rules" subsection to Section 4 (see Part 1, Decision 4)
-2. Update decision_record in decision-register.yaml to reference clarified ADR-008
-3. Mark ADR-008 status: REQUIRED → ACCEPTED
+2. Key principles:
+   - **Eager invalidation**: Detect immediately when inputs change, no deferred detection
+   - **Dependency-based**: Invalidate only contracts with actual dependencies on changed inputs
+   - **Compatibility proofs**: GenrePack changes require explicit compatibility verification
+   - **State boundaries**: Distinguish committed Canon (immutable) from compiled contracts (invalidatable) from adjustable plans
+   - **Audit trail**: Every invalidation must justify scope
+3. Update decision_record in decision-register.yaml to reference amended ADR-008
+4. Mark ADR-008 status: REQUIRED → ACCEPTED
+
+**Why AMEND vs. Original ACCEPT:**
+- Original proposal lacked **eager invalidation** requirement (could allow stale contracts)
+- Original proposal lacked **committed vs. compiled vs. adjustable** state distinction
+- Original proposal allowed implicit metadata exemptions without verification
+- These gaps create ambiguity that could lead to Canon corruption or stale contract usage
 
 **Unblocks:**
-- V2-017 IMPLEMENT can proceed
-- AT-V2-017-08 (invalidation) has clear test criteria
-- Long-form novel workflow validated
+- V2-017 IMPLEMENT can proceed with clear invalidation semantics
+- AT-V2-017-08 (invalidation) has precise test criteria
+- Long-form novel workflow validated with proper state boundaries
 
 **Rationale:**
-- Core decisions (1, 2, 3, 5) are sound and sufficient
-- Decision 4 needs only scope clarification, not redesign
-- Minimal change, maximum clarity
-- Product-aligned, technically solid
+- Core decisions (1, 2, 3, 5) remain sound
+- Decision 4 requires **tightening, not redesign**
+- Minimal change for maximum safety
+- Product-aligned, prevents invalidation scope explosion
+
+---
+
+### Option B: ACCEPT (as currently proposed) — NOT RECOMMENDED
+
+**Risk:** Current ADR-008 Section 4 allows ambiguity in:
+- When invalidation detection occurs (immediate vs. deferred)
+- What constitutes "compatibility" for GenrePack changes
+- Whether metadata changes can silently skip invalidation
+
+**Consequence:** Could allow stale contracts or Canon corruption in edge cases.
+
+**Not Recommended** due to identified precision gaps.
 
 ---
 
@@ -395,58 +425,99 @@ At chapter 50:
 
 ## Part 6: Formal Recommendation
 
-**Recommended Decision: ACCEPT ADR-008 with Invalidation Scope Clarification**
+**Recommended Decision: AMEND ADR-008 with Precise Invalidation Scope Rules**
 
 **Summary:**
 - Decisions 1, 2, 3, 5: Accept as-is ✅
-- Decision 4: Accept with addition of Invalidation Scope Rules ⚠️→✅
+- Decision 4: **AMEND** with addition of Invalidation Scope Rules (eager detection, dependency-based, state boundaries)
 - All 8 AT scenarios covered or correctly out-of-scope
 - Product alignment validated for Chinese long-form fiction
-- No blocking technical flaws
-- Minimal change required (scope rules addition)
+- Precision gaps identified and addressed
+
+**Critical Amendments to Decision 4:**
+1. **Eager invalidation**: No deferred detection, immediate invalidation when inputs change
+2. **Committed vs. compiled distinction**: Committed Canon immutable, compiled contracts subject to invalidation
+3. **Compatibility proofs required**: GenrePack changes need explicit verification, not assumptions
+4. **Metadata exemptions verified**: Must prove field doesn't participate in compilation
+5. **Audit trail mandatory**: Every InvalidationRecord justifies scope
 
 **Next Steps After Acceptance:**
-1. Owner approves this recommendation
+1. Owner approves this AMEND recommendation
 2. Update ADR-008 document with Invalidation Scope Rules
 3. Update decision-register.yaml: status REQUIRED → ACCEPTED, add decision_record reference
 4. V2-017 IMPLEMENT authorized (pending Story Fixture human review)
 
-**Estimated Time to Acceptance:** Owner review + minimal ADR-008 edit: 1 session
+**Estimated Time to Acceptance:** Owner review + ADR-008 amendment: 1 session
 
 ---
 
-## Appendix A: Invalidation Scope Rules (Proposed Addition)
+## Appendix A: Invalidation Scope Rules (Proposed Amendment)
 
 ```markdown
 ### 4.1 Invalidation Scope Rules
 
-**Full Series Invalidation** (affects all chapters):
-- GenrePack ID fundamentally changed (urban.business → fantasy.eastern)
-- SeriesVision core conflict completely redesigned
-- Canon parent lost due to data corruption
+**Immediate Invalidation (Eager Detection):**
+- Canon parent changes → immediately invalidate all compiled contracts bound to old parent
+- No deferred invalidation: detection must happen before any downstream use
+- Incremental recompilation allowed, but stale contracts cannot remain valid
 
-**Cascade Invalidation** (sequential recompilation):
-- Canon parent advances (chapter N committed) → invalidate chapter N+1
-- After chapter N+1 recompiled successfully → invalidate chapter N+2
-- Continue until recompilation stable or manual stop
+**Dependency-Based Invalidation:**
+- GenrePack version/hash changed → invalidate contracts UNLESS verifiable compatibility proof exists
+- State type changes → invalidate only contracts with preconditions/transitions using affected types
+- Compatibility must be explicit (schema version, migration path), not assumed
 
-**Partial Invalidation** (targeted chapters only):
-- GenrePack version/hash changed → only chapters using affected state types
-- Character goal in SeriesVision adjusted → only chapters with that goal in required_transitions
-- Knowledge boundary modified → only chapters with that knowledge constraint
-- Resource initial value changed → only chapters with resource preconditions
+**Contract State Boundaries:**
+- **Committed Canon chapters**: Immutable, cannot be invalidated (history is frozen)
+- **Compiled but uncommitted contracts**: Subject to invalidation when inputs change
+- **Adjustable future plans**: Can be modified without invalidation (not yet compiled)
 
-**No Invalidation** (metadata changes):
-- Typo fixes in chapter titles or synopsis
-- Comment additions in SeriesVision YAML
-- Metadata updates (partition, notes fields)
+**Metadata Exemptions:**
+- Synopsis, title, comments exempt ONLY if proven not to participate in compilation
+- Exemption requires verification: field not referenced in any RequiredTransition or Precondition
+- No silent assumptions: if uncertain, trigger invalidation
+
+**Invalidation Audit Trail:**
+- Every InvalidationRecord must specify: which input changed, affected contracts, dependency chain
+- Scope justification required (why these contracts, not others)
+- No batch invalidation without per-contract dependency analysis
 
 **Scope Determination Algorithm:**
-1. Identify what changed (Canon parent, Pack, SeriesVision field)
-2. Query: which chapters reference changed element?
-3. Create InvalidationRecord for affected chapters only
-4. Generate ReplanProposal with explicit scope justification
-5. After approval, recompile only affected chapters
+1. Identify what changed (Canon parent hash, Pack hash, SeriesVision field)
+2. Query dependency graph: which compiled contracts reference changed element?
+3. Create InvalidationRecord for each dependent contract (with reason, old/new values)
+4. Generate ReplanProposal with explicit scope justification and affected chapter list
+5. After approval, recompile only invalidated contracts with new inputs
+```
+
+**Example 1: Canon Parent Advances**
+```
+Scenario: Chapter 5 committed to Canon (parent: new_hash_789)
+Action:
+  - Immediately invalidate chapter 6 contract (bound to old_hash_456)
+  - Chapter 7+ contracts remain valid (not yet dependent on chapter 6 state)
+  - After chapter 6 recompiled: evaluate chapter 7 dependencies
+Rationale: Eager detection prevents stale chapter 6 from being used
+```
+
+**Example 2: GenrePack Hash Changes**
+```
+Scenario: urban.business.realistic Pack hash changes (bug fix in equity validator)
+Action:
+  - Query: which contracts use Equity state type in preconditions/transitions?
+  - Contracts using Equity → invalidate
+  - Contracts not using Equity → remain valid
+  - Compatibility proof: if validator logic unchanged, contracts can remain valid
+Rationale: Dependency-based invalidation, not wholesale series invalidation
+```
+
+**Example 3: Synopsis Change**
+```
+Scenario: Author updates series synopsis (typo fix)
+Action:
+  - Verify: synopsis field not referenced in any contract compilation
+  - If verified: no invalidation
+  - If synopsis used in context generation (future V2-018): would trigger invalidation
+Rationale: Metadata exemption requires proof, not assumption
 ```
 
 ---

@@ -210,21 +210,78 @@ Both fixtures demonstrate:
 - ✅ Goal clear
 - ⚠️ Needs explicit mapping to state transitions
 
-**Proposed Mapping (for Compiler):**
-```yaml
-chapter_1_contract:
-  required_transitions:
-    - operation: SET_FACT
-      fact_path: "relationships.zhang_wang.status"
-      target_value: "negotiation_started"
-      preconditions:
-        - fact_path: "company.cash_balance"
-          constraint: "< 500000"
-    
-    - operation: SET_FACT
-      fact_path: "company.funding_proposals"
-      target_value: ["wang_proposal_v1"]
-```
+**Q1: Dao comprehension timeline consistency**
+
+Fixture states:
+- Line 20 (initial_facts): "王林炼气九层，道韵20"
+- Line 259 (chapters 1-3): "道韵从15提升至20"
+
+**Inconsistency Identified:** Initial state says dao 20, but arc plan says it increases from 15→20 in chapters 1-3.
+
+**Possible Interpretations:**
+1. **Chapters 1-3 are flashback**: Initial_facts timestamp "修真历2380年春" is AFTER chapters 1-3 events
+2. **Timeline error**: Contradiction between initial state and arc progression
+
+**Clarification Needed (Non-Blocking):**
+- Which value is correct at story opening?
+- **Recommended Fix Option A:** Change line 259 to "道韵从18提升至20" (smaller gain)
+- **Recommended Fix Option B:** Change line 20 to "王林炼气九层，道韵18，距离筑基一步之遥（需达20）"
+- **Recommended Fix Option C:** Add timeline note: "Initial_facts reflects state AFTER chapters 1-3 training"
+
+**Assessment:** ⚠️ Timeline inconsistency. Requires clarification before compilation, but not a fundamental story flaw.
+
+---
+
+**Q2: Guild contract survival rates**
+
+Fixture states:
+- Line 189: "商会护卫任务危险，死亡率30%"
+- Line 237 (Secret 03): "商会护卫契约有50%生还率"
+
+**Inconsistency Check:** 30% death rate vs. 50% survival rate
+
+**Math:** If death rate = 30%, survival rate should be 70%, not 50%.
+
+**Possible Interpretations:**
+1. **Different scopes**: Line 189 refers to "per-mission death rate" (30% of missions have casualties), line 237 refers to "3-year contract completion rate" (50% of bodyguards complete full term)
+2. **Cumulative vs. single-mission**: 30% death per mission × multiple missions over 3 years = ~50% cumulative survival
+3. **Actual error**: Numbers contradict
+
+**Clarification Needed (Blocking if Actual Error):**
+- **Recommended Fix:** Change line 189 to "商会护卫三年契约危险，完成率约50%（任务死亡率累积）" OR change Secret 03 to match 70% survival if 30% death per mission
+
+**Assessment:** ⚠️ **Potential blocking inconsistency.** Math must reconcile or explicitly state different scopes (per-mission vs. cumulative).
+
+---
+
+**Q3: Foundation Pill and contract exchange clarity**
+
+Fixture mentions:
+- Wang Lin has 1 Foundation Pill
+- Guild offers: Heavenly Heart Grass + extra Foundation Pill for 3-year contract
+- Line 186: "获得天心草+额外筑基丹"
+
+**Clarity Check:**
+- Guild provides 1 NEW Foundation Pill (Wang keeps his original + gets 1 more = 2 total)?
+- OR Guild provides Heavenly Heart Grass + 1 Foundation Pill total (not extra)?
+
+**Current Wording Analysis:**
+"额外筑基丹" suggests Wang gets 1 MORE (in addition to his existing 1) = 2 total pills
+
+**If 2 pills total:**
+- Use 1 for Liu Meng healing (with Heavenly Heart Grass)
+- Use 1 for Wang Lin breakthrough
+- Problem solved, seems too good to be true (aligns with "hidden cost" theme)
+
+**If 1 pill total:**
+- Contract provides Heavenly Heart Grass + 1 pill
+- Wang uses his original 1 pill for Liu, gets new 1 pill for self
+- Same result but clearer exchange
+
+**Clarification Needed (Non-Blocking):**
+- **Recommended:** Clarify line 186 to "获得天心草+筑基丹各1枚（满足双重需求）"
+
+**Assessment:** ✅ Wording ambiguity, but intent clear (contract solves both problems). Minor clarification improves precision.
 
 **Clarification Needed (Non-Blocking):**
 
@@ -244,20 +301,37 @@ key_beats:
 - Option B: Add explicit `required_transitions` field to beats
 - **Recommendation:** Option A (less rigid, allows Compiler intelligence)
 
-**Q2: Are equity calculations verifiable?**
+**Q2: Are equity and cash runway calculations accurate?**
 
-Financing scenario:
+**Financing scenario:**
 - Pre-money: Zhang 70%, Li 30%
-- Investment: 5M for 30% equity
+- Investment: 5M RMB for 30% equity
 - Post-money: Zhang 49%, Li 21%, Wang 30%
 
-**Math Check:**
+**Equity Math Check:**
 - Zhang: 70% × 0.70 = 49% ✅
 - Li: 30% × 0.70 = 21% ✅
 - Wang: 30% ✅
 - Total: 100% ✅
 
-**Assessment:** ✅ Equity math correct.
+**Cash Runway Check:**
+Line 147 states: "获得500万资金，18个月运营保障"
+- Post-funding cash: 500k (current) + 5M (investment) = 5.5M RMB
+- Monthly cost: 200k RMB (line 30)
+- Runway: 5.5M / 200k = 27.5 months
+
+**Inconsistency Identified:** 27.5 months ≠ 18 months
+
+**Possible Interpretations:**
+1. **18-month performance bet deadline** (line 151: "18个月内营收需达3000万") is NOT the same as cash runway
+2. Cash runway is ~27 months, but Wang's performance bet requires results in 18 months
+3. After 18 months without hitting target, Wang may enforce penalties (not cash-out)
+
+**Clarification Needed (Non-Blocking):**
+- Does "18个月运营保障" mean physical cash runway or performance bet timeline?
+- **Recommended Fix:** Change line 147 to "获得500万资金，27个月现金续航（但对赌协议要求18个月达标）"
+
+**Assessment:** ⚠️ Timing ambiguity, but explainable as performance bet vs. cash runway distinction. Not a blocking error if clarified.
 
 ---
 
@@ -323,20 +397,23 @@ Financing scenario:
 
 ### Section G: Urban Business Fixture Final Recommendation
 
-**Status:** ✅ **RECOMMEND APPROVE**
+**Status:** ⚠️ **RECOMMEND APPROVE with 1 Minor Clarification**
 
-**Blocking Issues:** None
+**Minor Clarification Required:**
 
-**Minor Clarifications (Non-Blocking):**
+1. **Cash runway vs. performance bet timeline (line 147):**
+   - Current: "获得500万资金，18个月运营保障"
+   - Issue: 5.5M RMB / 200k monthly = 27.5 months, not 18 months
+   - Likely intent: 18 months is performance bet deadline, not cash runway
+   - **Suggested fix:** "获得500万资金，27个月现金续航（但对赌协议要求18个月内营收达3000万）"
+   - **Impact if not fixed:** Ambiguity in choice consequence analysis
+   - **Blocking?** No (can interpret as separate timelines)
 
-1. **state_changes formalization:** Decide whether to keep natural language or add explicit RequiredTransitions
-   - **Owner Decision Needed:** Option A or B (see Section D, Q1)
-   - **Impact:** Affects Compiler implementation details, not fixture validity
+**Optional Clarifications (Non-Blocking):**
 
-2. **Resource tracking formalization:** Add explicit cash balance tracking per chapter?
-   - **Current:** Described in beats ("账户余额从50万降至30万")
-   - **Proposed:** Optional `resource_deltas` field
-   - **Impact:** Implementation detail, not blocker
+2. **state_changes formalization:** Decide whether to keep natural language or add explicit RequiredTransitions
+   - **Owner Decision Needed:** Option A (natural language) or B (explicit operations)
+   - **Recommendation:** Option A (Compiler should translate)
 
 **Content Quality (Requires Human Judgment):**
 - Story premise compelling? (技术创业者的融资困境)
@@ -348,8 +425,9 @@ Financing scenario:
 
 **Owner Action Required:**
 1. Review content quality (AI pre-audit covers technical structure only)
-2. If approved, assign `human_review_ref` (e.g., "review-2026-10-28-urban-001")
-3. Update fixture: `human_review_ref: "review-2026-10-28-urban-001"`
+2. Decide on clarification: accept as-is OR request line 147 revision
+3. If approved, assign `human_review_ref` (e.g., "review-2026-10-28-urban-001")
+4. Update fixture: `human_review_ref: "review-2026-10-28-urban-001"`
 
 ---
 
@@ -727,25 +805,41 @@ use_pill_for_breakthrough:
 
 ### Section G: Fantasy Eastern Fixture Final Recommendation
 
-**Status:** ✅ **RECOMMEND APPROVE**
+**Status:** ⚠️ **RECOMMEND APPROVE with 2 Clarifications (1 Blocking)**
 
-**Blocking Issues:** None
+**Blocking Clarification Required:**
 
-**Minor Clarifications (Non-Blocking):**
+1. **Guild contract survival rates (lines 189 & 237):**
+   - Line 189: "死亡率30%"
+   - Line 237: "生还率50%"
+   - **Inconsistency:** 30% death ≠ 50% survival (should be 70%)
+   - **Possible interpretations:**
+     - Per-mission death rate (30%) vs. 3-year contract completion rate (50% cumulative)
+     - Different risk calculations
+   - **Suggested fix Option A:** Change line 189 to "商会三年护卫契约完成率约50%（累积风险）"
+   - **Suggested fix Option B:** Change Secret 03 line 237 to "生还率70%"
+   - **Blocking?** **YES** — math must reconcile before contract choice analysis is valid
 
-1. **Resource delta formalization:** Keep natural language or explicit operations?
-   - **Owner Decision:** See Section D, Q1
-   - **Impact:** Compiler implementation detail
+**Minor Clarification Required:**
 
-2. **Dao comprehension mechanics:** Define threshold logic formally?
-   - Current: dao 20 = Foundation eligible
-   - Proposed: Add explicit breakthrough_requirements in fixture
-   - **Impact:** Non-blocking, can derive from Pack rules
+2. **Dao comprehension timeline (lines 20 & 259):**
+   - Initial state: dao 20
+   - Chapters 1-3: dao 15→20
+   - **Inconsistency:** Which is story opening value?
+   - **Suggested fix Option A:** Change line 259 to "道韵从18提升至20"
+   - **Suggested fix Option B:** Change line 20 to "道韵18" + note needed to reach 20
+   - **Suggested fix Option C:** Add timeline note: initial_facts = AFTER chapters 1-3
+   - **Blocking?** No (timeline ambiguity but progression logic intact)
 
-3. **Pill consumption irreversibility:** Confirm one-time use semantics?
-   - Current: Implied by scarcity emphasis
-   - Proposed: Add explicit `consumable: true` field
-   - **Impact:** Clarifies resource type for Compiler
+**Optional Clarifications (Non-Blocking):**
+
+3. **Foundation Pill exchange clarity (line 186):**
+   - "额外筑基丹" — extra means Wang gets 2 pills total?
+   - **Suggested:** "获得天心草+筑基丹各1枚（满足双重需求）"
+   - **Impact:** Wording precision (intent already clear)
+
+4. **Resource delta formalization:** Keep natural language or explicit operations?
+   - **Recommendation:** Natural language (Compiler translates)
 
 **Content Quality (Requires Human Judgment):**
 - Story premise compelling? (散修的资源困境与道侣危机)
@@ -757,8 +851,10 @@ use_pill_for_breakthrough:
 
 **Owner Action Required:**
 1. Review content quality (AI pre-audit covers technical structure only)
-2. If approved, assign `human_review_ref` (e.g., "review-2026-10-28-fantasy-001")
-3. Update fixture: `human_review_ref: "review-2026-10-28-fantasy-001"`
+2. **Resolve blocking issue:** Clarify guild contract survival rates (30% vs. 50%)
+3. Decide on dao comprehension timeline clarification
+4. If approved, assign `human_review_ref` (e.g., "review-2026-10-28-fantasy-001")
+5. Update fixture: `human_review_ref: "review-2026-10-28-fantasy-001"`
 
 ---
 

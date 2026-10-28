@@ -98,9 +98,20 @@
 **ADR-008 Document Status:**
 - Location: `plan/validation/execution/V2-017/prepare/adr-008-recommendation.md`
 - Status: PROPOSED (awaiting acceptance)
-- Owner Decision Review: `ADR-008-OWNER-DECISION-REVIEW.md` (本次创建)
+- Owner Decision Review: `ADR-008-OWNER-DECISION-REVIEW.md` (revised with precision gaps identified)
 
-**Recommendation from Review:** ACCEPT with Invalidation Scope Clarification
+**Recommendation from Review:** **AMEND** (not ACCEPT) — Add precise Invalidation Scope Rules
+
+**Critical Precision Gaps Identified:**
+1. **Eager invalidation**: Original proposal lacks requirement for immediate detection
+2. **State boundaries**: Must distinguish committed Canon (immutable) vs. compiled contracts (invalidatable) vs. adjustable plans
+3. **Compatibility proofs**: GenrePack changes need explicit verification, not assumptions
+4. **Metadata exemptions**: Must verify field doesn't participate in compilation
+
+**Why AMEND vs. ACCEPT:**
+- Original ADR-008 Section 4 allows ambiguity that could lead to stale contracts or Canon corruption
+- Tightening required, not redesign
+- Core decisions (1, 2, 3, 5) remain sound
 
 **Blocker:** ⏳ **Owner must formally accept ADR-008 before V2-017 IMPLEMENT.**
 
@@ -126,17 +137,22 @@
 **Urban Business Fixture:**
 - File: `specs/fixtures/urban_business_startup_v1.yaml`
 - Line 8: `human_review_ref: null`
-- AI Pre-Audit: ✅ RECOMMEND APPROVE
+- AI Pre-Audit: ⚠️ **APPROVE with 1 minor clarification** (cash runway vs. performance bet timeline)
 
 **Fantasy Eastern Fixture:**
 - File: `specs/fixtures/fantasy_eastern_cultivation_v1.yaml`
 - Line 8: `human_review_ref: null`
-- AI Pre-Audit: ✅ RECOMMEND APPROVE
+- AI Pre-Audit: ⚠️ **APPROVE with 2 clarifications** (1 blocking: survival rate inconsistency)
 
 **Human Review Checklist:**
-- Location: `DUAL-STORY-FIXTURE-HUMAN-REVIEW-CHECKLIST.md` (本次创建)
-- Technical validation: ✅ PASS
+- Location: `DUAL-STORY-FIXTURE-HUMAN-REVIEW-CHECKLIST.md` (revised with specific inconsistencies identified)
+- Technical validation: ✅ PASS (with clarifications needed)
 - Content quality: Requires Owner judgment
+
+**Blocking Issue Identified:**
+- Fantasy fixture lines 189 & 237: "死亡率30%" vs. "生还率50%" — math inconsistency
+- Must resolve before contract choice analysis is valid
+- Suggested fixes provided in checklist
 
 **AT-V2-017-04 Requirement:**
 > "Both fixtures must have `human_review_ref` populated"

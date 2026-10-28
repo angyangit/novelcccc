@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-28T05:49:49.122556+00:00",
+  "generated_at_utc": "2026-10-28T09:20:46.948016+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "FAIL",
+  "status": "PASS",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,7 +11,7 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "ecf49779049a848b8e31bb9bdd6110eb286c55a5",
+  "validated_repository_revision": "3c151eabb3f56f64af0595f7f71369ad3ef62278",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
@@ -51,16 +51,9 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_INPUT V2-015: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-016: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
   ],
-  "fatal_errors": [
-    "EXEC_INPUT V2-015: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-016: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation"
-  ],
+  "fatal_errors": [],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

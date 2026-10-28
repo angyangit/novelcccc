@@ -73,7 +73,7 @@ inputs:
   sha256: d420155d5491822d844bf8dccd1074f1a7209465b4306167c76315157df26f18
 - source_ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
   ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
-  sha256: eb6c34bf3e9aac015a8b3bbbfe8de2886c8ecbf149f36452076a39dea7425794
+  sha256: 9fe97a37104250ebef01d6b0eab871dca22f14b911481d7aad101f3cd9ae77a6
 
 expected_outputs:
 - validation/execution/V2-017/prepare/prepare-review.md
@@ -123,7 +123,7 @@ claims:
   - ref: machine/decision-register.yaml
     sha256: c95c407b260496c95ee285ac518b983b87938d5122d2cb18835469629fd97915
   - ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
-    sha256: eb6c34bf3e9aac015a8b3bbbfe8de2886c8ecbf149f36452076a39dea7425794
+    sha256: 9fe97a37104250ebef01d6b0eab871dca22f14b911481d7aad101f3cd9ae77a6
   blocks_actions: []
   verification_plan: Confirmed by decision-register ADR-008.status=ACCEPTED and acceptance evidence
 - id: CLAIM-004
@@ -191,5 +191,5 @@ handoff:
     - ref: validation/execution/V2-017/prepare/prepare-review.md
       sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
     - ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
-      sha256: eb6c34bf3e9aac015a8b3bbbfe8de2886c8ecbf149f36452076a39dea7425794
+      sha256: 9fe97a37104250ebef01d6b0eab871dca22f14b911481d7aad101f3cd9ae77a6
     missing_artifact_reason: null

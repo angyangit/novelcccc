@@ -3,10 +3,10 @@ schema_version: '1.0'
 evidence_id: ADR-008-20261028-owner-approved-remediation
 evidence_type: ADR_DECISION
 subject_id: ADR-008
-revision: 2deb1d84cc418fe87dfe376d814c2f527edb5618
+revision: 3a0744189d88cc6c0da3a3071fb499a3dc684069
 status: PASS
 producer: ANovelOS Owner - explicit acceptance of ADR-008 with Invalidation Scope Rules amendment
-executed_at: '2026-10-28T00:00:00.000Z'
+executed_at: '2026-10-28T09:45:32.000Z'
 environment_fingerprint: V2-017 Contract Compiler decision governance; controlled remediation based on Owner selection
 artifacts:
 - ref: decisions/ADR-008_CONTRACT_OVERLAY_BINDING_PLANNING_VERSIONING.md

@@ -47,7 +47,7 @@ inputs:
   ref: validation/execution/V2-014/snapshots/implementation-backlog-78ffbf1.yaml
   sha256: cc25ca35f082e521b46ae73ce6e3cf0c654153bb49a610a2d23cc1a197dcb82a
 - source_ref: machine/test-catalog.yaml
-  ref: machine/test-catalog.yaml
+  ref: validation/execution/V2-014/snapshots/test-catalog-5d67c9a.yaml
   sha256: 51ee21a4424471f450a2c6cdf5db13b7f3f607211b99d5791665864677519b1e
 - source_ref: machine/decision-register.yaml
   ref: machine/decision-register.yaml

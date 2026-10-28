@@ -1,7 +1,7 @@
 {
   "scope": "planning validator self-test only",
-  "generated_at_utc": "2026-10-26T03:45:50.896750+00:00",
-  "manifest_sha256": "7dcae7a6c689d99b2311e885c14796de589878b1bf33427407f2954215f5d38f",
+  "generated_at_utc": "2026-10-28T02:47:39.201439+00:00",
+  "manifest_sha256": "f4b824d8d053f9f1dfcf7f3234f2643db63dfd5d154ae0218fcdaec8bad235c6",
   "status": "PASS",
   "cases": [
     {
@@ -129,8 +129,8 @@
       "expected": "REJECT",
       "actual": "REJECT",
       "evidence": [
-        "PHASE_VERIFIED P3: missing evidence",
-        "PHASE_VERIFIED P3: tasks must be CLOSED"
+        "PHASE_VERIFIED P4: missing evidence",
+        "PHASE_VERIFIED P4: tasks must be CLOSED"
       ]
     },
     {

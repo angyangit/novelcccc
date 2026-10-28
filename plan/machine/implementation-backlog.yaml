@@ -1092,18 +1092,30 @@ tasks:
   - 不绕过前置阶段门禁
   - 只实现两个冻结 Anchor，不扩展 30 个题材包
   - 不把关键词计数当事实硬裁判
-  status: OPEN
-  execution_packet_ref: null
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-015/execution-packet.yaml
   owner_role: genre-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P2
   required_decisions:
   - ADR-007
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
+    tests:
+    - ref: validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
+    ci:
+    - ref: validation/closure/G-P3-68c8d00/V2-015-ci-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
+    acceptance:
+    - ref: validation/closure/G-P3-68c8d00/V2-015-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
   related_findings:
   - AR-15
   - CA-08
@@ -1137,18 +1149,30 @@ tasks:
   - 不绕过前置阶段门禁
   - 只实现两个冻结 Anchor，不扩展 30 个题材包
   - 不把关键词计数当事实硬裁判
-  status: OPEN
-  execution_packet_ref: null
+  status: CLOSED
+  execution_packet_ref: validation/execution/V2-016/execution-packet.yaml
   owner_role: genre-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P2
   required_decisions:
   - ADR-007
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - ref: validation/closure/G-P3-68c8d00/V2-016-code-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
+    tests:
+    - ref: validation/closure/G-P3-68c8d00/V2-016-test-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
+    ci:
+    - ref: validation/closure/G-P3-68c8d00/V2-016-ci-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
+    acceptance:
+    - ref: validation/closure/G-P3-68c8d00/V2-016-evidence.yaml
+      revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+      status: PASS
   related_findings:
   - AR-15
   - CA-08

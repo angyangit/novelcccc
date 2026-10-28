@@ -1,0 +1,15 @@
+V2-016 Eastern Fantasy Extension - Story Fixture Artifact
+
+Story fixture verified at revision 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1:
+
+1. specs/fixtures/fantasy_eastern_cultivation_v1.yaml - Cultivation progression scenario demonstrating CultivationRealm, Ability, CultivationResource state tracking
+   SHA256: 34b56a83b329e1bcf4dbc0b2a38a5203d62e645055ff253108d21caa1927bbf6
+
+This fixture demonstrates:
+- Cultivation realm progression with typed state transitions
+- Ability acquisition with explicit preconditions
+- Cultivation resource management (spirit stones, merchant guild commerce)
+- Business keyword tolerance in fantasy context (商会/购买/交易 allowed)
+- Modern corporate structure rejection (stock markets, IPOs rejected)
+
+KNOWN LIMITATION: Story fixture requires human content review before production deployment (does NOT block G-P3 certification).

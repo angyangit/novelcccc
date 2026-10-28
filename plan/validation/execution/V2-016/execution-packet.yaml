@@ -1,0 +1,118 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-016
+plan_version: 1.3.1
+repository_revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+worktree_dirty: false
+plan_manifest_sha256: 9e31c0501c06c840cacab2c883cb711db6a11874b2bb4fb1d7a8865594172c0f
+
+environment:
+  fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14
+  runtime_versions:
+    python: 3.12.14
+  database_image: postgres:17-alpine
+  ci_context: github-actions
+
+implementer: claude-opus-4.7
+verifier: ci-automated
+owner_role: genre-maintainer
+
+scope: |
+  V2-016 Eastern Fantasy Extension: Implements fantasy.eastern.progression genre extension with typed state tracking.
+
+  Delivers:
+  - src/anovel/genre/extensions/progression.py: Extension with CultivationRealm, Ability, CultivationResource state types
+  - tests/contract/test_v2_016.py: 20 contract tests covering all 3 AT scenarios
+  - GenreHardPolicyEngine integration: enforces fantasy world rules, allows cultivation, rejects modern corporate structures
+
+  Verified:
+  - AT-V2-016-01: 11 tests for typed state and preconditions
+  - AT-V2-016-02: 4 tests for business keyword tolerance in fantasy context
+  - AT-V2-016-03: 4 tests for modern corporate structure rejection
+
+action: IMPLEMENT
+
+inputs:
+- source_ref: machine/implementation-backlog.yaml
+  ref: machine/implementation-backlog.yaml
+  sha256: 8677700ce27aa9fbd0075a407e0f10c1d0ecd879bd3cbfa31c962ad55d2d3450
+- source_ref: machine/test-catalog.yaml
+  ref: validation/execution/V2-016/snapshots/test-catalog-140b2dc.yaml
+  sha256: e1da976e5f11267070cd5c2214397f9832e189a38e9312fa1dd4ef2183ea9754
+
+expected_outputs:
+- src/anovel/genre/extensions/progression.py
+- tests/contract/test_v2_016.py
+
+allowed_paths:
+- src/anovel/genre/extensions/
+- tests/contract/test_v2_016.py
+
+required_decisions:
+- ADR-007
+
+claims:
+- id: CLAIM-001
+  kind: FACT
+  statement: V2-016 implements fantasy.eastern.progression extension with typed state tracking
+  sources:
+  - ref: validation/closure/G-P3-68c8d00/V2-016-closure.md
+    sha256: c1fdb6b451029d84e5f88f83e3a10a2406b980061f8ada47e532c29f90c14005
+  blocks_actions: []
+  verification_plan: Code validation and contract test execution
+- id: CLAIM-002
+  kind: FACT
+  statement: AT-V2-016 test suite verified with 20 contract tests covering all 3 acceptance scenarios
+  sources:
+  - ref: validation/closure/G-P3-68c8d00/V2-016-closure.md
+    sha256: c1fdb6b451029d84e5f88f83e3a10a2406b980061f8ada47e532c29f90c14005
+  blocks_actions: []
+  verification_plan: pytest execution with 20/20 passing
+
+estimate:
+  range: actual-completed
+  unit: session
+  assumptions:
+  - Authorization granted for V2-016 IMPLEMENT
+  - V2-014 CLOSED, V2-013 CLOSED, G-P2 VERIFIED, ADR-007 ACCEPTED
+  confidence: actual-result
+
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 1
+  maximum_runtime: 7200
+
+stop_conditions:
+- Implementation complete with all tests passing
+- V2-013/V2-014 regression tests passing
+- Architecture fitness tests passing
+
+review_notes:
+- V2-016 implements minimal necessary fantasy progression extension for P3
+- Reuses GenrePackRegistry, GenreHardPolicyEngine from V2-013/V2-014
+- Demonstrates keyword tolerance (商会/购买/交易 legitimate in fantasy commerce context)
+- Does NOT bypass CanonCommitService or Q2 gates
+
+change_review:
+  scope_revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+  scope_ref: V2-016 closure at revision 68c8d00
+
+handoff:
+  current_step: CERTIFY
+  completed_steps:
+  - Created src/anovel/genre/extensions/progression.py
+  - Created tests/contract/test_v2_016.py (20 tests)
+  - All 20 V2-016 tests passing
+  - All regression tests passing
+  - Merged to main via commit 99b59810cc9e4d5c0164e13add8dbc465dbd84dc
+  - CI verified (6/6 gates SUCCESS)
+  pending_items: []
+  next_action: CERTIFY
+  last_check:
+    status: PASS
+    artifacts:
+    - ref: validation/closure/G-P3-68c8d00/V2-016-closure.md
+      sha256: c1fdb6b451029d84e5f88f83e3a10a2406b980061f8ada47e532c29f90c14005
+    missing_artifact_reason: null

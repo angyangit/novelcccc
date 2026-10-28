@@ -309,7 +309,7 @@ suites:
 - id: AT-V2-015
   task_id: V2-015
   phase: P3
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/contract/test_v2_015.py
   scenarios:
   - id: AT-V2-015-01
@@ -318,11 +318,12 @@ suites:
     required_assertion: 禁止现实 Anchor 注入重生系统或修炼事实
   - id: AT-V2-015-03
     required_assertion: 合法商业样本通过且不会读取玄幻专属字段
-  execution_evidence: []
+  execution_evidence:
+  - validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
 - id: AT-V2-016
   task_id: V2-016
   phase: P3
-  status: PLANNED
+  status: VERIFIED
   target_path: tests/contract/test_v2_016.py
   scenarios:
   - id: AT-V2-016-01
@@ -331,7 +332,8 @@ suites:
     required_assertion: 玄幻交易商会不因商业词汇误拒绝
   - id: AT-V2-016-03
     required_assertion: 未声明的现代股权制度不能污染扩展
-  execution_evidence: []
+  execution_evidence:
+  - validation/closure/G-P3-68c8d00/V2-016-test-evidence.yaml
 - id: AT-V2-017
   task_id: V2-017
   phase: P4

@@ -1,0 +1,21 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-015-test-68c8d00
+evidence_type: TEST_RESULT
+subject_id: V2-015
+revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+status: PASS
+producer: GitHub Actions Run 40468278925 Job 122075111291
+executed_at: '2026-10-27T07:56:25Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
+command: uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+exit_code: 0
+check_ids:
+  - AT-V2-015-01
+  - AT-V2-015-02
+  - AT-V2-015-03
+artifacts:
+  - ref: validation/closure/G-P3-68c8d00/artifacts/V2-015-test-artifacts.txt
+    sha256: 3e6f0180395d9b13d643a9614530b3ca5846f64f96de9075cfa547254de375e9
+input_evidence_refs:
+  - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml

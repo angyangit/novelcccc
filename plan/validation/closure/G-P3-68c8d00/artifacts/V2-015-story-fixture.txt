@@ -1,0 +1,14 @@
+V2-015 Urban Business Extension - Story Fixture Artifact
+
+Story fixture verified at revision 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1:
+
+1. specs/fixtures/urban_business_startup_v1.yaml - Business startup scenario demonstrating Company, Equity, ResourcePool state tracking
+   SHA256: 59608fc59696c2b14a1782c3ac5a4ecfa12c3526d757b51f57d383300ed5e34c
+
+This fixture demonstrates:
+- Company entity with typed equity and resource tracking
+- Investment rounds with explicit valuation and ownership transfer
+- Business operations with precondition checking
+- Context-aware pollution prevention (rejects cultivation/rebirth in world facts)
+
+KNOWN LIMITATION: Story fixture requires human content review before production deployment (does NOT block G-P3 certification).

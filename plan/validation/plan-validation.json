@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-28T05:14:23.485541+00:00",
+  "generated_at_utc": "2026-10-28T05:49:49.122556+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
   "status": "FAIL",
   "not_certified": [
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "3a0744189d88cc6c0da3a3071fb499a3dc684069",
+  "validated_repository_revision": "ecf49779049a848b8e31bb9bdd6110eb286c55a5",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "9b497923261ece16cac0435464c6a484df9c04c6e7f1d961575a18d8143bab90",
+  "manifest_sha256": "1de99b2c5c2b58aa594d694fb00e45e44645724083f90aba03400d0cfdc6e2eb",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -52,14 +52,14 @@
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_INPUT V2-013: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation",
-    "EXEC_INPUT V2-017: live source changed/missing: machine/decision-register.yaml"
+    "EXEC_INPUT V2-015: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-016: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation"
   ],
   "fatal_errors": [
-    "EXEC_INPUT V2-013: missing/changed artifact machine/decision-register.yaml",
-    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation",
-    "EXEC_INPUT V2-017: live source changed/missing: machine/decision-register.yaml"
+    "EXEC_INPUT V2-015: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-016: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation"
   ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",

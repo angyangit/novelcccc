@@ -572,9 +572,9 @@ class ReplanProposal:
 **Risk:** ADR-008 not accepted before IMPLEMENT starts.
 
 **Mitigation:**
-- This PREPARE provides recommendation
-- Owner can approve ADR-008 in parallel with PREPARE review
-- If delayed, IMPLEMENT can proceed with "proposed ADR-008" semantics
+- This PREPARE provides ADR-008 recommendation and decision review
+- Owner must formally accept ADR-008 before V2-017 IMPLEMENT
+- IMPLEMENT cannot proceed with unapproved ADR-008 per formal decision governance
 
 ---
 

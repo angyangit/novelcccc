@@ -85,7 +85,7 @@ claims:
   statement: V2-017 minimal architecture designed with 5 modules (planning models/versions/replanning, contracts models/compiler)
   sources:
   - ref: validation/execution/V2-017/prepare/prepare-review.md
-    sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
+    sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
   blocks_actions: []
   verification_plan: Design review and interface contract validation
 - id: CLAIM-002
@@ -93,7 +93,7 @@ claims:
   statement: All 8 AT-V2-017 scenarios mapped to concrete test strategies with positive/negative cases
   sources:
   - ref: validation/execution/V2-017/prepare/prepare-review.md
-    sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
+    sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
   blocks_actions: []
   verification_plan: Test mapping completeness review
 - id: CLAIM-003
@@ -101,7 +101,7 @@ claims:
   statement: Story fixtures will receive human review before IMPLEMENT phase, populating human_review_ref
   sources:
   - ref: validation/execution/V2-017/prepare/prepare-review.md
-    sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
+    sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
   blocks_actions: []
   verification_plan: Owner fixture review process required before IMPLEMENT
 
@@ -156,5 +156,5 @@ handoff:
     status: PASS
     artifacts:
     - ref: validation/execution/V2-017/prepare/prepare-review.md
-      sha256: 4cbd9d6a99b8fafea5dfd8d1c0eabb1f9857e917132fc2a13ed50cd8c71ae305
+      sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
     missing_artifact_reason: null

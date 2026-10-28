@@ -144,37 +144,44 @@ ADR-008 lists invalidation triggers but doesn't specify **scope of invalidation*
 - Author updates protagonist goal in SeriesVision
 - Does this invalidate all 100 chapters? Or only chapters explicitly referencing that goal?
 
-**Required Clarification:**
+**Required Amendment:**
 
 Add to ADR-008 Section 4:
 
 ```markdown
 ### 4.1 Invalidation Scope Rules
 
-**Immediate Invalidation (Eager Detection):**
-- Canon parent changes → immediately invalidate all compiled contracts bound to old parent
-- No deferred invalidation: detection must happen before any downstream use
-- Incremental recompilation allowed, but stale contracts cannot remain valid
+**Immediate Invalidation Detection:**
+- Canon parent changes → immediately identify all compiled contracts bound to old parent
+- Detection must happen before any downstream use (eager, not deferred)
+- Incremental recompilation may be deferred, but invalidation detection cannot
+- Uncompiled future plans are not subject to invalidation (they're adjustable, not compiled)
 
 **Dependency-Based Invalidation:**
 - GenrePack version/hash changed → invalidate contracts UNLESS verifiable compatibility proof exists
-- State type changes → invalidate only contracts with preconditions/transitions using affected types
-- Compatibility must be explicit (schema version, migration path), not assumed
+- Compatibility cannot be assumed from state type filtering alone (hash change = semantic change until proven otherwise)
+- Compatibility exemption requires: input equivalence proof, semantic equivalence verification, explicit approval
+- State type filtering is insufficient: must analyze full compilation input dependencies
 
 **Contract State Boundaries:**
 - **Committed Canon chapters**: Immutable, cannot be invalidated (history is frozen)
 - **Compiled but uncommitted contracts**: Subject to invalidation when inputs change
-- **Adjustable future plans**: Can be modified without invalidation (not yet compiled)
+- **Uncompiled future plans**: Can be modified without invalidation (not yet compiled into contracts)
 
-**Metadata Exemptions:**
-- Synopsis, title, comments exempt ONLY if proven not to participate in compilation
-- Exemption requires verification: field not referenced in any RequiredTransition or Precondition
-- No silent assumptions: if uncertain, trigger invalidation
+**Input Dependency Analysis:**
+- Synopsis, title, metadata exempt ONLY if proven not to affect compilation output
+- Exemption verification: check ALL compilation inputs, not just RequiredTransition field references
+- If field influences context, preconditions, or any compiled output → not exempt
+- When uncertain, trigger invalidation (safe default)
 
 **Invalidation Audit Trail:**
 - Every InvalidationRecord must specify: which input changed, affected contracts, dependency chain
-- Scope justification required (why these contracts, not others)
+- Scope justification required: why these contracts, what dependency, old/new values
 - No batch invalidation without per-contract dependency analysis
+- Audit trail enables debugging and rollback
+
+**Implementation Requirement:**
+Compiler must track full input set for each contract (Canon parent, Pack hash, SeriesVision version, all referenced fields) to enable precise dependency analysis.
 ```
 
 **Why This Matters for Long-Form Fiction:**
@@ -456,68 +463,85 @@ At chapter 50:
 ```markdown
 ### 4.1 Invalidation Scope Rules
 
-**Immediate Invalidation (Eager Detection):**
-- Canon parent changes → immediately invalidate all compiled contracts bound to old parent
-- No deferred invalidation: detection must happen before any downstream use
-- Incremental recompilation allowed, but stale contracts cannot remain valid
+**Immediate Invalidation Detection:**
+- Canon parent changes → immediately identify all compiled contracts bound to old parent
+- Detection must happen before any downstream use (eager, not deferred)
+- Incremental recompilation may be deferred, but invalidation detection cannot
+- Uncompiled future plans are not subject to invalidation (they're adjustable, not compiled)
 
 **Dependency-Based Invalidation:**
 - GenrePack version/hash changed → invalidate contracts UNLESS verifiable compatibility proof exists
-- State type changes → invalidate only contracts with preconditions/transitions using affected types
-- Compatibility must be explicit (schema version, migration path), not assumed
+- Compatibility cannot be assumed from state type filtering alone (hash change = semantic change until proven otherwise)
+- Compatibility exemption requires: input equivalence proof, semantic equivalence verification, explicit approval
+- State type filtering is insufficient: must analyze full compilation input dependencies
 
 **Contract State Boundaries:**
 - **Committed Canon chapters**: Immutable, cannot be invalidated (history is frozen)
 - **Compiled but uncommitted contracts**: Subject to invalidation when inputs change
-- **Adjustable future plans**: Can be modified without invalidation (not yet compiled)
+- **Uncompiled future plans**: Can be modified without invalidation (not yet compiled into contracts)
 
-**Metadata Exemptions:**
-- Synopsis, title, comments exempt ONLY if proven not to participate in compilation
-- Exemption requires verification: field not referenced in any RequiredTransition or Precondition
-- No silent assumptions: if uncertain, trigger invalidation
+**Input Dependency Analysis:**
+- Synopsis, title, metadata exempt ONLY if proven not to affect compilation output
+- Exemption verification: check ALL compilation inputs, not just RequiredTransition field references
+- If field influences context, preconditions, or any compiled output → not exempt
+- When uncertain, trigger invalidation (safe default)
 
 **Invalidation Audit Trail:**
 - Every InvalidationRecord must specify: which input changed, affected contracts, dependency chain
-- Scope justification required (why these contracts, not others)
+- Scope justification required: why these contracts, what dependency, old/new values
 - No batch invalidation without per-contract dependency analysis
+- Audit trail enables debugging and rollback
 
-**Scope Determination Algorithm:**
-1. Identify what changed (Canon parent hash, Pack hash, SeriesVision field)
-2. Query dependency graph: which compiled contracts reference changed element?
-3. Create InvalidationRecord for each dependent contract (with reason, old/new values)
-4. Generate ReplanProposal with explicit scope justification and affected chapter list
-5. After approval, recompile only invalidated contracts with new inputs
+**Implementation Requirement:**
+Compiler must track full input set for each contract (Canon parent, Pack hash, SeriesVision version, all referenced fields) to enable precise dependency analysis.
 ```
 
 **Example 1: Canon Parent Advances**
 ```
 Scenario: Chapter 5 committed to Canon (parent: new_hash_789)
 Action:
-  - Immediately invalidate chapter 6 contract (bound to old_hash_456)
-  - Chapter 7+ contracts remain valid (not yet dependent on chapter 6 state)
-  - After chapter 6 recompiled: evaluate chapter 7 dependencies
-Rationale: Eager detection prevents stale chapter 6 from being used
+  - Immediately identify: chapter 6 contract compiled with old_hash_456 → INVALIDATE
+  - Chapter 7-10 contracts: analyze dependencies
+    - If chapter 7 bound to old parent → INVALIDATE
+    - If chapter 7-10 not yet compiled → remain UNCOMPILED (not invalidated, just not compiled yet)
+  - After chapter 6 recompiled: evaluate chapter 7 dependencies, continue chain
+Rationale: Eager detection prevents stale chapter 6 from being used; uncompiled chapters remain adjustable
 ```
 
 **Example 2: GenrePack Hash Changes**
 ```
 Scenario: urban.business.realistic Pack hash changes (bug fix in equity validator)
 Action:
-  - Query: which contracts use Equity state type in preconditions/transitions?
-  - Contracts using Equity → invalidate
-  - Contracts not using Equity → remain valid
-  - Compatibility proof: if validator logic unchanged, contracts can remain valid
-Rationale: Dependency-based invalidation, not wholesale series invalidation
+  - Cannot assume compatibility from state type filtering alone
+  - Compatibility proof required: validator logic unchanged for all Equity operations used in contracts
+  - If proof provided and verified → contracts remain valid
+  - If no proof or verification fails → invalidate all contracts using Pack
+  - State type filtering insufficient: must verify semantic equivalence
+Rationale: Hash change signals potential semantic change; compatibility must be proven, not assumed
 ```
 
 **Example 3: Synopsis Change**
 ```
 Scenario: Author updates series synopsis (typo fix)
 Action:
-  - Verify: synopsis field not referenced in any contract compilation
-  - If verified: no invalidation
-  - If synopsis used in context generation (future V2-018): would trigger invalidation
-Rationale: Metadata exemption requires proof, not assumption
+  - Verify: does synopsis affect ANY compilation input or output?
+  - Check: not just RequiredTransition references, but full compilation process
+  - If synopsis never read during compilation → no invalidation
+  - If synopsis used in context generation (future V2-018) → would trigger invalidation
+  - When uncertain → invalidate (safe default)
+Rationale: Metadata exemption requires proof of non-participation in compilation, not assumption
+```
+
+**Example 4: Uncompiled Future Plans**
+```
+Scenario: Author adjusts chapter 50 goals (chapters 1-20 compiled, 21-49 uncompiled)
+Action:
+  - Chapters 1-20: compiled contracts, evaluate dependencies
+    - If chapter 50 goal referenced in chapter 1-20 contracts → invalidate affected contracts
+    - If not referenced → no invalidation
+  - Chapters 21-49: not yet compiled → no invalidation (they're adjustable plans, not contracts)
+  - Chapter 50: not yet compiled → adjustment is normal plan refinement
+Rationale: Only compiled contracts can be invalidated; uncompiled plans are adjustable by design
 ```
 
 ---

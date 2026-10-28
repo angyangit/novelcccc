@@ -3,7 +3,7 @@
 **Date:** 2026-10-28  
 **Canonical Baseline:** `7bca5218fc65a83c74e3d9c0ddd9854582409850` (G-P3 merged)  
 **Review Branch:** `review/adr-008-and-fixtures-decision`  
-**Review HEAD:** `6452b345ad7a9b685d787a41995096375bfd8a7b` (to be updated)
+**Current Review HEAD:** `b8e5d2fad8bbe4bd878b7fd007830730d7733929` (to be updated after final corrections)
 
 ---
 
@@ -57,9 +57,11 @@ Add precise Invalidation Scope Rules to Section 4:
 
 **Minor Clarification (Non-Blocking):**
 - **Line 147:** "获得500万资金，18个月运营保障"
-- **Issue:** 5.5M / 200k monthly = 27.5 months, not 18 months
-- **Likely intent:** 18 months = performance bet deadline (not cash runway)
-- **Suggested fix:** "获得500万资金，27个月现金续航（但对赌协议要求18个月内营收达3000万）"
+- **Static calculation:** Current 500k + 5M investment = 5.5M / 200k monthly cost = 27.5 months
+- **Likely intent:** 18 months refers to performance bet deadline (line 151), not physical cash runway
+- **Reality consideration:** Post-funding expansion typically increases monthly costs, reducing theoretical 27.5-month runway
+- **Suggested clarification:** "获得500万资金，静态续航约27个月（但对赌协议要求18个月内营收达3000万，且扩张会增加成本）"
+- **Owner decision:** Accept as-is (interpreting as performance bet timeline) OR request explicit clarification
 
 **Content Quality (Human Judgment Required):**
 - Story compelling? (创业融资困境)
@@ -93,18 +95,21 @@ Add precise Invalidation Scope Rules to Section 4:
 
 **Blocking Clarification:**
 - **Lines 189 & 237:** "死亡率30%" vs. "生还率50%"
-- **Math inconsistency:** 30% death should = 70% survival, not 50%
+- **Math inconsistency:** If single-mission death rate = 30%, survival should = 70%, not 50%
 - **Possible interpretations:**
-  - Per-mission death (30%) vs. 3-year contract completion (50% cumulative)
-  - Different risk scopes
-- **Suggested fix A:** Change line 189 to "三年护卫契约完成率约50%（累积风险）"
-- **Suggested fix B:** Change line 237 to "生还率70%"
-- **Blocking?** **YES** — contract choice analysis requires consistent math
+  - **Per-mission death rate (30%)** vs. **3-year contract completion rate (50%)** — different statistical scopes
+  - **Cumulative risk:** Multiple dangerous missions over 3 years = ~50% survive to contract end
+  - **Actual error:** Numbers contradict and need reconciliation
+- **Owner must decide and unify:**
+  - Option A: Clarify line 189 as "三年护卫契约完成率约50%（累积多次任务风险）"
+  - Option B: Change line 237 to "生还率70%（单次任务基准）"
+  - Option C: Specify different scopes explicitly in both locations
+- **Blocking?** **YES** — contract choice analysis requires consistent risk assessment
 
 **Minor Clarification (Non-Blocking):**
-- **Lines 20 & 259:** Dao comprehension 20 (initial) vs. 15→20 (chapters 1-3)
-- **Timeline ambiguity:** Which is story opening value?
-- **Suggested fixes:** Adjust line 259 OR line 20 OR add timeline note
+- **Lines 20 & 259:** Initial dao 20 vs. chapters 1-3 progression 15→20
+- **Timeline ambiguity:** Does initial_facts reflect state BEFORE or AFTER chapters 1-3?
+- **Owner decision:** Adjust line 20, line 259, or add timeline note clarifying sequence
 
 **Content Quality (Human Judgment Required):**
 - Story compelling? (散修资源困境)

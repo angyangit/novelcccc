@@ -8,7 +8,7 @@ status: PASS
 producer: GitHub Actions Run 40468278925 Job 122075111291
 executed_at: '2026-10-27T07:56:25Z'
 environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
-command: uv run pytest tests/contract/test_v2_015.py -v --tb=short
+command: uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
 exit_code: 0
 check_ids:
   - AT-V2-015-01

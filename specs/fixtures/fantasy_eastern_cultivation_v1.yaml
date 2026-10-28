@@ -17,7 +17,7 @@ synopsis: |
 
 initial_facts:
   - fact_id: wang_realm
-    description: "王林炼气九层，道韵20，距离筑基一步之遥"
+    description: "王林炼气九层，道韵15，距离筑基一步之遥"
     fact_type: cultivation_state
     story_time: "修真历2380年春"
 
@@ -44,7 +44,7 @@ characters:
     age: 25
     initial_state:
       cultivation_level: qi_refining_9
-      dao_comprehension: 20
+      dao_comprehension: 15
       resources:
         - type: pill
           item: 筑基丹
@@ -186,7 +186,7 @@ choice_costs:
     immediate_gain: "获得天心草+额外筑基丹，两全其美"
     immediate_cost: "签订三年生死契约，丧失修炼自由"
     delayed_consequences:
-      - "商会护卫任务危险，死亡率30%"
+      - "商会护卫任务危险，三年契约预计执行六次高危任务，单次任务条件死亡率约10.9%，累计生还率约50%"
       - "三年内无法自主选择修炼方向"
       - "契约可能包含隐藏条款（残缺功法归商会研究）"
 
@@ -234,7 +234,7 @@ secrets_and_knowers:
     impact: "提供另一条资源获取路径，引出新的危险和机遇"
 
   - secret_id: secret_03
-    content: "商会护卫契约有50%生还率，但成功者通常能获得结丹期资源"
+    content: "商会护卫契约三年内约执行六次高危任务，累计生还率约50%，但成功者通常能获得结丹期资源"
     knowers: [elder_zhao]
     potential_reveal: "第18章，通过其他护卫经历间接展示"
     impact: "契约风险高但回报也高，不是单纯陷阱"

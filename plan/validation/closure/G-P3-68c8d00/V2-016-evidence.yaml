@@ -31,15 +31,64 @@ rationale: |
 
   Note: Story fixture fantasy_eastern_cultivation_v1.yaml requires human content review before production deployment.
 
-finding_dispositions: []
+finding_dispositions:
+  - finding_id: AR-15
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-016-code-evidence.yaml
+      - validation/closure/G-P3-68c8d00/V2-016-test-evidence.yaml
+    reason: |
+      V2-016 delivers fantasy.eastern.progression extension as one of two frozen Anchors for P3.
+      Partial completion: fantasy progression extension implemented and verified.
+    remaining_work: Full 30-GenrePack expansion with additional Anchor pairs and extension mechanics.
+    next_task: V2-035
+    owner_role: genre-maintainer
+    due_gate: G-P8
+  - finding_id: CA-08
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-016-code-evidence.yaml
+      - validation/execution/V2-013/closure/acceptance.yaml
+      - validation/execution/V2-014/closure/acceptance-evidence.yaml
+    reason: |
+      V2-016 addresses CA-08 by implementing versioned GenrePack with frozen Profile and content hash.
+      Extension does not rely on keyword-based genre inference.
+      Verified: Pack identity explicit, keyword tolerance context-aware (see V2-014 GenreHardPolicyEngine).
+  - finding_id: RR-11
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-016-code-evidence.yaml
+    reason: |
+      V2-016 establishes fantasy progression extension foundation for dual-genre chapter certification.
+      Partial completion: Extension mechanics verified.
+    remaining_work: Continuous chapter certification protocol with dual-genre validation.
+    next_task: V2-035
+    owner_role: genre-maintainer
+    due_gate: G-P8
+  - finding_id: SUP-01
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-016-test-evidence.yaml
+    reason: |
+      V2-016 delivers fantasy_eastern_cultivation_v1.yaml fixture demonstrating fantasy progression extension.
+      Partial completion: Fixture exists and passes contract tests.
+      Known limitation: Fixture requires human content review before production deployment (does NOT block G-P3).
+    remaining_work: Human-audited standard test book establishment (随关联任务首次使用前落实).
+    next_task: V2-017
+    owner_role: content-reviewer
+    due_gate: G-P4
 
 artifacts:
-  - ref: specs/fixtures/fantasy_eastern_cultivation_v1.yaml
-    sha256: 34b56a83b329e1bcf4dbc0b2a38a5203d62e645055ff253108d21caa1927bbf6
+  - ref: validation/closure/G-P3-68c8d00/artifacts/V2-016-story-fixture.txt
+    sha256: 795bd3dc3bdf160acec73b8c30b9e7499cd173c008a87baf41be282ea3248f7a
 
 input_evidence_refs:
   - validation/closure/G-P3-68c8d00/V2-016-code-evidence.yaml
   - validation/closure/G-P3-68c8d00/V2-016-test-evidence.yaml
   - validation/closure/G-P3-68c8d00/V2-016-ci-evidence.yaml
-  - validation/execution/V2-014/closure/closure-review.md
-  - validation/closure/G-P2-65e2fc0/V2-013-retrospective-closure.md
+  - validation/execution/V2-014/closure/acceptance-evidence.yaml
+  - validation/execution/V2-013/closure/acceptance.yaml

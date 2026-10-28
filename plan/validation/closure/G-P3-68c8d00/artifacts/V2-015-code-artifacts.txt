@@ -1,0 +1,11 @@
+V2-015 Urban Business Extension - Code Artifacts
+
+Implementation verified at revision 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1:
+
+1. src/anovel/genre/extensions/business.py - Urban business extension with Company, Equity, ResourcePool state tracking
+   SHA256: 418b44afbbfe447cdfc13a09e686bd0e9f69d1b7a648bb1c2d4013fe70cce5bc
+
+2. src/anovel/genre/extensions/__init__.py - Extension module exports
+   SHA256: b216b078075a31d15e6ae1dcd45d033334e011bdb86d40fa5c4e87cb60c923df
+
+All files merged to main via commit 6c5af0416116c1de9caeb7f7bcff331f9442a246 and verified via GitHub Actions run 40468278925.

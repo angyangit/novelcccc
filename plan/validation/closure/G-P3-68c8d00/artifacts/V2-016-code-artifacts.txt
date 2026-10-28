@@ -1,0 +1,8 @@
+V2-016 Eastern Fantasy Extension - Code Artifacts
+
+Implementation verified at revision 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1:
+
+1. src/anovel/genre/extensions/progression.py - Fantasy progression extension with CultivationRealm, Ability, CultivationResource state tracking
+   SHA256: c3848cc0c757e5b3c28fbfcc2938b47cef4ab65661b7efdc0825dd057e107ed2
+
+All files merged to main via commit 99b59810cc9e4d5c0164e13add8dbc465dbd84dc and verified via GitHub Actions run 40468278925.

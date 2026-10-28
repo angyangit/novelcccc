@@ -9,8 +9,8 @@ producer: GitHub Actions Run 40468278925 + G-P3 phase gate certification
 executed_at: '2026-10-27T04:17:25Z'
 environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
 artifacts:
-  - ref: src/anovel/genre/extensions/progression.py
-    sha256: c3848cc0c757e5b3c28fbfcc2938b47cef4ab65661b7efdc0825dd057e107ed2
+  - ref: validation/closure/G-P3-68c8d00/artifacts/V2-016-code-artifacts.txt
+    sha256: bb7abab1ac5d69110e5327df231a08262eb557fbd30f863a1221f099528b85f4
 input_evidence_refs: []
 check_ids:
   - CODE-V2-016-PROGRESSION-PY

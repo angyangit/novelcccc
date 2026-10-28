@@ -31,15 +31,64 @@ rationale: |
 
   Note: Story fixture urban_business_startup_v1.yaml requires human content review before production deployment.
 
-finding_dispositions: []
+finding_dispositions:
+  - finding_id: AR-15
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml
+      - validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
+    reason: |
+      V2-015 delivers urban.business.realistic extension as one of two frozen Anchors for P3.
+      Partial completion: business extension implemented and verified.
+    remaining_work: Full 30-GenrePack expansion with additional Anchor pairs and extension mechanics.
+    next_task: V2-034
+    owner_role: genre-maintainer
+    due_gate: G-P8
+  - finding_id: CA-08
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml
+      - validation/execution/V2-013/closure/acceptance.yaml
+      - validation/execution/V2-014/closure/acceptance-evidence.yaml
+    reason: |
+      V2-015 addresses CA-08 by implementing versioned GenrePack with frozen Profile and content hash.
+      Extension does not rely on keyword-based genre inference.
+      Verified: Pack identity explicit, no silent defaults (see V2-014 GenrePackRegistry).
+  - finding_id: RR-11
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml
+    reason: |
+      V2-015 establishes business extension foundation for dual-genre chapter certification.
+      Partial completion: Extension mechanics verified.
+    remaining_work: Continuous chapter certification protocol with dual-genre validation.
+    next_task: V2-034
+    owner_role: genre-maintainer
+    due_gate: G-P8
+  - finding_id: SUP-01
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
+    reason: |
+      V2-015 delivers urban_business_startup_v1.yaml fixture demonstrating business extension.
+      Partial completion: Fixture exists and passes contract tests.
+      Known limitation: Fixture requires human content review before production deployment (does NOT block G-P3).
+    remaining_work: Human-audited standard test book establishment (随关联任务首次使用前落实).
+    next_task: V2-017
+    owner_role: content-reviewer
+    due_gate: G-P4
 
 artifacts:
-  - ref: specs/fixtures/urban_business_startup_v1.yaml
-    sha256: 59608fc59696c2b14a1782c3ac5a4ecfa12c3526d757b51f57d383300ed5e34c
+  - ref: validation/closure/G-P3-68c8d00/artifacts/V2-015-story-fixture.txt
+    sha256: 842fcfba4ad2c2ac8358454760a9f6b3f255fb89aa0a3d21effcf0e638e017df
 
 input_evidence_refs:
   - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml
   - validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
   - validation/closure/G-P3-68c8d00/V2-015-ci-evidence.yaml
-  - validation/execution/V2-014/closure/closure-review.md
-  - validation/closure/G-P2-65e2fc0/V2-013-retrospective-closure.md
+  - validation/execution/V2-014/closure/acceptance-evidence.yaml
+  - validation/execution/V2-013/closure/acceptance.yaml

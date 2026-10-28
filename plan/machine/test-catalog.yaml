@@ -319,7 +319,7 @@ suites:
   - id: AT-V2-015-03
     required_assertion: 合法商业样本通过且不会读取玄幻专属字段
   execution_evidence:
-  - validation/closure/G-P3-68c8d00/V2-015-evidence.yaml
+  - validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
 - id: AT-V2-016
   task_id: V2-016
   phase: P3
@@ -333,7 +333,7 @@ suites:
   - id: AT-V2-016-03
     required_assertion: 未声明的现代股权制度不能污染扩展
   execution_evidence:
-  - validation/closure/G-P3-68c8d00/V2-016-evidence.yaml
+  - validation/closure/G-P3-68c8d00/V2-016-test-evidence.yaml
 - id: AT-V2-017
   task_id: V2-017
   phase: P4

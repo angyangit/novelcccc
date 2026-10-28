@@ -1391,8 +1391,8 @@
   },
   {
     "path": "generated/PHASE_TASK_REGISTRY.md",
-    "bytes": 6226,
-    "sha256": "eeb42253f31176a0ce0c935985d50e66c9e223b633ffc8ee217ceec1dc5ccd74"
+    "bytes": 6230,
+    "sha256": "50ec5f026cc99e31693d27db07701beb5bc7cd0a367bc042ba66332c64d63b69"
   },
   {
     "path": "machine/ai-execution-policy.yaml",
@@ -1431,8 +1431,8 @@
   },
   {
     "path": "machine/implementation-backlog.yaml",
-    "bytes": 99149,
-    "sha256": "8d6878cf9754aceb0d3a93005037372c836b35dc77551d5637f0b6a4ec824560"
+    "bytes": 100379,
+    "sha256": "8677700ce27aa9fbd0075a407e0f10c1d0ecd879bd3cbfa31c962ad55d2d3450"
   },
   {
     "path": "machine/legacy-evidence-compatibility.yaml",
@@ -1446,8 +1446,8 @@
   },
   {
     "path": "machine/phase-gates.yaml",
-    "bytes": 5799,
-    "sha256": "16b41c2161cc71e700d4f3fb5d616d1d7263386fd9a60f82df9ac85802524155"
+    "bytes": 5848,
+    "sha256": "617af16b72fc7d93df749e550713670b1fd12930ece7e4561003e9be62e6e02a"
   },
   {
     "path": "machine/remediation-register.yaml",
@@ -1466,8 +1466,8 @@
   },
   {
     "path": "machine/test-catalog.yaml",
-    "bytes": 40353,
-    "sha256": "51ee21a4424471f450a2c6cdf5db13b7f3f607211b99d5791665864677519b1e"
+    "bytes": 40473,
+    "sha256": "925acc02e7367b8e409dc3704eca43a1a99a6a6b470668a07e5741b67e27d478"
   },
   {
     "path": "review/00_REVIEW_TRIAGE_POLICY.md",

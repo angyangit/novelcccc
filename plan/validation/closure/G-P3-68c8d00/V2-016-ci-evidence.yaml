@@ -15,6 +15,7 @@ command: uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junit
 exit_code: 0
 check_ids:
   - ARCH_FITNESS
+  - CANON_CAS_IDEMPOTENCY
   - POSTGRES_ENV
   - STATIC
   - SECRET_DEPENDENCY

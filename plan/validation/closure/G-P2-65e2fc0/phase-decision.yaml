@@ -12,8 +12,8 @@ executed_at: '2026-10-25T02:23:33Z'
 environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-Candidate-e6b6ed2
 
 artifacts:
-  - ref: machine/phase-gates.yaml
-    sha256: 16b41c2161cc71e700d4f3fb5d616d1d7263386fd9a60f82df9ac85802524155
+  - ref: validation/closure/G-P2-65e2fc0/artifacts/phase-gates-snapshot.yaml
+    sha256: 537abf33d94e92f0ee3a2072f8e712fbe842825c567f973d48e06ef22057af8f
 
 input_evidence_refs:
   - validation/tasks/V2-009/code-evidence.yaml

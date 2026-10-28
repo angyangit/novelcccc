@@ -15,7 +15,7 @@ check_ids:
   - AT-V2-016-02
   - AT-V2-016-03
 artifacts:
-  - ref: tests/contract/test_v2_016.py
-    sha256: b740edc52d52db9ec321ff8c25b8f30e2f6bfdaac96002ab6705d74b8cd36861
+  - ref: validation/closure/G-P3-68c8d00/artifacts/V2-016-test-artifacts.txt
+    sha256: 0417ded8fa5e917500a9019e77d582bcfbe954e75e27ddd69f5231d461f17dc0
 input_evidence_refs:
   - validation/closure/G-P3-68c8d00/V2-016-code-evidence.yaml

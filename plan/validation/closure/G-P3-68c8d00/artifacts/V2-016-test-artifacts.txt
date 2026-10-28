@@ -1,0 +1,13 @@
+V2-016 Eastern Fantasy Extension - Test Artifacts
+
+Contract tests verified at revision 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1:
+
+1. tests/contract/test_v2_016.py - 20 contract tests covering AT-V2-016-01/02/03
+   SHA256: b740edc52d52db9ec321ff8c25b8f30e2f6bfdaac96002ab6705d74b8cd36861
+
+Test execution results:
+- AT-V2-016-01: 11 tests for typed state tracking (CultivationRealm, Ability, CultivationResource) with explicit units and preconditions
+- AT-V2-016-02: 4 tests for business keyword tolerance in fantasy context (商会/购买/交易 allowed in spirit commerce)
+- AT-V2-016-03: 4 tests for modern corporate structure rejection (stock markets, IPOs rejected in fantasy world)
+
+All 20 tests passed in GitHub Actions run 40468278925.

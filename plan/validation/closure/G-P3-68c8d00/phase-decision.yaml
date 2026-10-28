@@ -16,8 +16,8 @@ artifacts:
     sha256: 617af16b72fc7d93df749e550713670b1fd12930ece7e4561003e9be62e6e02a
 
 input_evidence_refs:
-  - validation/closure/G-P2-65e2fc0/V2-013-retrospective-closure.md
-  - validation/execution/V2-014/closure/closure-review.md
+  - validation/execution/V2-013/closure/acceptance.yaml
+  - validation/execution/V2-014/closure/acceptance-evidence.yaml
   - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml
   - validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
   - validation/closure/G-P3-68c8d00/V2-015-ci-evidence.yaml

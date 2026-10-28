@@ -1,0 +1,13 @@
+V2-015 Urban Business Extension - Test Artifacts
+
+Contract tests verified at revision 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1:
+
+1. tests/contract/test_v2_015.py - 19 contract tests covering AT-V2-015-01/02/03
+   SHA256: 7435af28edea1623c8ff403b74b94a12023fdac8e35fe070328c20849011a1ae
+
+Test execution results:
+- AT-V2-015-01: 10 tests for typed state tracking (Company, Equity, ResourcePool) with explicit units and preconditions
+- AT-V2-015-02: 6 tests for pollution prevention (context-aware rejection of cultivation/rebirth in world facts)
+- AT-V2-015-03: 3 tests for extension isolation (business extension does not read fantasy-specific fields)
+
+All 19 tests passed in GitHub Actions run 40468278925.

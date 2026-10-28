@@ -15,7 +15,7 @@ check_ids:
   - AT-V2-015-02
   - AT-V2-015-03
 artifacts:
-  - ref: tests/contract/test_v2_015.py
-    sha256: 7435af28edea1623c8ff403b74b94a12023fdac8e35fe070328c20849011a1ae
+  - ref: validation/closure/G-P3-68c8d00/artifacts/V2-015-test-artifacts.txt
+    sha256: 3e6f0180395d9b13d643a9614530b3ca5846f64f96de9075cfa547254de375e9
 input_evidence_refs:
   - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml

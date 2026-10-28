@@ -11,7 +11,7 @@
 
 ## Executive Summary
 
-**Recommendation: ACCEPT with one critical clarification on invalidation scope.**
+**Recommendation: AMEND with precise Invalidation Scope Rules.**
 
 ADR-008 provides sound technical foundation for V2-017 Contract Compiler. The five core decisions align with ANovelOS product goals: enable iterative Chinese long-form novel planning while maintaining Canon integrity and preventing planning system from corrupting narrative state.
 
@@ -548,4 +548,4 @@ Rationale: Only compiled contracts can be invalidated; uncompiled plans are adju
 
 **Review Complete.**  
 **Status:** Ready for Owner decision.  
-**Recommendation:** ACCEPT with clarification (Option A).
+**Recommendation:** AMEND with precise Invalidation Scope Rules (Option A).

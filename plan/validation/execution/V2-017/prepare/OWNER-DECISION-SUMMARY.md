@@ -3,7 +3,7 @@
 **Date:** 2026-10-28  
 **Canonical Baseline:** `7bca5218fc65a83c74e3d9c0ddd9854582409850` (G-P3 merged)  
 **Review Branch:** `review/adr-008-and-fixtures-decision`  
-**Current Review HEAD:** `b8e5d2fad8bbe4bd878b7fd007830730d7733929` (to be updated after final corrections)
+**Note:** Current HEAD available in GitHub PR #15
 
 ---
 

@@ -91,7 +91,7 @@ decisions:
   - V2-020
   decision_due_task: V2-017
   timing: before_interface_implementation
-  decision_record: plan/validation/execution/V2-017/implement/adr-008-acceptance.yaml
+  decision_record: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
   verification_refs: []
 - id: ADR-009
   title: Context 必需项溢出与选择解释

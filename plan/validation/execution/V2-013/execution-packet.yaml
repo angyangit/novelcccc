@@ -36,10 +36,10 @@ scope: |
 action: PREPARE
 inputs:
 - source_ref: machine/implementation-backlog.yaml
-  ref: machine/implementation-backlog.yaml
+  ref: validation/execution/V2-013/snapshots/implementation-backlog-912e6d6f.yaml
   sha256: 69224e995a9b8d014cacd5b7a02d7aa7ff1403a739b5ffa55591c0e1c72bafe1
 - source_ref: machine/decision-register.yaml
-  ref: machine/decision-register.yaml
+  ref: validation/execution/V2-013/snapshots/decision-register-f74701c.yaml
   sha256: f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2
 - source_ref: machine/phase-gates.yaml
   ref: machine/phase-gates.yaml

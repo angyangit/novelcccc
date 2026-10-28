@@ -1,0 +1,205 @@
+version: 1.2.0
+scope: 本包 ADR 编号；旧 ADR 编号仅在 archive 中保留，按语义映射而非同号继承
+decisions:
+- id: ADR-001
+  title: 精确运行环境与锁定工具
+  status: ACCEPTED
+  owner_role: repository-maintainer
+  related_tasks:
+  - V2-001
+  decision_due_task: V2-001
+  timing: before_interface_implementation
+  decision_record: validation/execution/V2-001/adr-001-decision.yaml
+  verification_refs: []
+- id: ADR-002
+  title: Character 基础/派生 Schema 与代码类型一致策略
+  status: ACCEPTED
+  owner_role: domain-maintainer
+  related_tasks:
+  - V2-061
+  decision_due_task: V2-061
+  timing: before_interface_implementation
+  decision_record: validation/execution/V2-061/adr-002-decision.yaml
+  verification_refs: []
+- id: ADR-003
+  title: Event occurrence 与 Promise 时序
+  status: ACCEPTED
+  owner_role: domain-maintainer
+  related_tasks:
+  - V2-007
+  decision_due_task: V2-007
+  timing: before_interface_implementation
+  decision_record: validation/execution/V2-007/adr-003-decision.yaml
+  verification_refs: []
+- id: ADR-004
+  title: 有限变化语言与 reducer 前置条件
+  status: ACCEPTED
+  owner_role: domain-maintainer
+  related_tasks:
+  - V2-008
+  - V2-010
+  - V2-017
+  decision_due_task: V2-008
+  timing: before_interface_implementation
+  decision_record: validation/execution/V2-008/adr-004-decision.yaml
+  verification_refs: []
+- id: ADR-005
+  title: 规范化字节 哈希与原始正文身份
+  status: ACCEPTED
+  owner_role: canon-maintainer
+  related_tasks:
+  - V2-009
+  - V2-010
+  decision_due_task: V2-009
+  timing: before_interface_implementation
+  decision_record: validation/decisions/owner-acceptance-ead6d37/adr-005-decision.yaml
+  verification_refs: []
+- id: ADR-006
+  title: 根提交 短事务 收据与保留闭包
+  status: ACCEPTED
+  owner_role: canon-maintainer
+  related_tasks:
+  - V2-009
+  - V2-010
+  - V2-011
+  - V2-012
+  decision_due_task: V2-009
+  timing: before_interface_implementation
+  decision_record: validation/decisions/owner-acceptance-ead6d37/adr-006-decision.yaml
+  verification_refs: []
+  required_refinements:
+  - 补充取消/提交次序、执行权限撤销与最小恢复证据闭包
+- id: ADR-007
+  title: Genre 扩展命名空间与状态转移
+  status: ACCEPTED
+  owner_role: genre-maintainer
+  related_tasks:
+  - V2-013
+  - V2-014
+  - V2-015
+  - V2-016
+  decision_due_task: V2-013
+  timing: before_interface_implementation
+  decision_record: validation/decisions/adr-007-acceptance-acff54b/adr-007-decision.yaml
+  verification_refs: []
+- id: ADR-008
+  title: 候选 overlay 与 Contract 编译绑定
+  status: REQUIRED
+  owner_role: planning-maintainer
+  related_tasks:
+  - V2-017
+  - V2-020
+  decision_due_task: V2-017
+  timing: before_interface_implementation
+  decision_record: null
+  verification_refs: []
+  required_refinements:
+  - 补充规划版本、冻结边界、supersession、失效与受控重规划；按 V2-017 packet 分职责
+- id: ADR-009
+  title: Context 必需项溢出与选择解释
+  status: REQUIRED
+  owner_role: context-maintainer
+  related_tasks:
+  - V2-018
+  decision_due_task: V2-018
+  timing: before_interface_implementation
+  decision_record: null
+  verification_refs: []
+- id: ADR-010
+  title: Provider UNKNOWN 预算与逻辑请求身份
+  status: REQUIRED
+  owner_role: gateway-maintainer
+  related_tasks:
+  - V2-019
+  - V2-027
+  decision_due_task: V2-019
+  timing: before_live_call
+  decision_record: null
+  verification_refs: []
+  required_refinements:
+  - 补充调用前预算预留、UNKNOWN 待核、重启/fallback/修复共享上限
+- id: ADR-011
+  title: 必跑检查集与 Permit 授权
+  status: REQUIRED
+  owner_role: quality-maintainer
+  related_tasks:
+  - V2-021
+  - V2-022
+  - V2-023
+  - V2-024
+  - V2-025
+  - V2-026
+  - V2-029
+  decision_due_task: V2-021
+  timing: before_interface_implementation
+  decision_record: null
+  verification_refs: []
+  required_refinements:
+  - 补充逐检查语义证据判定表、授权裁决与提交端执行权限核验
+- id: ADR-012
+  title: 有限修复 升级与回归范围
+  status: REQUIRED
+  owner_role: quality-maintainer
+  related_tasks:
+  - V2-030
+  - V2-031
+  - V2-032
+  decision_due_task: V2-030
+  timing: before_interface_implementation
+  decision_record: null
+  verification_refs: []
+- id: ADR-013
+  title: 认证样本 指标 阈值 holdout 与停止条件
+  status: REQUIRED
+  owner_role: certification-maintainer
+  related_tasks:
+  - V2-033
+  - V2-034
+  - V2-035
+  - V2-036
+  - V2-040
+  decision_due_task: V2-033
+  timing: before_certification_run
+  decision_record: null
+  verification_refs: []
+  required_refinements:
+  - 补充中文篇幅口径、自动程度、全部分母和阅读/成本后的继续投入决定
+- id: ADR-014
+  title: 参考来源 原创与 Genesis 接口
+  status: REQUIRED
+  owner_role: intelligence-maintainer
+  related_tasks:
+  - V2-042
+  - V2-044
+  - V2-045
+  - V2-047
+  - V2-048
+  decision_due_task: V2-042
+  timing: before_interface_implementation
+  decision_record: null
+  verification_refs: []
+- id: ADR-015
+  title: 学习分区 校准 晋级与回退
+  status: REQUIRED
+  owner_role: learning-maintainer
+  related_tasks:
+  - V2-049
+  - V2-052
+  - V2-056
+  - V2-057
+  decision_due_task: V2-049
+  timing: before_interface_implementation
+  decision_record: null
+  verification_refs: []
+- id: ADR-016
+  title: 恢复与版本迁移的长期认证
+  status: REQUIRED
+  owner_role: reliability-maintainer
+  related_tasks:
+  - V2-058
+  - V2-059
+  - V2-060
+  decision_due_task: V2-058
+  timing: before_certification_run
+  decision_record: null
+  verification_refs: []

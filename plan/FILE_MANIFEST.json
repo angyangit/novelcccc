@@ -1380,6 +1380,11 @@
     "sha256": "e59822c28420b1fdf5030f376ad53e632d44e2d26ebe81e59133c4aa3695eb38"
   },
   {
+    "path": "decisions/ADR-008_CONTRACT_OVERLAY_BINDING_PLANNING_VERSIONING.md",
+    "bytes": 11596,
+    "sha256": "d420155d5491822d844bf8dccd1074f1a7209465b4306167c76315157df26f18"
+  },
+  {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",
     "bytes": 3286,
     "sha256": "c5f816a2050dacad720ff5a5600e0d89d52b19052d09dcd7d9af98299058eb4d"
@@ -1411,8 +1416,8 @@
   },
   {
     "path": "machine/decision-register.yaml",
-    "bytes": 5601,
-    "sha256": "f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2"
+    "bytes": 5534,
+    "sha256": "c95c407b260496c95ee285ac518b983b87938d5122d2cb18835469629fd97915"
   },
   {
     "path": "machine/external-practice-register.yaml",

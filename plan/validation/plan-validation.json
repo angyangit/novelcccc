@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-28T04:23:35.349894+00:00",
+  "generated_at_utc": "2026-10-28T05:14:23.485541+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "b8e5d2fad8bbe4bd878b7fd007830730d7733929",
+  "validated_repository_revision": "3a0744189d88cc6c0da3a3071fb499a3dc684069",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "f4b824d8d053f9f1dfcf7f3234f2643db63dfd5d154ae0218fcdaec8bad235c6",
+  "manifest_sha256": "9b497923261ece16cac0435464c6a484df9c04c6e7f1d961575a18d8143bab90",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -51,9 +51,16 @@
   },
   "errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_INPUT V2-013: missing/changed artifact machine/decision-register.yaml",
+    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation",
+    "EXEC_INPUT V2-017: live source changed/missing: machine/decision-register.yaml"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "EXEC_INPUT V2-013: missing/changed artifact machine/decision-register.yaml",
+    "EXEC_VERSION V2-017: manifest changed; reconcile context before continuation",
+    "EXEC_INPUT V2-017: live source changed/missing: machine/decision-register.yaml"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

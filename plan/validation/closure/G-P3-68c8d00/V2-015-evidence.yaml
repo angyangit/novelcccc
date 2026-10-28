@@ -1,0 +1,45 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-015-CLOSURE-68c8d00
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-015
+revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+status: PASS
+producer: G-P3 phase gate certification
+executed_at: '2026-10-27T04:17:03Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
+
+check_ids:
+  - V2-015
+  - AT-V2-015
+  - AT-V2-015-01
+  - AT-V2-015-02
+  - AT-V2-015-03
+
+decision: ACCEPTED
+rationale: |
+  V2-015 urban.business.realistic extension acceptance verified:
+
+  1. Extension implements typed state tracking (Company, Equity, ResourcePool) with explicit units and preconditions
+  2. GenreHardPolicyEngine integration enforces realistic world rules via V2-014
+  3. Pollution prevention demonstrated: rejects cultivation/rebirth in world facts, allows in dialogue/dreams/metaphors
+  4. Extension isolation confirmed: business extension does not read fantasy-specific fields
+  5. All 19 contract tests pass (10 for typed state, 6 for pollution prevention, 3 for isolation)
+  6. CI verification: 6/6 gates SUCCESS in GitHub Actions run 40468278925
+  7. No regressions: 111 total tests passing including P0/P1/P2 baseline
+  8. Closure commit 6c5af0416116c1de9caeb7f7bcff331f9442a246 merged to main
+
+  Note: Story fixture urban_business_startup_v1.yaml requires human content review before production deployment.
+
+finding_dispositions: []
+
+artifacts:
+  - ref: specs/fixtures/urban_business_startup_v1.yaml
+    sha256: 59608fc59696c2b14a1782c3ac5a4ecfa12c3526d757b51f57d383300ed5e34c
+
+input_evidence_refs:
+  - validation/closure/G-P3-68c8d00/V2-015-code-evidence.yaml
+  - validation/closure/G-P3-68c8d00/V2-015-test-evidence.yaml
+  - validation/closure/G-P3-68c8d00/V2-015-ci-evidence.yaml
+  - validation/execution/V2-014/closure/closure-review.md
+  - validation/closure/G-P2-65e2fc0/V2-013-retrospective-closure.md

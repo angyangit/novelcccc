@@ -1,0 +1,26 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-016-ci-68c8d00
+evidence_type: CI_RUN
+subject_id: V2-016
+producer: GitHub Actions Run 40468278925
+pipeline_id: '40468278925'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/40468278925
+job_id: '121051322834'
+revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+status: PASS
+executed_at: '2026-10-27T04:17:25Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
+command: uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
+exit_code: 0
+check_ids:
+  - ARCH_FITNESS
+  - POSTGRES_ENV
+  - STATIC
+  - SECRET_DEPENDENCY
+  - SCHEMA_CONTRACT
+  - UNIT
+artifacts:
+  - ref: validation/closure/G-P3-68c8d00/V2-016-closure.md
+    sha256: c1fdb6b451029d84e5f88f83e3a10a2406b980061f8ada47e532c29f90c14005
+input_evidence_refs: []

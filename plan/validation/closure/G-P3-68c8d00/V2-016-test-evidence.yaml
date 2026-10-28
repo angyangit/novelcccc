@@ -1,0 +1,21 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-016-test-68c8d00
+evidence_type: TEST_RESULT
+subject_id: V2-016
+revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+status: PASS
+producer: GitHub Actions Run 40468278925 Job 121051322834
+executed_at: '2026-10-27T04:17:25Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
+command: uv run pytest tests/contract/test_v2_016.py -v --tb=short
+exit_code: 0
+check_ids:
+  - AT-V2-016-01
+  - AT-V2-016-02
+  - AT-V2-016-03
+artifacts:
+  - ref: tests/contract/test_v2_016.py
+    sha256: b740edc52d52db9ec321ff8c25b8f30e2f6bfdaac96002ab6705d74b8cd36861
+input_evidence_refs:
+  - validation/closure/G-P3-68c8d00/V2-016-code-evidence.yaml

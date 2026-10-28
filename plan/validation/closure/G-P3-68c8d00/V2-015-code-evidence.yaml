@@ -1,0 +1,21 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-015-code-68c8d00
+evidence_type: CODE
+subject_id: V2-015
+revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+status: PASS
+producer: GitHub Actions Run 40468278925 + G-P3 phase gate certification
+executed_at: '2026-10-27T04:17:03Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-40468278925
+artifacts:
+  - ref: src/anovel/genre/extensions/business.py
+    sha256: 418b44afbbfe447cdfc13a09e686bd0e9f69d1b7a648bb1c2d4013fe70cce5bc
+  - ref: src/anovel/genre/extensions/__init__.py
+    sha256: b216b078075a31d15e6ae1dcd45d033334e011bdb86d40fa5c4e87cb60c923df
+input_evidence_refs: []
+check_ids:
+  - CODE-V2-015-BUSINESS-PY
+  - CODE-V2-015-EXTENSION-INIT
+decision: VERIFIED
+rationale: V2-015 implementation artifacts exist and verified at revision 68c8d00. Code merged to main via commit 6c5af0416116c1de9caeb7f7bcff331f9442a246 and passing CI.

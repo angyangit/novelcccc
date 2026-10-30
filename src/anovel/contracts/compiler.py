@@ -32,6 +32,7 @@ from .models import (
     KnowledgeBoundary,
     ContinuityConstraint,
 )
+from .fact_mapper import FactPathMapper
 
 
 # Result type for compilation
@@ -42,8 +43,8 @@ class ContractCompiler:
     """Compiles planning inputs into chapter contracts."""
 
     def __init__(self):
-        """Initialize compiler (stateless, can be reused)."""
-        pass
+        """Initialize compiler with fact path mapper."""
+        self.fact_mapper = FactPathMapper()
 
     def compile_chapter(
         self,
@@ -98,6 +99,7 @@ class ContractCompiler:
         required_transitions = self._compile_required_transitions(
             chapter_plan,
             series_vision.protagonist_goals,
+            series_vision.genre_pack_binding.pack_id,
         )
 
         # Compile prohibited transitions from world constraints
@@ -206,19 +208,23 @@ class ContractCompiler:
         self,
         chapter_plan: ChapterPlan,
         protagonist_goals: list[ProtagonistGoal],
+        genre_pack_id: str,
     ) -> list[RequiredTransition]:
         """
         Compile required state transitions from chapter plan.
 
         Uses NarrativeDelta OperationType semantics (ADR-004).
+        Maps state changes to typed fact paths (equity, resources, cultivation).
         """
         transitions = []
 
-        for i, state_change in enumerate(chapter_plan.required_state_changes):
-            # Map state change description to operation type and fact path
-            # This is simplified - real implementation would parse structured data
-            operation_type = OperationType.SET_FACT
-            fact_path = f"state.{chapter_plan.chapter_id}.change_{i}"
+        for state_change in chapter_plan.required_state_changes:
+            # Map to typed fact path using FactPathMapper
+            mapped = self.fact_mapper.map_state_change(
+                state_change,
+                chapter_plan.chapter_id,
+                genre_pack_id,
+            )
 
             # Find related goal for rationale
             rationale = state_change
@@ -229,12 +235,18 @@ class ContractCompiler:
 
             transition = RequiredTransition(
                 transition_id=str(uuid.uuid4()),
-                operation_type=operation_type,
-                fact_path=fact_path,
-                target_value=state_change,
+                operation_type=mapped.operation_type,
+                fact_path=mapped.fact_path,
+                target_value=mapped.target_value,
                 rationale=rationale,
             )
             transitions.append(transition)
+
+            # If mapping was uncertain, add diagnostic note
+            if mapped.confidence == "uncertain" and mapped.diagnostic:
+                # Note: In real implementation, would collect diagnostics
+                # For now, still create transition but with diagnostic note
+                pass
 
         return transitions
 

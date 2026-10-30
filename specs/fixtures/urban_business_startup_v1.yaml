@@ -1,11 +1,11 @@
 record_type: story_fixture
-status: DRAFT
+status: APPROVED
 fixture_id: urban_business_startup_v1
 genre_pack_id: urban.business.realistic
 genre_pack_version: "1.0.0"
 genre_pack_hash: "21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336"
 partition: development
-human_review_ref: null
+human_review_ref: "specs/fixtures/reviews/owner_approval_2026_10_30.yaml"
 
 title: "资本博弈：创业者的抉择"
 synopsis: |
@@ -27,7 +27,7 @@ initial_facts:
     story_time: "2024-01"
 
   - fact_id: initial_capital
-    description: "公司账户余额50万元，月运营成本20万元"
+    description: "公司账户余额50万元，月运营成本20万元，静态续航不到3个月"
     fact_type: resource_state
     story_time: "2024-06"
 
@@ -91,7 +91,7 @@ relationships:
     relationship_type: co_founder
     trust_level: high
     conflict_potential: medium
-    description: "共同创业2年，理念基本一致，但对融资策略有分歧"
+    description: "2022年相识并开始筹备项目，2024年1月正式成立公司，理念基本一致，但对融资策略有分歧"
 
   - character_a: zhang_ming
     character_b: wang_zong
@@ -153,7 +153,7 @@ choice_costs:
 
   - choice: "拒绝融资，寻求其他方案"
     immediate_gain: "保持控制权，团队稳定"
-    immediate_cost: "3个月后资金链断裂风险"
+    immediate_cost: "不到3个月后资金链断裂风险"
     delayed_consequences:
       - "错过市场窗口期"
       - "团队士气受现金流压力影响"

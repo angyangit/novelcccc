@@ -8,6 +8,7 @@ import yaml
 from pathlib import Path
 from typing import Optional
 import hashlib
+import re
 
 from ..planning.models import (
     SeriesVision,
@@ -39,17 +40,43 @@ def load_fixture_yaml(fixture_path: Path) -> dict:
         return yaml.safe_load(f)
 
 
+def load_approval_record(approval_ref: str, fixture_base_path: Path) -> dict:
+    """Load approval record YAML from reference path."""
+    # approval_ref is a relative path from repo root (e.g., "specs/fixtures/reviews/...")
+    # fixture_base_path is the fixture file path
+    # We need to resolve relative to the repo root
+
+    # Find repo root by looking for .git directory
+    repo_root = fixture_base_path.resolve()
+    while repo_root.parent != repo_root:
+        if (repo_root / '.git').exists():
+            break
+        repo_root = repo_root.parent
+    else:
+        # If no .git found, assume current working directory
+        import os
+        repo_root = Path(os.getcwd())
+
+    approval_path = repo_root / approval_ref
+
+    if not approval_path.exists():
+        raise FixtureValidationError(f"Approval record not found: {approval_path}")
+
+    with open(approval_path, 'r', encoding='utf-8') as f:
+        return yaml.safe_load(f)
+
+
 def validate_fixture_approval(
+    fixture_path: Path,
     fixture_data: dict,
-    expected_content_hash: Optional[str] = None,
     require_approval: bool = False,
 ) -> tuple[bool, Optional[str]]:
     """
     Validate fixture approval status and content binding.
 
     Args:
+        fixture_path: Path to fixture file (for computing hash)
         fixture_data: Parsed YAML fixture
-        expected_content_hash: Expected approved content SHA-256
         require_approval: Whether to require human_review_ref
 
     Returns:
@@ -57,48 +84,76 @@ def validate_fixture_approval(
     """
     status = fixture_data.get('status')
     human_review_ref = fixture_data.get('human_review_ref')
+    fixture_id = fixture_data.get('fixture_id')
 
     # Check approval requirement
     if require_approval and human_review_ref is None:
-        return False, f"Fixture {fixture_data.get('fixture_id')} requires human_review_ref for production use"
+        return False, f"Fixture {fixture_id} requires human_review_ref for production use"
 
     # If approved, verify binding exists
     if status == 'APPROVED' and human_review_ref is None:
-        return False, f"Fixture marked APPROVED but missing human_review_ref"
+        return False, f"Fixture {fixture_id} marked APPROVED but missing human_review_ref"
 
-    # Verify content hash if provided (for approval verification)
-    if expected_content_hash and human_review_ref:
-        # In production, would load approval record and verify SHA-256 match
-        # For now, log that verification should occur
-        pass
+    # If human_review_ref exists, verify SHA-256 binding
+    if human_review_ref:
+        try:
+            approval_record = load_approval_record(human_review_ref, fixture_path)
+        except Exception as e:
+            return False, f"Failed to load approval record: {e}"
+
+        # Find fixture in approval scope
+        fixture_approval = None
+        for item in approval_record.get('scope', []):
+            if item.get('fixture_id') == fixture_id:
+                fixture_approval = item
+                break
+
+        if not fixture_approval:
+            return False, f"Fixture {fixture_id} not found in approval record scope"
+
+        # Compute actual content hash
+        with open(fixture_path, 'r', encoding='utf-8') as f:
+            actual_content = f.read()
+        actual_hash = compute_content_sha256(actual_content)
+
+        # Verify against approved hash (with metadata)
+        expected_hash = fixture_approval.get('with_approval_metadata_sha256')
+        if actual_hash != expected_hash:
+            return False, (
+                f"Fixture {fixture_id} content hash mismatch: "
+                f"expected {expected_hash}, got {actual_hash}"
+            )
 
     return True, None
 
 
 def parse_protagonist_goals(fixture_data: dict) -> list[ProtagonistGoal]:
     """Parse protagonist goals from fixture."""
-    goals = []
-    for goal_data in fixture_data.get('protagonist_goal', {}).get('constraints', []):
-        # This is simplified - real fixture has more complex structure
-        pass
+    pg = fixture_data.get('protagonist_goal')
+    if not pg:
+        return []
 
-    # Extract from fixture structure
-    pg = fixture_data.get('protagonist_goal', {})
-    if pg:
-        goal = ProtagonistGoal(
-            goal_id=pg.get('primary', 'main_goal'),
-            description=pg.get('primary', ''),
-            constraints=pg.get('constraints', []),
-            success_criteria=pg.get('success_criteria', []),
-        )
-        goals.append(goal)
+    primary = pg.get('primary')
+    if not primary:
+        raise FixtureValidationError("protagonist_goal.primary is required but missing")
 
-    return goals
+    goal = ProtagonistGoal(
+        goal_id='primary_goal',
+        description=primary,
+        constraints=pg.get('constraints', []),
+        success_criteria=pg.get('success_criteria', []),
+    )
+    return [goal]
 
 
 def parse_world_constraints(fixture_data: dict) -> WorldConstraints:
-    """Parse world constraints from fixture."""
+    """Parse world constraints from fixture.
+
+    Handles differences between urban (realistic_constraints) and
+    fantasy (cultivation_constraints, progression_rules) fixtures.
+    """
     wb = fixture_data.get('world_boundaries', {})
+
     return WorldConstraints(
         realistic_constraints=wb.get('realistic_constraints', []),
         cultivation_constraints=wb.get('cultivation_constraints', []),
@@ -129,22 +184,32 @@ def parse_secrets(fixture_data: dict) -> list[Secret]:
     """Parse secrets from fixture."""
     secrets = []
     for secret_data in fixture_data.get('secrets_and_knowers', []):
+        secret_id = secret_data.get('secret_id')
+        if not secret_id:
+            raise FixtureValidationError("secret_id is required for each secret")
+
+        content = secret_data.get('content')
+        if not content:
+            raise FixtureValidationError(f"secret {secret_id} missing required 'content' field")
+
         # Extract chapter number from potential_reveal string
         reveal_chapter = None
         reveal_str = secret_data.get('potential_reveal', '')
-        if '章' in reveal_str or 'chapter' in reveal_str.lower():
-            # Try to extract number
-            import re
-            match = re.search(r'\d+', reveal_str)
+        if reveal_str:
+            # Match "第N章" or "chapter N" patterns
+            match = re.search(r'第(\d+)章|chapter[:\s]+(\d+)', reveal_str, re.IGNORECASE)
             if match:
-                reveal_chapter = int(match.group())
+                reveal_chapter = int(match.group(1) or match.group(2))
+
+        knowers = secret_data.get('knowers', [])
+        reader_knows = 'reader' in knowers
 
         secret = Secret(
-            secret_id=secret_data.get('secret_id', ''),
-            content=secret_data.get('content', ''),
-            knowers=secret_data.get('knowers', []),
+            secret_id=secret_id,
+            content=content,
+            knowers=knowers,
             potential_reveal_chapter=reveal_chapter,
-            reader_knows='reader' in secret_data.get('knowers', []),
+            reader_knows=reader_knows,
         )
         secrets.append(secret)
 
@@ -152,7 +217,10 @@ def parse_secrets(fixture_data: dict) -> list[Secret]:
 
 
 def parse_arc_plans(fixture_data: dict) -> list[ArcPlan]:
-    """Parse arc plans from fixture first_arc_plan."""
+    """Parse arc plans from fixture first_arc_plan.
+
+    Extracts actual chapter ranges from key_beats instead of using list indices.
+    """
     arcs = []
     arc_plan = fixture_data.get('first_arc_plan', {})
 
@@ -161,21 +229,35 @@ def parse_arc_plans(fixture_data: dict) -> list[ArcPlan]:
 
     # Parse chapters from key_beats
     chapters = []
-    for i, beat in enumerate(arc_plan.get('key_beats', [])):
+    for beat in arc_plan.get('key_beats', []):
         chapter_range = beat.get('chapter', '')
         content = beat.get('content', '')
         state_changes = beat.get('state_changes', [])
 
-        # Create chapter plan (simplified - one chapter per beat)
-        chapter = ChapterPlan(
-            chapter_id=f"chapter_{i+1:02d}",
-            chapter_number=i+1,
-            goals=[content],
-            required_state_changes=state_changes,
-            character_focus=[],  # Would need to parse from content
-            scene_type=SceneType.DIALOGUE,  # Default, would need smarter detection
-        )
-        chapters.append(chapter)
+        if not chapter_range:
+            raise FixtureValidationError(f"key_beat missing 'chapter' field: {beat}")
+
+        # Parse chapter range (e.g., "1-3", "4-7", "8-10")
+        match = re.match(r'^(\d+)(?:-(\d+))?$', str(chapter_range))
+        if not match:
+            raise FixtureValidationError(
+                f"Invalid chapter range format: '{chapter_range}'. Expected 'N' or 'N-M'"
+            )
+
+        start_chapter = int(match.group(1))
+        end_chapter = int(match.group(2)) if match.group(2) else start_chapter
+
+        # Create chapter plans for the range
+        for chapter_num in range(start_chapter, end_chapter + 1):
+            chapter = ChapterPlan(
+                chapter_id=f"chapter_{chapter_num:02d}",
+                chapter_number=chapter_num,
+                goals=[content],
+                required_state_changes=state_changes,
+                character_focus=[],  # Would need deeper parsing
+                scene_type=SceneType.DIALOGUE,  # Default, would need smarter detection
+            )
+            chapters.append(chapter)
 
     arc = ArcPlan(
         arc_id='arc_01',
@@ -212,8 +294,18 @@ def load_series_vision_from_fixture(
     # Load YAML
     fixture_data = load_fixture_yaml(fixture_path)
 
+    # Validate required top-level fields
+    fixture_id = fixture_data.get('fixture_id')
+    if not fixture_id:
+        raise FixtureValidationError("fixture_id is required but missing")
+
+    title = fixture_data.get('title')
+    if not title:
+        raise FixtureValidationError(f"Fixture {fixture_id}: 'title' is required but missing")
+
     # Validate approval
     is_valid, error_msg = validate_fixture_approval(
+        fixture_path,
         fixture_data,
         require_approval=require_approval,
     )
@@ -228,16 +320,25 @@ def load_series_vision_from_fixture(
     arc_plans = parse_arc_plans(fixture_data)
 
     # Create GenrePackBinding
+    genre_pack_id = fixture_data.get('genre_pack_id')
+    genre_pack_version = fixture_data.get('genre_pack_version')
+    genre_pack_hash = fixture_data.get('genre_pack_hash')
+
+    if not genre_pack_id:
+        raise FixtureValidationError(f"Fixture {fixture_id}: 'genre_pack_id' is required but missing")
+    if not genre_pack_hash:
+        raise FixtureValidationError(f"Fixture {fixture_id}: 'genre_pack_hash' is required but missing")
+
     genre_binding = GenrePackBinding(
-        pack_id=fixture_data.get('genre_pack_id', ''),
-        version=fixture_data.get('genre_pack_version', ''),
-        content_hash=fixture_data.get('genre_pack_hash', ''),
+        pack_id=genre_pack_id,
+        version=genre_pack_version or '1.0.0',
+        content_hash=genre_pack_hash,
     )
 
     # Build SeriesVision
     series_vision = SeriesVision(
-        series_id=fixture_data.get('fixture_id', ''),
-        title=fixture_data.get('title', ''),
+        series_id=fixture_id,
+        title=title,
         synopsis=fixture_data.get('synopsis', ''),
         protagonist_goals=protagonist_goals,
         world_constraints=world_constraints,
@@ -245,7 +346,7 @@ def load_series_vision_from_fixture(
         secrets=secrets,
         genre_pack_binding=genre_binding,
         arc_plans=arc_plans,
-        fixture_version=fixture_data.get('genre_pack_version', '1.0'),
+        fixture_version=genre_pack_version or '1.0.0',
         human_review_ref=fixture_data.get('human_review_ref'),
     )
 

@@ -37,9 +37,19 @@ class TestFixtureLoading:
         assert len(series_vision.arc_plans[0].chapters) == 15
 
     def test_load_fantasy_fixture_success(self):
-        """Test loading approved fantasy cultivation fixture (if YAML is fixed)."""
-        # Note: This test will fail until fantasy fixture YAML syntax is fixed
-        pytest.skip("Fantasy fixture has YAML syntax error at line 117 (world_boundaries indentation)")
+        """Test loading approved fantasy cultivation fixture."""
+        fixture_path = Path('specs/fixtures/fantasy_eastern_cultivation_v1.yaml')
+        series_vision = load_series_vision_from_fixture(fixture_path, require_approval=True)
+
+        assert series_vision.series_id == 'fantasy_eastern_cultivation_v1'
+        assert series_vision.title == '逆天修仙：资源与抉择'
+        assert series_vision.human_review_ref == 'specs/fixtures/reviews/fantasy_yaml_structure_fix_2026_10_31.yaml'
+        assert series_vision.genre_pack_binding.pack_id == 'fantasy.eastern.progression'
+        assert len(series_vision.protagonist_goals) == 1
+        assert '3个月' in series_vision.protagonist_goals[0].description
+        assert len(series_vision.secrets) == 3
+        assert len(series_vision.arc_plans) == 1
+        assert len(series_vision.arc_plans[0].chapters) == 18
 
     def test_chapter_range_parsing(self):
         """Test that chapter ranges from key_beats are parsed correctly (not list indices)."""

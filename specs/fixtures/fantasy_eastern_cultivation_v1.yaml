@@ -5,7 +5,7 @@ genre_pack_id: fantasy.eastern.progression
 genre_pack_version: "1.0.0"
 genre_pack_hash: "6e835c0a4197cbae2e88ee55b52201f7af47f3ca8bfb3088f776cc5e21598757"
 partition: development
-human_review_ref: "specs/fixtures/reviews/owner_approval_2026_10_30.yaml"
+human_review_ref: "specs/fixtures/reviews/fantasy_yaml_structure_fix_2026_10_31.yaml"
 
 title: "逆天修仙：资源与抉择"
 synopsis: |
@@ -114,7 +114,7 @@ relationships:
     conflict_potential: high
     description: "商业谈判关系，赵长老掌握资源和信息优势"
 
-  world_boundaries:
+world_boundaries:
   cultivation_constraints:
     - "筑基需要筑基丹或特殊机缘"
     - "炼气至筑基是第一道大坎，失败可能道基受损"
@@ -144,7 +144,7 @@ relationships:
     - "修真资源交易"
     - "宗门贡献点系统"
 
-  protagonist_goal:
+protagonist_goal:
   primary: "在3个月内解决筑基和救治柳梦的两难困境"
   constraints:
     - "只有1枚筑基丹，无法同时用于突破和治疗"

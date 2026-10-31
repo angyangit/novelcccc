@@ -78,6 +78,45 @@ class ContractCompiler:
                 suggested_resolution=f"Use plan version {version_error.current_version}",
             )
 
+        # Verify FrozenInputs match actual compilation inputs
+        frozen_inputs = plan_version.freeze_horizon.frozen_inputs
+
+        # Check Canon parent hash match
+        if frozen_inputs.canon_parent_hash != canon_parent:
+            return CompilationDiagnostic(
+                diagnostic_id=str(uuid.uuid4()),
+                error_type="frozen_inputs_mismatch",
+                message=(
+                    f"Canon parent hash mismatch: plan frozen to "
+                    f"'{frozen_inputs.canon_parent_hash}' but compiling against '{canon_parent}'"
+                ),
+                affected_chapters=[chapter_plan.chapter_id],
+                suggested_resolution=(
+                    "Create new plan version with correct canon_parent_hash or "
+                    "compile against the frozen Canon version"
+                ),
+            )
+
+        # Check GenrePack hash match
+        if (
+            frozen_inputs.genre_pack_hash
+            != series_vision.genre_pack_binding.content_hash
+        ):
+            return CompilationDiagnostic(
+                diagnostic_id=str(uuid.uuid4()),
+                error_type="frozen_inputs_mismatch",
+                message=(
+                    f"GenrePack hash mismatch: plan frozen to "
+                    f"'{frozen_inputs.genre_pack_hash}' but SeriesVision uses "
+                    f"'{series_vision.genre_pack_binding.content_hash}'"
+                ),
+                affected_chapters=[chapter_plan.chapter_id],
+                suggested_resolution=(
+                    "Create new plan version with correct genre_pack_hash or "
+                    "use SeriesVision with matching GenrePack version"
+                ),
+            )
+
         # Check freeze horizon - can this chapter be modified?
         from ..planning.versions import can_modify_chapter
 

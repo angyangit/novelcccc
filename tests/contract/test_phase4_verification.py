@@ -72,8 +72,8 @@ def create_plan_version(
                 canon_parent_hash=canon_hash,
                 genre_pack_hash=pack_hash,
                 fixture_content_hash=fixture_hash,
-            )
-        )
+            ),
+        ),
     )
 
 
@@ -88,7 +88,10 @@ class TestContinuityEvidenceRequirements:
         as the hash binding alone provides some continuity.
         """
         compiler = ContractCompiler()
-        series_vision = create_test_series()
+
+        # Use matching hashes to pass FrozenInputs verification
+        genre_hash = "pack_def"
+        series_vision = create_test_series(genre_pack_hash=genre_hash)
 
         chapter_2 = ChapterPlan(
             chapter_id="chapter_02",
@@ -99,20 +102,24 @@ class TestContinuityEvidenceRequirements:
             scene_type=SceneType.ACTION,
         )
 
-        plan_version = create_plan_version()
+        canon_hash = "canon_abc"
+        plan_version = create_plan_version(
+            canon_hash=canon_hash,
+            pack_hash=genre_hash,
+        )
 
         # Compile with hash but no end state
         contract = compiler.compile_chapter(
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent="canon_abc",
+            canon_parent=canon_hash,
             previous_chapter_hash="chapter_1_hash",
             previous_end_state=None,  # Missing end state
         )
 
         # Currently allowed - contract created with empty previous_end_state
-        assert hasattr(contract, 'contract_id')
+        assert hasattr(contract, "contract_id")
         assert contract.continuity_constraints.previous_end_state == {}
 
     def test_chapter_2_requires_previous_hash(self):
@@ -121,7 +128,11 @@ class TestContinuityEvidenceRequirements:
         This is stricter than end_state - hash is mandatory for continuity.
         """
         compiler = ContractCompiler()
-        series_vision = create_test_series()
+
+        # Use matching hashes to pass FrozenInputs verification
+        genre_hash = "pack_def"
+        canon_hash = "canon_abc"
+        series_vision = create_test_series(genre_pack_hash=genre_hash)
 
         chapter_2 = ChapterPlan(
             chapter_id="chapter_02",
@@ -132,14 +143,17 @@ class TestContinuityEvidenceRequirements:
             scene_type=SceneType.ACTION,
         )
 
-        plan_version = create_plan_version()
+        plan_version = create_plan_version(
+            canon_hash=canon_hash,
+            pack_hash=genre_hash,
+        )
 
         # Attempt compile without previous_chapter_hash
         result = compiler.compile_chapter(
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent="canon_abc",
+            canon_parent=canon_hash,
             previous_chapter_hash=None,  # Missing!
             previous_end_state={"some": "state"},
         )
@@ -160,7 +174,10 @@ class TestHashFormatValidation:
     def test_compiler_accepts_hex_hash_format(self):
         """Test that compiler accepts reasonable hex-format hashes."""
         compiler = ContractCompiler()
-        series_vision = create_test_series()
+
+        canon_hash = "abc123def456789"
+        genre_hash = "pack_xyz_789"
+        series_vision = create_test_series(genre_pack_hash=genre_hash)
 
         chapter_1 = ChapterPlan(
             chapter_id="chapter_01",
@@ -171,20 +188,23 @@ class TestHashFormatValidation:
             scene_type=SceneType.ACTION,
         )
 
-        plan_version = create_plan_version()
+        plan_version = create_plan_version(
+            canon_hash=canon_hash,
+            pack_hash=genre_hash,
+        )
 
         # Valid-looking hex hash
         contract = compiler.compile_chapter(
             series_vision=series_vision,
             chapter_plan=chapter_1,
             plan_version=plan_version,
-            canon_parent="abc123def456789",  # Hex format
+            canon_parent=canon_hash,  # Hex format
             previous_chapter_hash=None,
             previous_end_state=None,
         )
 
-        assert hasattr(contract, 'contract_id')
-        assert contract.canon_parent == "abc123def456789"
+        assert hasattr(contract, "contract_id")
+        assert contract.canon_parent == canon_hash
 
     def test_compiler_currently_accepts_arbitrary_strings(self):
         """Test documenting that compiler currently accepts any string as hash.
@@ -193,7 +213,10 @@ class TestHashFormatValidation:
         This test documents current behavior for future hardening.
         """
         compiler = ContractCompiler()
-        series_vision = create_test_series()
+
+        canon_hash = "not_a_real_hash"
+        genre_hash = "also_not_real"
+        series_vision = create_test_series(genre_pack_hash=genre_hash)
 
         chapter_1 = ChapterPlan(
             chapter_id="chapter_01",
@@ -204,20 +227,23 @@ class TestHashFormatValidation:
             scene_type=SceneType.ACTION,
         )
 
-        plan_version = create_plan_version(canon_hash="not_a_real_hash")
+        plan_version = create_plan_version(
+            canon_hash=canon_hash,
+            pack_hash=genre_hash,
+        )
 
         # Currently accepts arbitrary string - documents behavior
         contract = compiler.compile_chapter(
             series_vision=series_vision,
             chapter_plan=chapter_1,
             plan_version=plan_version,
-            canon_parent="not_a_real_hash",
+            canon_parent=canon_hash,
             previous_chapter_hash=None,
             previous_end_state=None,
         )
 
         # Compiles successfully (current behavior)
-        assert hasattr(contract, 'contract_id')
+        assert hasattr(contract, "contract_id")
         # Future: Should validate hash format or require explicit verification
 
 
@@ -225,11 +251,7 @@ class TestFrozenInputsMatchVerification:
     """Test that FrozenInputs must match actual compilation inputs."""
 
     def test_genre_pack_hash_mismatch_detected(self):
-        """Test that genre pack hash mismatch is caught.
-
-        Note: Current implementation doesn't verify frozen_inputs match
-        actual inputs. This test documents the requirement.
-        """
+        """Test that genre pack hash mismatch is rejected."""
         compiler = ContractCompiler()
 
         # Series with one genre pack hash
@@ -249,7 +271,7 @@ class TestFrozenInputsMatchVerification:
             scene_type=SceneType.ACTION,
         )
 
-        # Currently compiles despite mismatch - documents behavior
+        # Must reject with diagnostic
         result = compiler.compile_chapter(
             series_vision=series_vision,
             chapter_plan=chapter_1,
@@ -259,9 +281,12 @@ class TestFrozenInputsMatchVerification:
             previous_end_state=None,
         )
 
-        # Current behavior: compiles successfully
-        # Future: Should detect mismatch and reject or warn
-        assert hasattr(result, 'contract_id')
+        # Must detect mismatch and reject
+        assert isinstance(result, CompilationDiagnostic)
+        assert result.error_type == "frozen_inputs_mismatch"
+        assert "GenrePack hash mismatch" in result.message
+        assert "frozen_pack_hash_456" in result.message
+        assert "actual_pack_hash_123" in result.message
 
     def test_canon_parent_must_match_frozen_inputs(self):
         """Test that canon_parent must match frozen canon_parent_hash.
@@ -293,9 +318,49 @@ class TestFrozenInputsMatchVerification:
             previous_end_state=None,
         )
 
-        # Currently compiles - documents behavior
-        # Future: Should verify match and reject mismatch
-        assert hasattr(result, 'contract_id')
+        # Must reject with diagnostic
+        assert isinstance(result, CompilationDiagnostic)
+        assert result.error_type == "frozen_inputs_mismatch"
+        assert "Canon parent hash mismatch" in result.message
+        assert "frozen_canon_hash" in result.message
+        assert "different_canon_hash" in result.message
+
+    def test_matching_frozen_inputs_compiles_successfully(self):
+        """Test that compilation succeeds when all FrozenInputs match."""
+        compiler = ContractCompiler()
+
+        # Series with specific genre pack hash
+        series_vision = create_test_series(genre_pack_hash="pack_hash_abc")
+
+        # Plan frozen to matching hashes
+        plan_version = create_plan_version(
+            canon_hash="canon_hash_def",
+            pack_hash="pack_hash_abc",  # Matches series_vision
+            fixture_hash="fixture_hash_ghi",
+        )
+
+        chapter_1 = ChapterPlan(
+            chapter_id="chapter_01",
+            chapter_number=1,
+            goals=["Test goal"],
+            required_state_changes=[],
+            character_focus=[],
+            scene_type=SceneType.ACTION,
+        )
+
+        # Compile with matching canon_parent
+        result = compiler.compile_chapter(
+            series_vision=series_vision,
+            chapter_plan=chapter_1,
+            plan_version=plan_version,
+            canon_parent="canon_hash_def",  # Matches frozen canon_parent_hash
+            previous_chapter_hash=None,
+            previous_end_state=None,
+        )
+
+        # Should compile successfully
+        assert hasattr(result, "contract_id")
+        assert result.canon_parent == "canon_hash_def"
 
 
 class TestCompilerReadOnlyGuarantee:
@@ -311,8 +376,14 @@ class TestCompilerReadOnlyGuarantee:
         - Return deterministic output for same inputs
         """
         compiler = ContractCompiler()
-        series_vision = create_test_series()
-        plan_version = create_plan_version()
+
+        canon_hash = "canon_abc"
+        genre_hash = "pack_def"
+        series_vision = create_test_series(genre_pack_hash=genre_hash)
+        plan_version = create_plan_version(
+            canon_hash=canon_hash,
+            pack_hash=genre_hash,
+        )
 
         chapter_1 = ChapterPlan(
             chapter_id="chapter_01",
@@ -328,7 +399,7 @@ class TestCompilerReadOnlyGuarantee:
             series_vision=series_vision,
             chapter_plan=chapter_1,
             plan_version=plan_version,
-            canon_parent="canon_abc",
+            canon_parent=canon_hash,
             previous_chapter_hash=None,
             previous_end_state=None,
         )
@@ -337,7 +408,7 @@ class TestCompilerReadOnlyGuarantee:
             series_vision=series_vision,
             chapter_plan=chapter_1,
             plan_version=plan_version,
-            canon_parent="canon_abc",
+            canon_parent=canon_hash,
             previous_chapter_hash=None,
             previous_end_state=None,
         )
@@ -346,7 +417,9 @@ class TestCompilerReadOnlyGuarantee:
         assert contract1.chapter_id == contract2.chapter_id
         assert contract1.chapter_number == contract2.chapter_number
         assert contract1.plan_version == contract2.plan_version
-        assert len(contract1.required_transitions) == len(contract2.required_transitions)
+        assert len(contract1.required_transitions) == len(
+            contract2.required_transitions
+        )
 
         # Input objects should not be modified
         assert chapter_1.chapter_id == "chapter_01"

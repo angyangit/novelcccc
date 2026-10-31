@@ -48,7 +48,7 @@ def create_test_series() -> SeriesVision:
         genre_pack_binding=GenrePackBinding(
             pack_id="test.pack",
             version="1.0",
-            content_hash="abc123",
+            content_hash="pack_def",  # Match frozen_inputs
         ),
         arc_plans=[],
         fixture_version="1.0",
@@ -85,8 +85,8 @@ class TestFreezeHorizonEnforcement:
                     canon_parent_hash="canon_abc",
                     genre_pack_hash="pack_def",
                     fixture_content_hash="fixture_ghi",
-                )
-            )
+                ),
+            ),
         )
 
         # Attempt to compile frozen chapter
@@ -131,8 +131,8 @@ class TestFreezeHorizonEnforcement:
                     canon_parent_hash="canon_abc",
                     genre_pack_hash="pack_def",
                     fixture_content_hash="fixture_ghi",
-                )
-            )
+                ),
+            ),
         )
 
         # Compile adjustable chapter
@@ -146,7 +146,7 @@ class TestFreezeHorizonEnforcement:
         )
 
         # Should compile successfully
-        assert hasattr(contract, 'contract_id')
+        assert hasattr(contract, "contract_id")
         assert contract.chapter_id == "chapter_02"
 
     def test_chapter_not_in_freeze_horizon_rejected(self):
@@ -175,8 +175,8 @@ class TestFreezeHorizonEnforcement:
                     canon_parent_hash="canon_abc",
                     genre_pack_hash="pack_def",
                     fixture_content_hash="fixture_ghi",
-                )
-            )
+                ),
+            ),
         )
 
         # Attempt to compile chapter not in plan
@@ -225,8 +225,8 @@ class TestFreezeHorizonEnforcement:
                     canon_parent_hash="canon_abc",
                     genre_pack_hash="pack_def",
                     fixture_content_hash="fixture_ghi",
-                )
-            )
+                ),
+            ),
         )
 
         # Compile chapter 2, which reads frozen chapter 1's end state
@@ -240,7 +240,7 @@ class TestFreezeHorizonEnforcement:
         )
 
         # Should succeed - reading frozen chapters is allowed
-        assert hasattr(contract, 'contract_id')
+        assert hasattr(contract, "contract_id")
         assert contract.continuity_constraints.previous_chapter_hash == "chapter_1_hash"
 
 
@@ -273,10 +273,10 @@ class TestVersionSupersession:
                     canon_parent_hash="canon_abc",
                     genre_pack_hash="pack_def",
                     fixture_content_hash="fixture_ghi",
-                )
+                ),
             ),
             superseded_by="v2",  # Superseded!
-            invalidation_reason="Canon parent advanced"
+            invalidation_reason="Canon parent advanced",
         )
 
         # Attempt to compile with superseded version
@@ -312,14 +312,22 @@ class TestFrozenInputsBinding:
                     canon_parent_hash="canon_abc123",
                     genre_pack_hash="pack_def456",
                     fixture_content_hash="fixture_ghi789",
-                )
-            )
+                ),
+            ),
         )
 
         # Verify frozen inputs are accessible
-        assert plan_version.freeze_horizon.frozen_inputs.canon_parent_hash == "canon_abc123"
-        assert plan_version.freeze_horizon.frozen_inputs.genre_pack_hash == "pack_def456"
-        assert plan_version.freeze_horizon.frozen_inputs.fixture_content_hash == "fixture_ghi789"
+        assert (
+            plan_version.freeze_horizon.frozen_inputs.canon_parent_hash
+            == "canon_abc123"
+        )
+        assert (
+            plan_version.freeze_horizon.frozen_inputs.genre_pack_hash == "pack_def456"
+        )
+        assert (
+            plan_version.freeze_horizon.frozen_inputs.fixture_content_hash
+            == "fixture_ghi789"
+        )
 
         # In real implementation, compiler would verify these match actual inputs
         # and reject compilation if mismatch detected

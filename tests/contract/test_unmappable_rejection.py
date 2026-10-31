@@ -64,8 +64,8 @@ def create_test_plan(chapter_id: str = "chapter_01") -> PlanVersion:
                 canon_parent_hash="test",
                 genre_pack_hash="abc123",
                 fixture_content_hash="test",
-            )
-        )
+            ),
+        ),
     )
 
 
@@ -92,7 +92,7 @@ class TestUnmappableStateChangeRejection:
             series_vision=series,
             chapter_plan=chapter,
             plan_version=plan,
-            canon_parent=None,
+            canon_parent="test",  # Match frozen_inputs
             previous_chapter_hash=None,
             previous_end_state=None,
         )
@@ -128,7 +128,7 @@ class TestUnmappableStateChangeRejection:
             series_vision=series,
             chapter_plan=chapter,
             plan_version=plan,
-            canon_parent=None,
+            canon_parent="test",  # Match frozen_inputs
             previous_chapter_hash=None,
             previous_end_state=None,
         )
@@ -161,7 +161,7 @@ class TestUnmappableStateChangeRejection:
             series_vision=series,
             chapter_plan=chapter,
             plan_version=plan,
-            canon_parent=None,
+            canon_parent="test",  # Match frozen_inputs
             previous_chapter_hash=None,
             previous_end_state=None,
         )
@@ -195,17 +195,17 @@ class TestUnmappableStateChangeRejection:
             series_vision=series,
             chapter_plan=chapter,
             plan_version=plan,
-            canon_parent=None,
+            canon_parent="test",  # Match frozen_inputs
             previous_chapter_hash=None,
             previous_end_state=None,
         )
 
         # Should compile successfully
-        assert hasattr(result, 'contract_id')
+        assert hasattr(result, "contract_id")
         assert len(result.required_transitions) == 2
         # Verify no untyped paths
         for trans in result.required_transitions:
-            assert 'untyped_change' not in trans.fact_path
+            assert "untyped_change" not in trans.fact_path
 
     def test_diagnostic_suggests_resolution(self):
         """Test that diagnostic includes helpful resolution suggestion."""
@@ -227,11 +227,14 @@ class TestUnmappableStateChangeRejection:
             series_vision=series,
             chapter_plan=chapter,
             plan_version=plan,
-            canon_parent=None,
+            canon_parent="test",  # Match frozen_inputs
             previous_chapter_hash=None,
             previous_end_state=None,
         )
 
         assert isinstance(result, CompilationDiagnostic)
         assert result.suggested_resolution is not None
-        assert "structured" in result.suggested_resolution or "extend" in result.suggested_resolution
+        assert (
+            "structured" in result.suggested_resolution
+            or "extend" in result.suggested_resolution
+        )

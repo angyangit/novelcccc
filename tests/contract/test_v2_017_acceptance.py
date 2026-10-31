@@ -51,7 +51,10 @@ def urban_business_series_vision():
                 goal_id="融资生存",
                 description="在3个月内完成融资，确保公司生存",
                 constraints=["不能完全失去控制权", "必须保持团队稳定"],
-                success_criteria=["获得足够运营资金（至少300万）", "保持创始团队合计持股超过51%"],
+                success_criteria=[
+                    "获得足够运营资金（至少300万）",
+                    "保持创始团队合计持股超过51%",
+                ],
             ),
         ],
         world_constraints=WorldConstraints(
@@ -87,7 +90,11 @@ def urban_business_series_vision():
                 arc_goal="完成融资决策",
                 escalation_pattern=EscalationPattern(
                     pattern_type="crisis_driven",
-                    key_escalation_points=["资金只够支撑3个月", "李华威胁退出", "竞争对手获得融资"],
+                    key_escalation_points=[
+                        "资金只够支撑3个月",
+                        "李华威胁退出",
+                        "竞争对手获得融资",
+                    ],
                 ),
                 chapters=[
                     ChapterPlan(
@@ -122,7 +129,10 @@ def fantasy_cultivation_series_vision():
             ),
         ],
         world_constraints=WorldConstraints(
-            cultivation_constraints=["道韵需达到20以上才有筑基资格", "资源有限，灵石和丹药需要明确来源"],
+            cultivation_constraints=[
+                "道韵需达到20以上才有筑基资格",
+                "资源有限，灵石和丹药需要明确来源",
+            ],
             prohibited_mechanisms=["现代股份制公司结构", "证券市场和IPO"],
         ),
         character_knowledge_map={
@@ -154,7 +164,11 @@ def fantasy_cultivation_series_vision():
                 arc_goal="解决筑基困境",
                 escalation_pattern=EscalationPattern(
                     pattern_type="crisis_driven",
-                    key_escalation_points=["柳梦走火入魔", "商会提出契约", "柳梦伤势恶化"],
+                    key_escalation_points=[
+                        "柳梦走火入魔",
+                        "商会提出契约",
+                        "柳梦伤势恶化",
+                    ],
                 ),
                 chapters=[
                     ChapterPlan(
@@ -175,7 +189,7 @@ def fantasy_cultivation_series_vision():
 
 @pytest.fixture
 def base_plan_version():
-    """Base plan version for testing."""
+    """Base plan version for urban business testing."""
     return PlanVersion(
         plan_id="plan_v1",
         version="v1",
@@ -183,8 +197,12 @@ def base_plan_version():
         freeze_horizon=FreezeHorizon(
             frozen_chapters=[],
             adjustable_chapters=[
-                "chapter_01", "chapter_02", "chapter_03",
-                "chapter_conflict", "chapter_quiet", "chapter_growth"  # For test scenarios
+                "chapter_01",
+                "chapter_02",
+                "chapter_03",
+                "chapter_conflict",
+                "chapter_quiet",
+                "chapter_growth",  # For test scenarios
             ],
             frozen_inputs=FrozenInputs(
                 canon_parent_hash="abc123",
@@ -195,10 +213,36 @@ def base_plan_version():
     )
 
 
+@pytest.fixture
+def fantasy_plan_version():
+    """Plan version for fantasy cultivation testing."""
+    return PlanVersion(
+        plan_id="plan_fantasy_v1",
+        version="v1",
+        created_at=datetime.now(),
+        freeze_horizon=FreezeHorizon(
+            frozen_chapters=[],
+            adjustable_chapters=[
+                "chapter_01",
+                "chapter_02",
+                "chapter_03",
+                "chapter_growth",
+            ],
+            frozen_inputs=FrozenInputs(
+                canon_parent_hash="def456",
+                genre_pack_hash="6e835c0a4197cbae2e88ee55b52201f7af47f3ca8bfb3088f776cc5e21598757",
+                fixture_content_hash="fantasy_fixture_hash",
+            ),
+        ),
+    )
+
+
 class TestAT_V2_017_01_InitialChapterCompilation:
     """AT-V2-017-01: Compile from SeriesVision, not P10 Genesis."""
 
-    def test_compile_urban_chapter_1_success(self, urban_business_series_vision, base_plan_version):
+    def test_compile_urban_chapter_1_success(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Positive: Load urban fixture, compile chapter 1 contract successfully."""
         compiler = ContractCompiler()
         chapter_plan = urban_business_series_vision.arc_plans[0].chapters[0]
@@ -220,7 +264,9 @@ class TestAT_V2_017_01_InitialChapterCompilation:
         assert result.fixture_ref == "urban_business_startup_v1"
         assert result.human_review_ref is not None
 
-    def test_compile_fantasy_chapter_1_success(self, fantasy_cultivation_series_vision, base_plan_version):
+    def test_compile_fantasy_chapter_1_success(
+        self, fantasy_cultivation_series_vision, fantasy_plan_version
+    ):
         """Positive: Load fantasy fixture, compile chapter 1 contract successfully."""
         compiler = ContractCompiler()
         chapter_plan = fantasy_cultivation_series_vision.arc_plans[0].chapters[0]
@@ -228,7 +274,7 @@ class TestAT_V2_017_01_InitialChapterCompilation:
         result = compiler.compile_chapter(
             series_vision=fantasy_cultivation_series_vision,
             chapter_plan=chapter_plan,
-            plan_version=base_plan_version,
+            plan_version=fantasy_plan_version,
             canon_parent="def456",
             previous_chapter_hash=None,
             previous_end_state=None,
@@ -240,7 +286,9 @@ class TestAT_V2_017_01_InitialChapterCompilation:
         assert result.genre_pack_binding.pack_id == "fantasy.eastern.progression"
         assert result.continuity_constraints is None  # Chapter 1 has no previous
 
-    def test_missing_protagonist_goal_fails(self, urban_business_series_vision, base_plan_version):
+    def test_missing_protagonist_goal_fails(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Negative: Missing protagonist goals causes compilation failure."""
         # Create fixture with empty goals
         broken_vision = SeriesVision(
@@ -276,7 +324,9 @@ class TestAT_V2_017_01_InitialChapterCompilation:
 class TestAT_V2_017_02_RequiredTransitionSemantics:
     """AT-V2-017-02: RequiredTransition uses NarrativeDelta semantics."""
 
-    def test_required_transition_uses_operation_type(self, urban_business_series_vision, base_plan_version):
+    def test_required_transition_uses_operation_type(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Positive: RequiredTransition uses OperationType from delta module."""
         compiler = ContractCompiler()
         chapter_plan = urban_business_series_vision.arc_plans[0].chapters[0]
@@ -302,7 +352,9 @@ class TestAT_V2_017_02_RequiredTransitionSemantics:
 class TestAT_V2_017_03_ConflictsReturnDiagnostic:
     """AT-V2-017-03: Conflicts return diagnostic, don't modify Canon."""
 
-    def test_conflicting_constraints_returns_diagnostic(self, urban_business_series_vision, base_plan_version):
+    def test_conflicting_constraints_returns_diagnostic(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Positive: Conflicting goals return CompilationDiagnostic."""
         # Create chapter plan with conflicting state changes
         conflicting_chapter = ChapterPlan(
@@ -336,7 +388,9 @@ class TestAT_V2_017_03_ConflictsReturnDiagnostic:
 class TestAT_V2_017_04_ContinuityBindsToPreviousChapter:
     """AT-V2-017-05: Continuity binds to previous chapter hash."""
 
-    def test_chapter_2_requires_previous_hash(self, urban_business_series_vision, base_plan_version):
+    def test_chapter_2_requires_previous_hash(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Positive: Chapter 2 binds to chapter 1 hash."""
         chapter_2 = ChapterPlan(
             chapter_id="chapter_02",
@@ -359,10 +413,14 @@ class TestAT_V2_017_04_ContinuityBindsToPreviousChapter:
 
         assert isinstance(result, ChapterContract)
         assert result.continuity_constraints is not None
-        assert result.continuity_constraints.previous_chapter_hash == "chapter_01_hash_xyz"
+        assert (
+            result.continuity_constraints.previous_chapter_hash == "chapter_01_hash_xyz"
+        )
         assert result.continuity_constraints.previous_chapter_id == "chapter_1"
 
-    def test_chapter_2_missing_previous_hash_fails(self, urban_business_series_vision, base_plan_version):
+    def test_chapter_2_missing_previous_hash_fails(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Negative: Chapter 2 without previous hash returns diagnostic."""
         chapter_2 = ChapterPlan(
             chapter_id="chapter_02",
@@ -390,7 +448,9 @@ class TestAT_V2_017_04_ContinuityBindsToPreviousChapter:
 class TestAT_V2_017_05_KnowledgeBoundaries:
     """AT-V2-017-05: Knowledge boundaries and revelation timing validated."""
 
-    def test_knowledge_boundaries_compiled(self, urban_business_series_vision, base_plan_version):
+    def test_knowledge_boundaries_compiled(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Positive: Secrets compiled into knowledge boundaries."""
         compiler = ContractCompiler()
         chapter_plan = urban_business_series_vision.arc_plans[0].chapters[0]
@@ -521,7 +581,9 @@ class TestAT_V2_017_07_InvalidationScoping:
 class TestAT_V2_017_08_QuietChaptersSupported:
     """AT-V2-017-08: Quiet chapters and character growth not falsely rejected."""
 
-    def test_quiet_relationship_chapter_compiles(self, urban_business_series_vision, base_plan_version):
+    def test_quiet_relationship_chapter_compiles(
+        self, urban_business_series_vision, base_plan_version
+    ):
         """Positive: Quiet relationship chapter compiles without combat."""
         quiet_chapter = ChapterPlan(
             chapter_id="chapter_quiet",
@@ -547,7 +609,9 @@ class TestAT_V2_017_08_QuietChaptersSupported:
         # Should have transitions for relationship changes, not combat
         assert len(result.required_transitions) > 0
 
-    def test_internal_conflict_chapter_compiles(self, fantasy_cultivation_series_vision, base_plan_version):
+    def test_internal_conflict_chapter_compiles(
+        self, fantasy_cultivation_series_vision, fantasy_plan_version
+    ):
         """Positive: Internal conflict chapter (dao comprehension growth) compiles."""
         internal_chapter = ChapterPlan(
             chapter_id="chapter_growth",
@@ -563,7 +627,7 @@ class TestAT_V2_017_08_QuietChaptersSupported:
         result = compiler.compile_chapter(
             series_vision=fantasy_cultivation_series_vision,
             chapter_plan=internal_chapter,
-            plan_version=base_plan_version,
+            plan_version=fantasy_plan_version,
             canon_parent="def456",
             previous_chapter_hash="ch1_hash",
             previous_end_state={"dao_comprehension": {"wang_lin": 15}},

@@ -72,8 +72,8 @@ def create_plan_version(plan_id: str = "test_plan") -> PlanVersion:
                 canon_parent_hash="initial",
                 genre_pack_hash="abc123",
                 fixture_content_hash="def456",
-            )
-        )
+            ),
+        ),
     )
 
 
@@ -100,7 +100,7 @@ class TestContinuityBinding:
             series_vision=series_vision,
             chapter_plan=chapter_1,
             plan_version=plan_version,
-            canon_parent=None,
+            canon_parent="initial",  # Match frozen_inputs
             previous_chapter_hash=None,  # Chapter 1 has no prior
             previous_end_state=None,
         )
@@ -129,7 +129,7 @@ class TestContinuityBinding:
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent=None,
+            canon_parent="initial",  # Match frozen_inputs
             previous_chapter_hash=None,  # Missing!
             previous_end_state=None,
         )
@@ -160,7 +160,7 @@ class TestContinuityBinding:
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent=None,
+            canon_parent="initial",  # Match frozen_inputs
             previous_chapter_hash=previous_hash,
             previous_end_state=previous_state,
         )
@@ -203,7 +203,7 @@ class TestContinuityBinding:
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent=None,
+            canon_parent="initial",  # Match frozen_inputs
             previous_chapter_hash=original_hash,
             previous_end_state={},
         )
@@ -214,7 +214,7 @@ class TestContinuityBinding:
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent=None,
+            canon_parent="initial",  # Match frozen_inputs
             previous_chapter_hash=revised_hash,
             previous_end_state={},
         )
@@ -262,7 +262,7 @@ class TestContinuityEvidence:
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent=None,
+            canon_parent="initial",  # Match frozen_inputs
             previous_chapter_hash="chapter_1_hash",
             previous_end_state=end_state,
         )
@@ -292,7 +292,7 @@ class TestContinuityEvidence:
             series_vision=series_vision,
             chapter_plan=chapter_2,
             plan_version=plan_version,
-            canon_parent=None,
+            canon_parent="initial",  # Match frozen_inputs
             previous_chapter_hash="chapter_1_hash",
             previous_end_state={"key_fact": "value"},
         )

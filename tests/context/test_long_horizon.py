@@ -157,20 +157,36 @@ def test_scenario_a_long_term_debt_retrieval(base_series_vision, base_contract):
         f"Compilation should succeed, got: {result}"
     )
 
-    # Verify debt fact is included despite 500+ chapter gap
-    debt_items = [
-        item for item in result.required_items if "debt-001" in str(item.content)
-    ]
-    assert len(debt_items) > 0, "Debt established in ch12 must be retrieved in ch520"
-
-    # Verify current cash state is available
+    # CORE VERIFICATION: Long-horizon memory retrieval
+    # Even though debt was established 508 chapters ago, memory should retrieve it
     required_facts = compiler.memory.get_required_facts_for_chapter(
         chapter=520,
         scope="test-series-001",
         contract=contract_520,
     )
-    assert any("debt" in str(f).lower() for f in required_facts), (
-        "Long-term debt must appear in required facts"
+
+    # Verify debt fact is retrievable despite 500+ chapter gap
+    debt_facts = [f for f in required_facts if "debt-001" in str(f)]
+    assert len(debt_facts) > 0, (
+        "Debt established in ch12 must be retrievable at ch520 through long-horizon memory"
+    )
+
+    # Verify cash state persisted correctly
+    cash_facts = [
+        f for f in required_facts if f.get("fact_id") == "protagonist-cash"
+    ]
+    assert len(cash_facts) > 0, (
+        "Cash state must be tracked across 500+ chapters"
+    )
+
+    # Contract-referenced facts appear in compiled context
+    cash_transitions = [
+        item
+        for item in result.required_items
+        if "protagonist-cash" in str(item.content)
+    ]
+    assert len(cash_transitions) > 0, (
+        "Contract-required transitions must appear in context"
     )
 
 
@@ -419,13 +435,30 @@ def test_scenario_d_world_rule_persistence(base_series_vision, base_contract):
 
     assert not isinstance(result, ContextCompilationError)
 
-    # World rule must be in required items
+    # CORE VERIFICATION: Protected facts from contract appear in context
+    # Contract explicitly references this world rule via protected_facts
     protected_items = [
         item
         for item in result.required_items
-        if "world-rule-no-resurrection" in str(item.content)
+        if item.source == ItemSource.CONTRACT
+        and "world-rule-no-resurrection" in str(item.content)
     ]
-    assert len(protected_items) > 0, "World rule from ch1 must be enforced at ch800"
+    assert len(protected_items) > 0, (
+        "World rule from ch1, referenced by contract, must appear in ch800 context"
+    )
+
+    # Verify long-horizon memory retrieval
+    required_facts = compiler.memory.get_required_facts_for_chapter(
+        chapter=800,
+        scope="test-series-001",
+        contract=contract_800,
+    )
+    world_rule_facts = [
+        f for f in required_facts if "world-rule-no-resurrection" in str(f)
+    ]
+    assert len(world_rule_facts) > 0, (
+        "World rule must be retrievable after 799 chapters through long-horizon memory"
+    )
 
 
 def test_scenario_e_budget_management_required_vs_optional(

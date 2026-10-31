@@ -213,11 +213,23 @@ class ContextCompiler:
 
         # STEP 3: Protected facts
         for protected in contract.protected_facts:
-            prot_item = self._create_context_item(
-                content={
+            # Look up actual fact content from memory if available
+            fact_content = self.memory._permanent_facts.get(protected.fact_id)
+            if fact_content:
+                content_data = {
+                    "fact_id": protected.fact_id,
+                    "fact_path": protected.fact_path,
+                    "fact_data": fact_content["data"],
+                    "protection_reason": protected.protection_reason,
+                }
+            else:
+                content_data = {
                     "fact_path": protected.fact_path,
                     "protection_reason": protected.protection_reason,
-                },
+                }
+
+            prot_item = self._create_context_item(
+                content=content_data,
                 source=ItemSource.CONTRACT,
                 priority=ItemPriority.REQUIRED,
                 source_ref=contract.contract_id,

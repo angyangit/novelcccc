@@ -247,7 +247,7 @@ def parse_arc_plans(fixture_data: dict) -> list[ArcPlan]:
     allocation or mark beat-level changes as "unallocated planning goals" rather
     than executable chapter requirements.
     """
-    arcs = []
+    arcs: list[ArcPlan] = []
     arc_plan = fixture_data.get("first_arc_plan", {})
 
     if not arc_plan:

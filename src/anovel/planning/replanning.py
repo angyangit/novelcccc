@@ -60,24 +60,38 @@ def generate_invalidation_scope(
     affected_chapters = []
 
     if change_type == "canon_advance":
-        # Invalidate contracts bound to old Canon parent
+        # Rule 1: Invalidate contracts bound to old Canon parent
         for contract in all_contracts:
             if contract.get("canon_parent") == changed_input:
                 affected_chapters.append(contract["chapter_id"])
 
     elif change_type == "pack_upgrade":
-        # Invalidate contracts using old GenrePack hash
+        # Rule 2: Invalidate contracts using old GenrePack hash
         for contract in all_contracts:
             pack_binding = contract.get("genre_pack_binding", {})
             if pack_binding.get("content_hash") == changed_input:
                 affected_chapters.append(contract["chapter_id"])
 
     elif change_type == "chapter_revision":
-        # Invalidate subsequent chapters depending on revised chapter
+        # Rule 3: Invalidate subsequent chapters depending on revised chapter
         revised_chapter_num = int(changed_input.split("_")[-1])
         for contract in all_contracts:
             chapter_num = contract.get("chapter_number", 0)
             if chapter_num > revised_chapter_num:
+                affected_chapters.append(contract["chapter_id"])
+
+    elif change_type == "plan_supersession":
+        # Rule 4: Invalidate contracts referencing old plan version
+        old_version = changed_input
+        for contract in all_contracts:
+            if contract.get("plan_version") == old_version:
+                affected_chapters.append(contract["chapter_id"])
+
+    elif change_type == "fixture_change":
+        # Rule 5: Invalidate all contracts from changed fixture
+        fixture_id = changed_input
+        for contract in all_contracts:
+            if contract.get("fixture_ref") == fixture_id:
                 affected_chapters.append(contract["chapter_id"])
 
     return InvalidationScope(

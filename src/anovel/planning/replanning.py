@@ -4,24 +4,29 @@ When Canon, GenrePack, or plan inputs change, existing contracts become invalid.
 This module generates ReplanProposal records for Owner approval.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class InvalidationRecord:
     """Record of why and when a contract was invalidated."""
+
     contract_id: str
-    invalidation_reason: str  # "canon_parent_changed", "pack_upgraded", "prior_chapter_revised"
+    invalidation_reason: (
+        str  # "canon_parent_changed", "pack_upgraded", "prior_chapter_revised"
+    )
     invalidated_at: datetime
-    affected_inputs: dict[str, str]  # e.g., {"old_parent": "abc123", "new_parent": "def456"}
-    replan_proposal_id: Optional[str] = None
+    affected_inputs: dict[
+        str, str
+    ]  # e.g., {"old_parent": "abc123", "new_parent": "def456"}
+    replan_proposal_id: str | None = None
 
 
 @dataclass(frozen=True)
 class InvalidationScope:
     """Determines which contracts are affected by input changes."""
+
     invalidation_id: str
     change_type: str  # "canon_advance", "pack_upgrade", "chapter_revision"
     affected_chapters: list[str]  # Chapter IDs requiring recompilation
@@ -31,6 +36,7 @@ class InvalidationScope:
 @dataclass(frozen=True)
 class ReplanProposal:
     """Proposal for re-planning after invalidation (requires Owner approval)."""
+
     proposal_id: str
     created_at: datetime
     invalidation_record: InvalidationRecord
@@ -38,8 +44,8 @@ class ReplanProposal:
     affected_chapters: list[str]
     new_plan_version: str  # Proposed version identifier
     approval_status: str = "pending"  # "pending", "approved", "rejected"
-    approved_by: Optional[str] = None
-    approved_at: Optional[datetime] = None
+    approved_by: str | None = None
+    approved_at: datetime | None = None
 
 
 def generate_invalidation_scope(

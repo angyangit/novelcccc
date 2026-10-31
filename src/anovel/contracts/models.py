@@ -18,17 +18,21 @@ class RequiredTransition:
 
     Uses NarrativeDelta OperationType semantics (ADR-004).
     """
+
     transition_id: str
     operation_type: OperationType
     fact_path: str  # Path to fact being modified
     target_value: Any | None = None  # Expected value after transition
-    preconditions: list[Any] = field(default_factory=list)  # Precondition objects from delta
+    preconditions: list[Any] = field(
+        default_factory=list
+    )  # Precondition objects from delta
     rationale: str = ""  # Why required (from protagonist goal, etc.)
 
 
 @dataclass(frozen=True)
 class ProhibitedTransition:
     """State change that MUST NOT occur in this chapter."""
+
     prohibition_id: str
     fact_path: str
     prohibited_operation: OperationType
@@ -38,6 +42,7 @@ class ProhibitedTransition:
 @dataclass(frozen=True)
 class ProtectedFact:
     """Fact that cannot be changed without violating world constraints."""
+
     fact_id: str
     fact_path: str
     protection_reason: str  # References world constraint
@@ -46,6 +51,7 @@ class ProtectedFact:
 @dataclass(frozen=True)
 class KnowledgeBoundary:
     """Who knows what, when revelation allowed."""
+
     boundary_id: str
     fact_id: str
     knowers: list[str]  # Character IDs who know this fact
@@ -56,6 +62,7 @@ class KnowledgeBoundary:
 @dataclass(frozen=True)
 class ContinuityConstraint:
     """Binds chapter to previous chapter's actual end state."""
+
     previous_chapter_id: str | None  # None only for chapter 1
     previous_chapter_hash: str | None  # Content hash of prior chapter prose
     previous_end_state: dict[str, Any]  # Key facts from chapter N-1
@@ -69,6 +76,7 @@ class ChapterContract:
     Expresses planning intent, validation rules, and continuity constraints.
     Does NOT execute state changes or modify Canon.
     """
+
     contract_id: str
     chapter_id: str
     chapter_number: int
@@ -97,8 +105,11 @@ class CompilationDiagnostic:
 
     Compiler returns diagnostics, NEVER auto-modifies Canon or plans.
     """
+
     diagnostic_id: str
-    error_type: str  # "conflicting_constraints", "unsatisfiable", "version_expired", etc.
+    error_type: (
+        str  # "conflicting_constraints", "unsatisfiable", "version_expired", etc.
+    )
     message: str
     conflicts: list[str] = field(default_factory=list)
     affected_chapters: list[str] = field(default_factory=list)

@@ -12,7 +12,6 @@ from ..context.models import ContextArtifact
 from .models import (
     BudgetStatus,
     GenerationError,
-    GenerationRequest,
     GenerationResult,
     ProviderAdapter,
     RequestStatus,

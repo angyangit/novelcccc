@@ -1,6 +1,5 @@
 """Mock provider for testing without paid API calls."""
 
-from datetime import datetime
 from typing import Any
 
 

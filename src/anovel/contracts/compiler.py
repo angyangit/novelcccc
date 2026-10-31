@@ -108,11 +108,15 @@ class ContractCompiler:
             return conflict_check
 
         # Compile required transitions from chapter goals
-        required_transitions = self._compile_required_transitions(
+        required_transitions, mapping_diagnostic = self._compile_required_transitions(
             chapter_plan,
             series_vision.protagonist_goals,
             series_vision.genre_pack_binding.pack_id,
         )
+
+        # Return diagnostic if state changes cannot be mapped
+        if mapping_diagnostic:
+            return mapping_diagnostic
 
         # Compile prohibited transitions from world constraints
         prohibited_transitions = self._compile_prohibited_transitions(
@@ -221,14 +225,18 @@ class ContractCompiler:
         chapter_plan: ChapterPlan,
         protagonist_goals: list[ProtagonistGoal],
         genre_pack_id: str,
-    ) -> list[RequiredTransition]:
+    ) -> tuple[list[RequiredTransition], Optional[CompilationDiagnostic]]:
         """
         Compile required state transitions from chapter plan.
 
         Uses NarrativeDelta OperationType semantics (ADR-004).
         Maps state changes to typed fact paths (equity, resources, cultivation).
+
+        Returns:
+            (transitions, diagnostic) - diagnostic is not None if unmappable changes found
         """
         transitions = []
+        unmappable_changes = []
 
         for state_change in chapter_plan.required_state_changes:
             # Map to typed fact path using FactPathMapper
@@ -237,6 +245,14 @@ class ContractCompiler:
                 chapter_plan.chapter_id,
                 genre_pack_id,
             )
+
+            # Reject unmappable changes - do not create placeholder transitions
+            if mapped.confidence == "uncertain":
+                unmappable_changes.append({
+                    'change': state_change,
+                    'diagnostic': mapped.diagnostic
+                })
+                continue
 
             # Find related goal for rationale
             rationale = state_change
@@ -254,13 +270,19 @@ class ContractCompiler:
             )
             transitions.append(transition)
 
-            # If mapping was uncertain, add diagnostic note
-            if mapped.confidence == "uncertain" and mapped.diagnostic:
-                # Note: In real implementation, would collect diagnostics
-                # For now, still create transition but with diagnostic note
-                pass
+        # If any unmappable changes, return diagnostic
+        if unmappable_changes:
+            diagnostic = CompilationDiagnostic(
+                diagnostic_id=str(uuid.uuid4()),
+                error_type="unmappable_state_changes",
+                message=f"Chapter plan contains {len(unmappable_changes)} state changes that cannot be reliably mapped to typed fact paths",
+                conflicts=[f"{item['change']}: {item['diagnostic']}" for item in unmappable_changes],
+                affected_chapters=[chapter_plan.chapter_id],
+                suggested_resolution="Revise state changes to use structured, typed descriptions or extend FactPathMapper patterns",
+            )
+            return transitions, diagnostic
 
-        return transitions
+        return transitions, None
 
     def _compile_prohibited_transitions(
         self,

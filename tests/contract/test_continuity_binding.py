@@ -49,7 +49,7 @@ def create_minimal_series_vision(series_id: str = "test_series") -> SeriesVision
         character_knowledge_map={},
         secrets=[],
         genre_pack_binding=GenrePackBinding(
-            pack_id="test.pack",
+            pack_id="urban.business.realistic",  # Use real genre for fact mapping
             version="1.0",
             content_hash="abc123",
         ),
@@ -243,7 +243,8 @@ class TestContinuityEvidence:
             chapter_id="chapter_02",
             chapter_number=2,
             goals=["Test goal"],
-            required_state_changes=["Continue from previous state"],
+            # Use mappable state change (Phase 2 requirement)
+            required_state_changes=["公司账户余额从30万降至20万"],
             character_focus=[],
             scene_type=SceneType.ACTION,
         )
@@ -279,7 +280,8 @@ class TestContinuityEvidence:
             chapter_id="chapter_02",
             chapter_number=2,
             goals=["Build on previous outcome"],
-            required_state_changes=["Use inherited context"],
+            # Use mappable state change (Phase 2 requirement)
+            required_state_changes=["张明股权从70%降至65%"],
             character_focus=[],
             scene_type=SceneType.ACTION,
         )

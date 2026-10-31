@@ -220,6 +220,20 @@ def parse_arc_plans(fixture_data: dict) -> list[ArcPlan]:
     """Parse arc plans from fixture first_arc_plan.
 
     Extracts actual chapter ranges from key_beats instead of using list indices.
+
+    Phase 3 limitation: Current fixture format only provides Beat-level state_changes,
+    not chapter-specific assignments. To prevent resource over-consumption (e.g., cash
+    dropping 3x instead of 1x), state_changes are assigned only to the last chapter
+    of each beat range as a TEMPORARY PLACEHOLDER.
+
+    This does NOT imply all changes happen in the last chapter - it's an artifact
+    of the current fixture format lacking chapter-level allocation. Beat-level
+    state_changes represent cumulative outcomes across the beat, not actions
+    definitively occurring in the final chapter.
+
+    Future fixture versions should support explicit chapter-level state change
+    allocation or mark beat-level changes as "unallocated planning goals" rather
+    than executable chapter requirements.
     """
     arcs = []
     arc_plan = fixture_data.get('first_arc_plan', {})
@@ -248,12 +262,20 @@ def parse_arc_plans(fixture_data: dict) -> list[ArcPlan]:
         end_chapter = int(match.group(2)) if match.group(2) else start_chapter
 
         # Create chapter plans for the range
+        # TEMPORARY: Assign state_changes only to last chapter to prevent duplication.
+        # This is a limitation of the current fixture format which doesn't support
+        # chapter-level allocation. The last-chapter assignment is a placeholder to
+        # avoid resource over-consumption, NOT a claim that changes occur there.
         for chapter_num in range(start_chapter, end_chapter + 1):
+            is_last_in_beat = (chapter_num == end_chapter)
+
             chapter = ChapterPlan(
                 chapter_id=f"chapter_{chapter_num:02d}",
                 chapter_number=chapter_num,
                 goals=[content],
-                required_state_changes=state_changes,
+                # Beat-level state_changes assigned to last chapter as temporary placeholder
+                # to prevent duplication. Does NOT imply temporal semantics.
+                required_state_changes=state_changes if is_last_in_beat else [],
                 character_focus=[],  # Would need deeper parsing
                 scene_type=SceneType.DIALOGUE,  # Default, would need smarter detection
             )

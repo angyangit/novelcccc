@@ -204,8 +204,13 @@ class TestUncertainMappings:
         assert "Could not map" in result.diagnostic
         assert "untyped_change" in result.fact_path
 
-    def test_uncertain_mapping_still_creates_transition(self):
-        """Test that uncertain mappings still create transitions (with fallback path)."""
+    def test_uncertain_mapping_returns_untyped_fallback(self):
+        """Test that uncertain mappings return untyped fallback (for mapper level).
+
+        Note: At the compiler level, uncertain mappings now cause compilation
+        to fail with CompilationDiagnostic. This test verifies the mapper
+        itself still returns a fallback path with uncertain confidence.
+        """
         result = self.mapper.map_state_change(
             "一些模糊的变化",
             "chapter_01",
@@ -215,6 +220,8 @@ class TestUncertainMappings:
         assert result.operation_type == OperationType.SET_FACT
         assert result.fact_path is not None
         assert result.target_value == "一些模糊的变化"
+        assert result.confidence == "uncertain"
+        assert "untyped_change" in result.fact_path
 
 
 class TestRealFixtureIntegration:

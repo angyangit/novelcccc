@@ -28,13 +28,18 @@ class FactPathMapper:
 
     # Urban business patterns
     EQUITY_PATTERNS = [
-        (r'股权.*?(\d+)%', 'equity.{character}.percentage'),
+        (r'股权.*?从.*?(\d+)%.*?至.*?(\d+)%', 'equity.{character}.percentage'),  # Range: from X% to Y%
+        (r'股权.*?降至.*?(\d+)%', 'equity.{character}.percentage'),  # Drop to X%
+        (r'股权.*?(\d+)%', 'equity.{character}.percentage'),  # Simple: equity is X%
+        (r'持股.*?从.*?(\d+)%.*?至.*?(\d+)%', 'equity.{character}.percentage'),  # Range
         (r'持股.*?(\d+)%', 'equity.{character}.percentage'),
         (r'股权稀释', 'equity.{character}.percentage'),
     ]
 
     RESOURCE_PATTERNS = [
-        (r'账户余额.*?(\d+)万', 'resources.company.cash'),
+        (r'账户余额.*?从.*?(\d+)万.*?至.*?(\d+)万', 'resources.company.cash'),  # Range: from X to Y
+        (r'账户余额.*?降至.*?(\d+)万', 'resources.company.cash'),  # Drop to X
+        (r'账户余额.*?(\d+)万', 'resources.company.cash'),  # Simple: balance is X
         (r'资金.*?(\d+)万', 'resources.company.cash'),
         (r'获得.*?(\d+)万', 'resources.company.cash'),
         (r'融资.*?(\d+)万', 'resources.company.funding_received'),

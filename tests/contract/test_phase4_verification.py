@@ -4,19 +4,18 @@ Supplements existing test_continuity_binding.py and test_freeze_enforcement.py
 with specific Owner-required validation scenarios.
 """
 
-import pytest
 from datetime import datetime
 
+from anovel.contracts.compiler import CompilationDiagnostic, ContractCompiler
 from anovel.planning.models import (
-    SeriesVision,
     ChapterPlan,
-    ProtagonistGoal,
-    WorldConstraints,
     GenrePackBinding,
+    ProtagonistGoal,
     SceneType,
+    SeriesVision,
+    WorldConstraints,
 )
-from anovel.planning.versions import PlanVersion, FreezeHorizon, FrozenInputs
-from anovel.contracts.compiler import ContractCompiler, CompilationDiagnostic
+from anovel.planning.versions import FreezeHorizon, FrozenInputs, PlanVersion
 
 
 def create_test_series(genre_pack_hash: str = "abc123") -> SeriesVision:

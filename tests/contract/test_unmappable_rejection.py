@@ -4,19 +4,18 @@ Phase 2 requirement: Compiler must reject unmappable changes with
 CompilationDiagnostic, not silently create untyped placeholder transitions.
 """
 
-import pytest
 from datetime import datetime
 
+from anovel.contracts.compiler import CompilationDiagnostic, ContractCompiler
 from anovel.planning.models import (
-    SeriesVision,
     ChapterPlan,
-    ProtagonistGoal,
-    WorldConstraints,
     GenrePackBinding,
+    ProtagonistGoal,
     SceneType,
+    SeriesVision,
+    WorldConstraints,
 )
-from anovel.planning.versions import PlanVersion, FreezeHorizon, FrozenInputs
-from anovel.contracts.compiler import ContractCompiler, CompilationDiagnostic
+from anovel.planning.versions import FreezeHorizon, FrozenInputs, PlanVersion
 
 
 def create_test_series(genre_pack_id: str = "urban.business.realistic") -> SeriesVision:

@@ -10,33 +10,30 @@ Key principles:
 - Returns diagnostics on conflicts, doesn't auto-fix
 """
 
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional, Union
 import uuid
+from datetime import datetime
 
 from ..domain.delta import OperationType
 from ..planning.models import (
-    SeriesVision,
     ChapterPlan,
     ProtagonistGoal,
     Secret,
+    SeriesVision,
 )
 from ..planning.versions import PlanVersion, validate_plan_version
+from .fact_mapper import FactPathMapper
 from .models import (
     ChapterContract,
     CompilationDiagnostic,
-    RequiredTransition,
+    ContinuityConstraint,
+    KnowledgeBoundary,
     ProhibitedTransition,
     ProtectedFact,
-    KnowledgeBoundary,
-    ContinuityConstraint,
+    RequiredTransition,
 )
-from .fact_mapper import FactPathMapper
-
 
 # Result type for compilation
-CompilationResult = Union[ChapterContract, CompilationDiagnostic]
+CompilationResult = ChapterContract | CompilationDiagnostic
 
 
 class ContractCompiler:
@@ -52,8 +49,8 @@ class ContractCompiler:
         chapter_plan: ChapterPlan,
         plan_version: PlanVersion,
         canon_parent: str,
-        previous_chapter_hash: Optional[str] = None,
-        previous_end_state: Optional[dict] = None,
+        previous_chapter_hash: str | None = None,
+        previous_end_state: dict | None = None,
     ) -> CompilationResult:
         """
         Compile chapter plan into executable contract.
@@ -83,7 +80,10 @@ class ContractCompiler:
 
         # Check freeze horizon - can this chapter be modified?
         from ..planning.versions import can_modify_chapter
-        can_modify, freeze_reason = can_modify_chapter(plan_version, chapter_plan.chapter_id)
+
+        can_modify, freeze_reason = can_modify_chapter(
+            plan_version, chapter_plan.chapter_id
+        )
         if not can_modify:
             return CompilationDiagnostic(
                 diagnostic_id=str(uuid.uuid4()),
@@ -176,7 +176,7 @@ class ContractCompiler:
         protagonist_goals: list[ProtagonistGoal],
         world_constraints,
         chapter_plan: ChapterPlan,
-    ) -> Optional[CompilationDiagnostic]:
+    ) -> CompilationDiagnostic | None:
         """
         Check for conflicting constraints that make chapter unsatisfiable.
 
@@ -184,12 +184,15 @@ class ContractCompiler:
         """
         conflicts = []
 
-        # Check for direct equity conflicts
-        state_changes_text = " ".join(chapter_plan.required_state_changes)
-
         # Look for equity dilution vs control maintenance conflicts
-        has_dilution = any("49%" in change or "股权稀释" in change for change in chapter_plan.required_state_changes)
-        has_control_requirement = any("51%" in change or "超过51%" in change for change in chapter_plan.required_state_changes)
+        has_dilution = any(
+            "49%" in change or "股权稀释" in change
+            for change in chapter_plan.required_state_changes
+        )
+        has_control_requirement = any(
+            "51%" in change or "超过51%" in change
+            for change in chapter_plan.required_state_changes
+        )
 
         if has_dilution and has_control_requirement:
             conflicts.append(
@@ -203,7 +206,10 @@ class ContractCompiler:
                     for state_change in chapter_plan.required_state_changes:
                         if "49%" in state_change and "失去" not in state_change:
                             # Diluting to 49% conflicts with maintaining control
-                            if any("51%" in other for other in chapter_plan.required_state_changes):
+                            if any(
+                                "51%" in other
+                                for other in chapter_plan.required_state_changes
+                            ):
                                 conflicts.append(
                                     f"State change '{state_change}' conflicts with goal constraint '{constraint}'"
                                 )
@@ -225,7 +231,7 @@ class ContractCompiler:
         chapter_plan: ChapterPlan,
         protagonist_goals: list[ProtagonistGoal],
         genre_pack_id: str,
-    ) -> tuple[list[RequiredTransition], Optional[CompilationDiagnostic]]:
+    ) -> tuple[list[RequiredTransition], CompilationDiagnostic | None]:
         """
         Compile required state transitions from chapter plan.
 
@@ -248,16 +254,17 @@ class ContractCompiler:
 
             # Reject unmappable changes - do not create placeholder transitions
             if mapped.confidence == "uncertain":
-                unmappable_changes.append({
-                    'change': state_change,
-                    'diagnostic': mapped.diagnostic
-                })
+                unmappable_changes.append(
+                    {"change": state_change, "diagnostic": mapped.diagnostic}
+                )
                 continue
 
             # Find related goal for rationale
             rationale = state_change
             for goal in protagonist_goals:
-                if any(criterion in state_change for criterion in goal.success_criteria):
+                if any(
+                    criterion in state_change for criterion in goal.success_criteria
+                ):
                     rationale = f"Required for goal: {goal.description}"
                     break
 
@@ -276,7 +283,10 @@ class ContractCompiler:
                 diagnostic_id=str(uuid.uuid4()),
                 error_type="unmappable_state_changes",
                 message=f"Chapter plan contains {len(unmappable_changes)} state changes that cannot be reliably mapped to typed fact paths",
-                conflicts=[f"{item['change']}: {item['diagnostic']}" for item in unmappable_changes],
+                conflicts=[
+                    f"{item['change']}: {item['diagnostic']}"
+                    for item in unmappable_changes
+                ],
                 affected_chapters=[chapter_plan.chapter_id],
                 suggested_resolution="Revise state changes to use structured, typed descriptions or extend FactPathMapper patterns",
             )
@@ -334,7 +344,9 @@ class ContractCompiler:
             revelation_constraint = None
             if secret.potential_reveal_chapter:
                 if current_chapter < secret.potential_reveal_chapter:
-                    revelation_constraint = f"not_before_chapter_{secret.potential_reveal_chapter}"
+                    revelation_constraint = (
+                        f"not_before_chapter_{secret.potential_reveal_chapter}"
+                    )
 
             boundary = KnowledgeBoundary(
                 boundary_id=str(uuid.uuid4()),

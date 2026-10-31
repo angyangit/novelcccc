@@ -7,7 +7,6 @@ across every chapter in the range. Distinguish between:
 - Chapter-specific transitions (bound to specific chapter)
 """
 
-import pytest
 from pathlib import Path
 
 from anovel.contracts.fixture_loader import load_series_vision_from_fixture

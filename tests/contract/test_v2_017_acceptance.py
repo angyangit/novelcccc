@@ -11,31 +11,32 @@ Tests all 8 acceptance criteria from V2-017 specification:
 - AT-V2-017-08: Quiet chapters and character growth not falsely rejected
 """
 
-import pytest
 from datetime import datetime
+
+import pytest
 
 from anovel.contracts.compiler import ContractCompiler
 from anovel.contracts.models import ChapterContract, CompilationDiagnostic
 from anovel.domain.delta import OperationType
 from anovel.planning.models import (
-    SeriesVision,
-    ChapterPlan,
     ArcPlan,
-    ProtagonistGoal,
-    WorldConstraints,
+    ChapterPlan,
     CharacterKnowledge,
-    Secret,
-    GenrePackBinding,
     EscalationPattern,
+    GenrePackBinding,
+    ProtagonistGoal,
     SceneType,
+    Secret,
+    SeriesVision,
+    WorldConstraints,
 )
-from anovel.planning.versions import PlanVersion, FreezeHorizon, FrozenInputs
 from anovel.planning.replanning import (
-    generate_invalidation_scope,
-    create_replan_proposal,
     InvalidationRecord,
     InvalidationScope,
+    create_replan_proposal,
+    generate_invalidation_scope,
 )
+from anovel.planning.versions import FreezeHorizon, FrozenInputs, PlanVersion
 
 
 @pytest.fixture

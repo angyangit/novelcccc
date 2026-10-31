@@ -6,9 +6,9 @@ Contracts express planning intent and validation rules, not execution state.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Any
+from typing import Any
 
-from ..domain.delta import OperationType, Precondition
+from ..domain.delta import OperationType
 from ..planning.models import GenrePackBinding
 
 
@@ -21,7 +21,7 @@ class RequiredTransition:
     transition_id: str
     operation_type: OperationType
     fact_path: str  # Path to fact being modified
-    target_value: Optional[Any] = None  # Expected value after transition
+    target_value: Any | None = None  # Expected value after transition
     preconditions: list[Any] = field(default_factory=list)  # Precondition objects from delta
     rationale: str = ""  # Why required (from protagonist goal, etc.)
 
@@ -49,15 +49,15 @@ class KnowledgeBoundary:
     boundary_id: str
     fact_id: str
     knowers: list[str]  # Character IDs who know this fact
-    revelation_constraint: Optional[str] = None  # e.g., "not_before_chapter_5"
+    revelation_constraint: str | None = None  # e.g., "not_before_chapter_5"
     reader_knows: bool = False
 
 
 @dataclass(frozen=True)
 class ContinuityConstraint:
     """Binds chapter to previous chapter's actual end state."""
-    previous_chapter_id: Optional[str]  # None only for chapter 1
-    previous_chapter_hash: Optional[str]  # Content hash of prior chapter prose
+    previous_chapter_id: str | None  # None only for chapter 1
+    previous_chapter_hash: str | None  # Content hash of prior chapter prose
     previous_end_state: dict[str, Any]  # Key facts from chapter N-1
     current_start_requirements: list[str]  # What must be true at chapter start
 
@@ -84,11 +84,11 @@ class ChapterContract:
     prohibited_transitions: list[ProhibitedTransition] = field(default_factory=list)
     protected_facts: list[ProtectedFact] = field(default_factory=list)
     knowledge_boundaries: list[KnowledgeBoundary] = field(default_factory=list)
-    continuity_constraints: Optional[ContinuityConstraint] = None
+    continuity_constraints: ContinuityConstraint | None = None
 
     # Validation metadata
-    fixture_ref: Optional[str] = None  # Story fixture this compiled from
-    human_review_ref: Optional[str] = None  # Fixture approval reference
+    fixture_ref: str | None = None  # Story fixture this compiled from
+    human_review_ref: str | None = None  # Fixture approval reference
 
 
 @dataclass(frozen=True)
@@ -102,4 +102,4 @@ class CompilationDiagnostic:
     message: str
     conflicts: list[str] = field(default_factory=list)
     affected_chapters: list[str] = field(default_factory=list)
-    suggested_resolution: Optional[str] = None
+    suggested_resolution: str | None = None

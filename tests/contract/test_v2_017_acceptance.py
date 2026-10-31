@@ -181,7 +181,10 @@ def base_plan_version():
         created_at=datetime.now(),
         freeze_horizon=FreezeHorizon(
             frozen_chapters=[],
-            adjustable_chapters=["chapter_01", "chapter_02", "chapter_03"],
+            adjustable_chapters=[
+                "chapter_01", "chapter_02", "chapter_03",
+                "chapter_conflict", "chapter_quiet", "chapter_growth"  # For test scenarios
+            ],
             frozen_inputs=FrozenInputs(
                 canon_parent_hash="abc123",
                 genre_pack_hash="21aa232995b76cd5d958bd1302f30a87dc56db69a3f62fcbf023f09352962336",

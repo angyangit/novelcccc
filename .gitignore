@@ -47,3 +47,6 @@ build/
 .p3-entry-*.md
 .pr5-*.md
 .v2-013-*.md
+
+# Source materials - local reference only
+source/

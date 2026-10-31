@@ -81,6 +81,18 @@ class ContractCompiler:
                 suggested_resolution=f"Use plan version {version_error.current_version}",
             )
 
+        # Check freeze horizon - can this chapter be modified?
+        from ..planning.versions import can_modify_chapter
+        can_modify, freeze_reason = can_modify_chapter(plan_version, chapter_plan.chapter_id)
+        if not can_modify:
+            return CompilationDiagnostic(
+                diagnostic_id=str(uuid.uuid4()),
+                error_type="frozen_chapter_modification",
+                message=f"Cannot compile modifications to frozen chapter: {freeze_reason}",
+                affected_chapters=[chapter_plan.chapter_id],
+                suggested_resolution="Create new plan version with updated freeze horizon",
+            )
+
         # Validate fixture has human review for production
         if series_vision.human_review_ref is None:
             # Allow for dev/test, but warn

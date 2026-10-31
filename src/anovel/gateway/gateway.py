@@ -128,7 +128,6 @@ class ModelGateway:
 
         # Prepare prompt
         prompt = self.prepare_writer_prompt(artifact)
-        context_hash = hashlib.sha256(prompt.encode()).hexdigest()[:16]
 
         # Estimate cost
         input_tokens = len(prompt) // 4  # Rough estimate

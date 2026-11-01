@@ -39,6 +39,9 @@ class ChapterWorkflow:
         extractor: NarrativeDeltaExtractor
         | None = None,  # V2-021: injectable extractor
         q0_validator: "Q0Validator | None" = None,  # V2-022: Q0 deterministic validator
+        q1_validator: Any | None = None,  # V2-023: Q1 Canon validator
+        q2_validator: Any | None = None,  # V2-024: Q2 Genre validator
+        q3_validator: Any | None = None,  # V2-025: Q3 Transition validator
         mock_mode: bool = True,  # True = mock canon commits, False = real commits
     ):
         """Initialize workflow with required components.
@@ -49,18 +52,40 @@ class ChapterWorkflow:
             model_gateway: Model gateway (V2-019)
             extractor: Narrative delta extractor (V2-021), None = use legacy stub
             q0_validator: Q0 deterministic validator (V2-022), None = create default
+            q1_validator: Q1 Canon validator (V2-023), None = create default
+            q2_validator: Q2 Genre validator (V2-024), None = create default
+            q3_validator: Q3 Transition validator (V2-025), None = create default
             mock_mode: If True, use mock canon commits (NOT production)
         """
         self.contract_compiler = contract_compiler
         self.context_compiler = context_compiler
         self.model_gateway = model_gateway
         self.extractor = extractor  # V2-021: new injected extractor
+
         # V2-022: Q0 validator (lazy import to avoid circular dependency)
         if q0_validator is None:
             from ..quality.q0 import Q0Validator
-
             q0_validator = Q0Validator()
         self.q0_validator = q0_validator
+
+        # V2-023: Q1 Canon validator
+        if q1_validator is None:
+            from ..quality.q1 import Q1CanonValidator
+            q1_validator = Q1CanonValidator()
+        self.q1_validator = q1_validator
+
+        # V2-024: Q2 Genre validator
+        if q2_validator is None:
+            from ..quality.q2 import Q2GenreValidator
+            q2_validator = Q2GenreValidator()
+        self.q2_validator = q2_validator
+
+        # V2-025: Q3 Transition validator
+        if q3_validator is None:
+            from ..quality.q3 import Q3TransitionValidator
+            q3_validator = Q3TransitionValidator()
+        self.q3_validator = q3_validator
+
         self.mock_mode = mock_mode
 
     def execute_chapter(
@@ -240,6 +265,7 @@ class ChapterWorkflow:
                 delta=delta_result.delta,
                 contract=contract,
                 extraction_result=full_extraction_result,  # V2-022: Pass to Q0
+                canon_snapshot=canon_snapshot,  # V2-023: Pass to Q1/Q3
             )
             stages_completed.append(WorkflowStage.QUALITY_VALIDATION)
 
@@ -448,6 +474,7 @@ class ChapterWorkflow:
         delta: NarrativeDelta | None,
         contract: ChapterContract,
         extraction_result: NarrativeDeltaExtractionResult | None = None,
+        canon_snapshot: dict | None = None,
     ) -> QualityCheckResult:
         """Validate chapter quality with fail-closed gates.
 
@@ -459,6 +486,7 @@ class ChapterWorkflow:
             delta: Narrative delta (may be None if extraction failed)
             contract: Chapter contract
             extraction_result: Full extraction result for Q0 validation (V2-022)
+            canon_snapshot: Canon state for Q1/Q3 validation (V2-023/V2-025)
 
         Returns:
             Quality check result with passed=True only if all checks pass
@@ -475,6 +503,64 @@ class ChapterWorkflow:
             )
             if not q0_result.passed:
                 blocking_issues.extend(q0_result.blocking_issues)
+            warnings.extend(q0_result.warnings)
+
+        # Q1 VALIDATION (V2-023): Canon consistency checks
+        if delta and canon_snapshot:
+            checks_run.append("q1_canon_validation")
+            try:
+                from ..domain.delta import CanonState
+                # Convert canon_snapshot dict to CanonState if needed
+                if isinstance(canon_snapshot, dict):
+                    # For Stage 9, create minimal CanonState from snapshot
+                    from ..domain.identity import ProjectId
+                    canon_state = CanonState(
+                        project_id=ProjectId(contract.chapter_id.split("_")[0]),
+                        facts={},
+                        version=canon_snapshot.get("version", "0"),
+                    )
+                else:
+                    canon_state = canon_snapshot
+
+                q1_result = self.q1_validator.validate(delta, canon_state, contract)
+                if not q1_result.passed:
+                    blocking_issues.extend(q1_result.blocking_issues)
+                warnings.extend(q1_result.warnings)
+            except Exception as e:
+                warnings.append(f"Q1 validation error: {e}")
+
+        # Q2 VALIDATION (V2-024): Genre consistency checks
+        if delta:
+            checks_run.append("q2_genre_validation")
+            try:
+                q2_result = self.q2_validator.validate(delta, contract)
+                if not q2_result.passed:
+                    blocking_issues.extend(q2_result.blocking_issues)
+                warnings.extend(q2_result.warnings)
+            except Exception as e:
+                warnings.append(f"Q2 validation error: {e}")
+
+        # Q3 VALIDATION (V2-025): Transition checks
+        if delta and canon_snapshot:
+            checks_run.append("q3_transition_validation")
+            try:
+                from ..domain.delta import CanonState
+                from ..domain.identity import ProjectId
+                if isinstance(canon_snapshot, dict):
+                    canon_state = CanonState(
+                        project_id=ProjectId(contract.chapter_id.split("_")[0]),
+                        facts={},
+                        version=canon_snapshot.get("version", "0"),
+                    )
+                else:
+                    canon_state = canon_snapshot
+
+                q3_result = self.q3_validator.validate(delta, canon_state, contract)
+                if not q3_result.passed:
+                    blocking_issues.extend(q3_result.blocking_issues)
+                warnings.extend(q3_result.warnings)
+            except Exception as e:
+                warnings.append(f"Q3 validation error: {e}")
 
         # Check 1: Prose minimum length (BLOCKING)
         checks_run.append("prose_minimum_length")

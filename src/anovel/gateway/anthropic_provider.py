@@ -3,8 +3,14 @@
 Real Anthropic API integration with offline testing support.
 """
 
+import json
 import os
 from typing import Any, Protocol
+
+try:
+    import requests
+except ImportError:
+    requests = None  # type: ignore
 
 
 class HTTPClient(Protocol):
@@ -33,6 +39,7 @@ class AnthropicProvider:
         self,
         model_id: str = "claude-sonnet-3-5-20241022",
         api_key: str | None = None,
+        base_url: str | None = None,
         http_client: HTTPClient | None = None,
         allow_real_calls: bool = False,
     ):
@@ -41,7 +48,8 @@ class AnthropicProvider:
         Args:
             model_id: Claude model identifier
             api_key: Anthropic API key (or None to read from env)
-            http_client: HTTP client for requests (None = use real anthropic SDK)
+            base_url: API base URL (default: https://api.anthropic.com)
+            http_client: HTTP client for requests (None = use real requests)
             allow_real_calls: If False, raises error on real API attempts
         """
         self.model_id = model_id
@@ -53,6 +61,11 @@ class AnthropicProvider:
             api_key = os.getenv("ANTHROPIC_API_KEY", "")
         self.api_key = api_key
 
+        # Base URL handling
+        if base_url is None:
+            base_url = os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+        self.base_url = base_url.rstrip("/")
+
         # HTTP client (real or fake)
         if http_client is not None:
             self.http_client = http_client
@@ -60,7 +73,6 @@ class AnthropicProvider:
         else:
             self.use_fake_client = False
             # Real client would be initialized here
-            # For now, we keep it None and check allow_real_calls
 
     def generate(self, prompt: str, max_tokens: int, **kwargs) -> dict[str, Any]:
         """Generate text using Claude API.
@@ -91,15 +103,67 @@ class AnthropicProvider:
 
         if not self.api_key:
             raise RuntimeError(
-                "ANTHROPIC_API_KEY not set. Cannot make real API calls."
+                "API key not set. Cannot make real API calls."
             )
 
-        # Real API call would go here
-        # For Stage 7C, we implement the adapter structure but don't actually call
-        raise RuntimeError(
-            "Real Anthropic API calls not yet implemented. "
-            "Use http_client for offline testing."
-        )
+        if requests is None:
+            raise RuntimeError(
+                "requests library not available. Install with: pip install requests"
+            )
+
+        # Make real API call
+        return self._generate_with_real_api(prompt, max_tokens, **kwargs)
+
+    def _generate_with_real_api(
+        self, prompt: str, max_tokens: int, **kwargs
+    ) -> dict[str, Any]:
+        """Generate using real HTTP API call."""
+        temperature = kwargs.get("temperature", 0.7)
+
+        # Build Anthropic API request format
+        request_data = {
+            "model": self.model_id,
+            "max_tokens": max_tokens,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": temperature,
+        }
+
+        # Make HTTP POST request
+        url = f"{self.base_url}/v1/messages"
+        headers = {
+            "x-api-key": self.api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }
+
+        try:
+            response = requests.post(
+                url, headers=headers, json=request_data, timeout=120
+            )
+            response.raise_for_status()
+            response_data = response.json()
+        except requests.exceptions.Timeout:
+            raise TimeoutError(f"API request timed out after 120 seconds")
+        except requests.exceptions.HTTPError as e:
+            raise RuntimeError(f"API request failed: {e.response.status_code} {e.response.text}")
+        except Exception as e:
+            raise RuntimeError(f"API request error: {e}")
+
+        # Parse response
+        content = response_data.get("content", [])
+        if not content or content[0].get("type") != "text":
+            raise ValueError(f"Invalid response format: {response_data}")
+
+        prose = content[0].get("text", "")
+        usage = response_data.get("usage", {})
+
+        return {
+            "prose": prose,
+            "input_tokens": usage.get("input_tokens", 0),
+            "output_tokens": usage.get("output_tokens", 0),
+            "model": response_data.get("model", self.model_id),
+            "finished": response_data.get("stop_reason") == "end_turn",
+        }
 
     def _generate_with_fake_client(
         self, prompt: str, max_tokens: int, **kwargs

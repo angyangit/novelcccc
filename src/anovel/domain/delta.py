@@ -149,6 +149,7 @@ _FACT_PATH_REGISTRY_INTERNAL = {
     "protagonist.realm": FactPath("protagonist.realm", str),
     "protagonist.cultivation_level": FactPath("protagonist.cultivation_level", int),
     "protagonist.location": FactPath("protagonist.location", str),
+    "protagonist.activity": FactPath("protagonist.activity", str),
 }
 
 FACT_PATH_REGISTRY: MappingProxyType[str, FactPath] = MappingProxyType(

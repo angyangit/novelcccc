@@ -1,0 +1,46 @@
+{
+  "status": "success",
+  "cost": 0.1206,
+  "operations_count": 5,
+  "required_transitions": 2,
+  "coverage_percentage": 100.0,
+  "required_found": 2,
+  "required_missing": 0,
+  "issues_count": 7,
+  "operations": [
+    {
+      "fact_path": "protagonist.location",
+      "value": "科学类书籍区",
+      "evidence": "chapter:236-260"
+    },
+    {
+      "fact_path": "protagonist.activity",
+      "value": "抽出《时间简史》",
+      "evidence": "chapter:562-602"
+    },
+    {
+      "fact_path": "protagonist.location",
+      "value": "图书馆二楼阅览区靠窗位置",
+      "evidence": "chapter:654-690"
+    },
+    {
+      "fact_path": "protagonist.activity",
+      "value": "合上书休息",
+      "evidence": "chapter:1275-1309"
+    },
+    {
+      "fact_path": "protagonist.activity",
+      "value": "重新翻开书继续阅读",
+      "evidence": "chapter:1437-1460"
+    }
+  ],
+  "issues": [
+    "Change 0: Evidence text not found in prose: '他深吸一口气，推开了那扇门。门轴发出轻微的吱呀声，一股混合着纸张、墨水和木质家具的气息扑面而来。...'",
+    "Change 2: Evidence found at position 562, not near suggested 820 (fuzzy match used)",
+    "Change 3: Evidence found at position 654, not near suggested 950 (fuzzy match used)",
+    "Change 4: Evidence text not found in prose: '他调整了一下坐姿，打开了书的第一页。\"我们生活在一个奇妙的宇宙中……\"...'",
+    "Change 5: Evidence text not found in prose: '他的笔记本摊开在旁边，偶尔记下一些要点：\"光速恒定——每秒30万公里\"\"时间膨胀效应——高速运动时时...'",
+    "Change 6: Evidence found at position 1275, not near suggested 1780 (fuzzy match used)",
+    "Change 7: Evidence found at position 1437, not near suggested 2030 (fuzzy match used)"
+  ]
+}

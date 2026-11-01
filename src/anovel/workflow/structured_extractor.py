@@ -7,14 +7,12 @@ import hashlib
 import json
 import uuid
 from datetime import datetime
-from typing import Any
 
 from ..contracts.models import ChapterContract
 from ..domain.delta import (
     DeltaId,
     EvidenceRef,
     ExpectAbsent,
-    ExpectValue,
     NarrativeDelta,
     OperationType,
     SetFactOperation,
@@ -101,7 +99,9 @@ class StructuredExtractor:
                     start_idx = 1
                     # Find last fence line
                     end_idx = len(lines) - 1
-                    while end_idx > start_idx and not lines[end_idx].strip().startswith("```"):
+                    while end_idx > start_idx and not lines[end_idx].strip().startswith(
+                        "```"
+                    ):
                         end_idx -= 1
                     if lines[end_idx].strip().startswith("```"):
                         extraction_json = "\n".join(lines[start_idx:end_idx])
@@ -129,17 +129,26 @@ class StructuredExtractor:
                     corrected_json = extraction_json
                     # U+201C LEFT DOUBLE QUOTATION MARK "
                     # U+201D RIGHT DOUBLE QUOTATION MARK "
-                    corrected_json = corrected_json.replace('“', '《').replace('”', '》')
+                    corrected_json = corrected_json.replace("“", "《").replace(
+                        "”", "》"
+                    )
                     # Also handle 「」
-                    corrected_json = corrected_json.replace('「', '《').replace('」', '》')
+                    corrected_json = corrected_json.replace("「", "《").replace(
+                        "」", "》"
+                    )
 
                     extraction_data = json.loads(corrected_json)
-                    issues.append("Warning: Auto-corrected Chinese quotation marks in JSON")
+                    issues.append(
+                        "Warning: Auto-corrected Chinese quotation marks in JSON"
+                    )
                 except json.JSONDecodeError as e2:
                     issues.append(f"Correction attempt also failed: {e2}")
                     # Save for inspection
                     import tempfile
-                    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, dir='.') as f:
+
+                    with tempfile.NamedTemporaryFile(
+                        mode="w", suffix=".json", delete=False, dir="."
+                    ) as f:
                         f.write(extraction_json)
                         issues.append(f"Failed JSON saved to: {f.name}")
                     return self._create_failed_result(prose_hash, issues)
@@ -157,17 +166,37 @@ class StructuredExtractor:
         )
         issues.extend(extraction_issues)
 
-        # Determine status
+        # Determine status by matching operations to required transitions
         required_count = len(contract.required_transitions)
-        found_count = len(operations)
+
+        # Match operations to required transitions by fact_path
+        found_transitions = set()
+        for op in operations:
+            op_fact_path = op.path.path
+            for req in contract.required_transitions:
+                if req.fact_path == op_fact_path:
+                    found_transitions.add(req.fact_path)
+                    break
+
+        found_count = len(found_transitions)
+
+        # Report which transitions were found and which are missing
+        if required_count > 0:
+            missing_transitions = []
+            for req in contract.required_transitions:
+                if req.fact_path not in found_transitions:
+                    missing_transitions.append(req.fact_path)
+
+            if missing_transitions:
+                issues.append(
+                    f"Missing required transitions: {', '.join(missing_transitions)}"
+                )
 
         if required_count > 0 and found_count == 0:
             status = ExtractionStatus.FAILED
         elif found_count < required_count:
             status = ExtractionStatus.INCOMPLETE
-            issues.append(
-                f"Required transitions: {found_count}/{required_count} extracted"
-            )
+            issues.append(f"Required transitions: {found_count}/{required_count} found")
         elif required_count == 0:
             status = ExtractionStatus.NO_CHANGES
         else:
@@ -215,15 +244,30 @@ class StructuredExtractor:
         self, prose: str, contract: ChapterContract, series_vision: SeriesVision
     ) -> str:
         """Build LLM extraction prompt with strict JSON requirements."""
-        required_facts = [t.fact_path for t in contract.required_transitions]
+
+        # Build detailed guidance for each required transition
+        fact_guidance = []
+        for t in contract.required_transitions:
+            if "activity" in t.fact_path:
+                fact_guidance.append(
+                    f"- {t.fact_path}: 寻找动作转折点（如：打开书、开始X、进行Y），不是意图或持续状态描述"
+                )
+            elif "location" in t.fact_path:
+                fact_guidance.append(
+                    f"- {t.fact_path}: 寻找明确的地点转移（如：进入X、到达Y、移动到Z）"
+                )
+            else:
+                fact_guidance.append(
+                    f"- {t.fact_path}: {t.rationale if hasattr(t, 'rationale') else '提取相关状态变化'}"
+                )
 
         prompt = f"""你是一个小说语义分析专家。请从以下小说正文中提取状态变化。
 
 **小说正文**:
 {prose}
 
-**需要提取的状态变化** (fact_path):
-{', '.join(required_facts) if required_facts else '无特定要求'}
+**需要提取的状态变化**:
+{chr(10).join(fact_guidance) if fact_guidance else '无特定要求'}
 
 **输出格式** (JSON):
 {{
@@ -231,7 +275,7 @@ class StructuredExtractor:
     {{
       "fact_path": "状态路径",
       "value": "变化后的值",
-      "evidence_text": "支持证据原文（至少15个字，提供上下文）",
+      "evidence_text": "支持证据原文（精确复制，保留原文标点和格式）",
       "evidence_start": 证据起始位置（大约即可）,
       "evidence_end": 证据结束位置（大约即可）,
       "confidence": "confirmed",
@@ -242,13 +286,20 @@ class StructuredExtractor:
 
 **重要规则**:
 1. 只提取**已经发生**的事实变化，不提取计划、传闻、假设
-2. evidence_text必须是正文的精确引用，至少15个字提供上下文
-3. evidence_start和evidence_end是大致位置，用于定位，不必精确到字符
-4. 如果没有确凿证据，不要猜测
-5. 确保value的类型和值与正文一致
-6. **严格禁止**：不要在JSON字符串中使用任何引号（包括：" " 「」《》' ' ‹›）
-7. 书名、人名等用文字表述，不加标点：例如"时间简史"而非"《时间简史》"
-8. 分类名称直接写：例如"物理学书架"而非"物理学"书架
+2. evidence_text必须是正文的**精确复制**（包括所有标点符号：《》""等），至少15个字提供上下文
+3. JSON字符串中的引号必须使用反斜杠转义：\\" 或使用单引号包裹字符串
+4. evidence_start和evidence_end是大致位置，用于定位，不必精确到字符
+5. 如果没有确凿证据，不要猜测
+6. 确保value的类型和值与正文一致
+7. 区分动作类型：
+   - Intent（打算做X）：不提取
+   - Action（开始做X、正在做X）：提取为状态变化
+   - Current State（已经在做X）：提取为当前状态
+
+**特别注意 protagonist.activity**:
+- 寻找动作转折点，如：打开书、开始阅读、拿起X、进行Y
+- 不要只找"阅读"这个词，要找"开始阅读"的动作时刻
+- 例如："他打开了书的第一页" = activity变为reading
 
 请输出纯JSON（不要用markdown代码块包裹）:"""
 

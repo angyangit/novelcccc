@@ -14,6 +14,7 @@ from ..domain.delta import NarrativeDelta
 from ..gateway.gateway import ModelGateway
 from ..gateway.models import GenerationError
 from ..planning.models import SeriesVision
+from .delta_sequencer import DeltaSequencer
 from .extractor import NarrativeDeltaExtractionResult, NarrativeDeltaExtractor
 from .models import (
     ChapterWorkflowResult,
@@ -553,6 +554,78 @@ class ChapterWorkflow:
                 )
             )
             blocking_issues.append("Q0 validation not run: no extraction result")
+
+        # DELTA SEQUENCING: Order operations and calculate correct preconditions
+        if delta and canon_snapshot and q0_passed:
+            checks_run.append("delta_sequencing")
+            try:
+                from ..domain.delta import CanonState
+                from ..domain.identity import ProjectId
+
+                # Convert canon_snapshot to proper CanonState for sequencing
+                if isinstance(canon_snapshot, dict):
+                    if "project_id" in canon_snapshot:
+                        project_id = ProjectId(canon_snapshot["project_id"])
+                    elif delta.operations:
+                        project_id = delta.operations[0].subject.project_id
+                    else:
+                        project_id = ProjectId("unknown")
+
+                    canon_state = CanonState(
+                        project_id=project_id,
+                        facts=canon_snapshot.get("facts", ()),
+                        tombstones=canon_snapshot.get("tombstones", frozenset()),
+                        commit_history=canon_snapshot.get("commit_history", ()),
+                    )
+                else:
+                    canon_state = canon_snapshot
+
+                # Sequence operations with correct preconditions
+                sequencer = DeltaSequencer()
+                sequencing_result = sequencer.sequence_operations(
+                    list(delta.operations), canon_state
+                )
+
+                if sequencing_result.success:
+                    # Replace delta operations with sequenced operations
+                    delta = NarrativeDelta(
+                        delta_id=delta.delta_id,
+                        project_id=delta.project_id,
+                        operations=tuple(sequencing_result.sequenced_operations),
+                        source_chapter=delta.source_chapter,
+                        created_at=delta.created_at,
+                        authority=delta.authority,
+                        provenance=delta.provenance,
+                    )
+                    check_details.append(
+                        CheckDetail(
+                            check_name="delta_sequencing",
+                            status=CheckStatus.PASS,
+                            message=f"Sequenced {len(sequencing_result.sequenced_operations)} operations by narrative order",
+                            severity="info",
+                        )
+                    )
+                else:
+                    # Sequencing failed
+                    blocking_issues.extend(sequencing_result.issues)
+                    check_details.append(
+                        CheckDetail(
+                            check_name="delta_sequencing",
+                            status=CheckStatus.FAIL,
+                            message=f"Sequencing failed: {'; '.join(sequencing_result.issues)}",
+                            severity="error",
+                        )
+                    )
+            except Exception as e:
+                blocking_issues.append(f"Delta sequencing error: {e}")
+                check_details.append(
+                    CheckDetail(
+                        check_name="delta_sequencing",
+                        status=CheckStatus.ERROR,
+                        message=str(e),
+                        severity="error",
+                    )
+                )
 
         # Q1 VALIDATION (V2-023): Canon consistency checks
         if delta and canon_snapshot:

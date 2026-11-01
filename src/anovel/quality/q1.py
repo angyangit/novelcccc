@@ -142,22 +142,37 @@ class Q1CanonValidator:
     def _check_state_preconditions(
         self, delta: NarrativeDelta, canon_state: CanonState
     ) -> Q1CheckResult:
-        """Q1-02: Verify preconditions match current Canon state."""
+        """Q1-02: Verify preconditions match current Canon state with sequential delta application.
+
+        Each operation's precondition is validated against the accumulated state after
+        applying previous operations in the delta, not just the initial Canon state.
+        """
+        from ..domain.delta import (
+            ExpectAbsent,
+            ExpectPresent,
+            ExpectUnknown,
+            ExpectValue,
+        )
+
+        # Track accumulated state as we apply operations
+        state_tracker = {}  # (subject, fact_path) -> current_value
+
+        # Initialize from canon
+        for fact in canon_state.facts:
+            key = (str(fact.subject), fact.path.path)
+            state_tracker[key] = fact.value
+
         for i, op in enumerate(delta.operations):
             if not isinstance(op, SetFactOperation):
                 continue
 
-            # Get current value from Canon
-            current_value, exists = canon_state.get_value(op.subject, op.path)
+            key = (str(op.subject), op.path.path)
 
-            # Check precondition against Canon state
-            from ..domain.delta import (
-                ExpectAbsent,
-                ExpectPresent,
-                ExpectUnknown,
-                ExpectValue,
-            )
+            # Get current value from accumulated state
+            exists = key in state_tracker
+            current_value = state_tracker.get(key) if exists else None
 
+            # Check precondition against accumulated state
             precond = op.precondition
 
             if isinstance(precond, ExpectAbsent):
@@ -165,7 +180,7 @@ class Q1CanonValidator:
                     return Q1CheckResult(
                         check_name="state_preconditions",
                         status=Q1CheckStatus.FAIL,
-                        message=f"Operation {i} expects absent, but {op.path.path} exists in Canon with value {current_value}",
+                        message=f"Operation {i} expects absent, but {op.path.path} exists with value {current_value}",
                         severity="error",
                     )
 
@@ -174,14 +189,14 @@ class Q1CanonValidator:
                     return Q1CheckResult(
                         check_name="state_preconditions",
                         status=Q1CheckStatus.FAIL,
-                        message=f"Operation {i} expects value {precond.expected_value}, but {op.path.path} does not exist in Canon",
+                        message=f"Operation {i} expects value {precond.expected_value}, but {op.path.path} does not exist",
                         severity="error",
                     )
                 if current_value != precond.expected_value:
                     return Q1CheckResult(
                         check_name="state_preconditions",
                         status=Q1CheckStatus.FAIL,
-                        message=f"Operation {i} expects {op.path.path}={precond.expected_value}, but Canon has {current_value}",
+                        message=f"Operation {i} expects {op.path.path}={precond.expected_value}, but has {current_value}",
                         severity="error",
                     )
 
@@ -190,7 +205,7 @@ class Q1CanonValidator:
                     return Q1CheckResult(
                         check_name="state_preconditions",
                         status=Q1CheckStatus.FAIL,
-                        message=f"Operation {i} expects {op.path.path} to exist, but it does not exist in Canon",
+                        message=f"Operation {i} expects {op.path.path} to exist, but it does not exist",
                         severity="error",
                     )
 
@@ -199,14 +214,17 @@ class Q1CanonValidator:
                     return Q1CheckResult(
                         check_name="state_preconditions",
                         status=Q1CheckStatus.FAIL,
-                        message=f"Operation {i} expects {op.path.path}=UNKNOWN, but Canon has {current_value if exists else 'absent'}",
+                        message=f"Operation {i} expects {op.path.path}=UNKNOWN, but has {current_value if exists else 'absent'}",
                         severity="error",
                     )
+
+            # Apply operation to accumulated state
+            state_tracker[key] = op.value
 
         return Q1CheckResult(
             check_name="state_preconditions",
             status=Q1CheckStatus.PASS,
-            message="All preconditions match Canon state",
+            message="All preconditions match accumulated state",
             severity="error",
         )
 

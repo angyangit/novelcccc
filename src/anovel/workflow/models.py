@@ -9,9 +9,11 @@ from typing import Any
 class WorkflowStatus(StrEnum):
     """Workflow execution status."""
 
-    SUCCESS = "success"
-    FAILED = "failed"
-    PARTIAL = "partial"
+    SUCCESS = "success"  # All stages passed, canon committed
+    FAILED = "failed"  # Hard failure, cannot proceed
+    DRAFT_GENERATED = "draft_generated"  # Prose generated but not committed
+    QUALITY_FAILED = "quality_failed"  # Quality checks failed
+    EXTRACTION_FAILED = "extraction_failed"  # Delta extraction failed
 
 
 class WorkflowStage(StrEnum):
@@ -38,17 +40,50 @@ class WorkflowError:
 
 
 @dataclass
+class QualityCheckResult:
+    """Quality validation result."""
+
+    passed: bool
+    blocking_issues: list[str]  # Issues that block canon commit
+    warnings: list[str]  # Non-blocking issues
+    checks_run: list[str]  # Names of checks executed
+
+
+@dataclass
+class DeltaExtractionResult:
+    """Delta extraction result."""
+
+    success: bool
+    delta: Any | None  # NarrativeDelta if successful
+    prose_hash: str  # SHA-256 of prose content
+    extraction_method: str
+    issues: list[str]  # Extraction problems
+
+
+@dataclass
 class ChapterWorkflowResult:
-    """Complete chapter workflow result."""
+    """Complete chapter workflow result.
+
+    Status semantics:
+    - SUCCESS: prose generated, quality passed, canon committed
+    - DRAFT_GENERATED: prose generated but not committed (quality pending or failed)
+    - QUALITY_FAILED: prose generated but quality checks blocked commit
+    - EXTRACTION_FAILED: prose generated but delta extraction failed
+    - FAILED: hard failure before prose generation
+    """
 
     workflow_id: str
     chapter_id: str
     chapter_number: int
     status: WorkflowStatus
     prose: str | None
-    canon_commit_hash: str | None
+    prose_hash: str | None  # SHA-256 of prose if generated
+    canon_commit_hash: str | None  # None unless actually committed
+    is_mock_commit: bool  # True if canon_commit_hash is mock, not real
     stages_completed: list[WorkflowStage]
     error: WorkflowError | None
+    quality_result: QualityCheckResult | None
+    delta_result: DeltaExtractionResult | None
     execution_time_seconds: float
     total_cost_usd: float
     metadata: dict[str, Any]

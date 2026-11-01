@@ -1,19 +1,23 @@
 """Core Chapter Workflow orchestration for V2-020."""
 
+import hashlib
 import time
 import uuid
 from datetime import datetime
+from typing import Any
 
 from ..context.compiler import ContextCompiler
 from ..context.models import ContextCompilationError
 from ..contracts.compiler import ContractCompiler
 from ..contracts.models import ChapterContract
-from ..domain.delta import NarrativeDelta, Operation
+from ..domain.delta import NarrativeDelta
 from ..gateway.gateway import ModelGateway
 from ..gateway.models import GenerationError
 from ..planning.models import SeriesVision
 from .models import (
     ChapterWorkflowResult,
+    DeltaExtractionResult,
+    QualityCheckResult,
     WorkflowError,
     WorkflowStage,
     WorkflowStatus,
@@ -28,6 +32,7 @@ class ChapterWorkflow:
         contract_compiler: ContractCompiler,
         context_compiler: ContextCompiler,
         model_gateway: ModelGateway,
+        mock_mode: bool = True,  # True = mock canon commits, False = real commits
     ):
         """Initialize workflow with required components.
 
@@ -35,10 +40,12 @@ class ChapterWorkflow:
             contract_compiler: Contract compiler (V2-017)
             context_compiler: Context compiler (V2-018)
             model_gateway: Model gateway (V2-019)
+            mock_mode: If True, use mock canon commits (NOT production)
         """
         self.contract_compiler = contract_compiler
         self.context_compiler = context_compiler
         self.model_gateway = model_gateway
+        self.mock_mode = mock_mode
 
     def execute_chapter(
         self,
@@ -98,7 +105,9 @@ class ChapterWorkflow:
                     chapter_number=contract.chapter_number,
                     status=WorkflowStatus.FAILED,
                     prose=None,
+                    prose_hash=None,
                     canon_commit_hash=None,
+                    is_mock_commit=False,
                     stages_completed=stages_completed,
                     error=WorkflowError(
                         stage=WorkflowStage.CONTEXT_COMPILE,
@@ -107,6 +116,8 @@ class ChapterWorkflow:
                         retryable=False,
                         failed_at=datetime.now(),
                     ),
+                    quality_result=None,
+                    delta_result=None,
                     execution_time_seconds=execution_time,
                     total_cost_usd=total_cost,
                     metadata={},
@@ -131,7 +142,9 @@ class ChapterWorkflow:
                     chapter_number=contract.chapter_number,
                     status=WorkflowStatus.FAILED,
                     prose=None,
+                    prose_hash=None,
                     canon_commit_hash=None,
+                    is_mock_commit=False,
                     stages_completed=stages_completed,
                     error=WorkflowError(
                         stage=WorkflowStage.GENERATION,
@@ -141,6 +154,8 @@ class ChapterWorkflow:
                         failed_at=generation_result.failed_at,
                         context={"request_id": generation_result.request_id},
                     ),
+                    quality_result=None,
+                    delta_result=None,
                     execution_time_seconds=execution_time,
                     total_cost_usd=total_cost,
                     metadata={
@@ -151,29 +166,102 @@ class ChapterWorkflow:
                 )
 
             prose = generation_result.prose
+            prose_hash = hashlib.sha256(prose.encode()).hexdigest()
             total_cost = total_cost + (generation_result.cost_usd or 0.0)
             stages_completed.append(WorkflowStage.GENERATION)
 
             # Stage 4: Delta extraction
-            delta = self._extract_narrative_delta(
+            delta_result = self._extract_narrative_delta(
                 prose=prose,
+                prose_hash=prose_hash,
                 contract=contract,
+                series_vision=series_vision,
             )
             stages_completed.append(WorkflowStage.DELTA_EXTRACTION)
 
+            # Check extraction success
+            if not delta_result.success:
+                execution_time = time.time() - start_time
+                return ChapterWorkflowResult(
+                    workflow_id=workflow_id,
+                    chapter_id=contract.chapter_id,
+                    chapter_number=contract.chapter_number,
+                    status=WorkflowStatus.EXTRACTION_FAILED,
+                    prose=prose,
+                    prose_hash=prose_hash,
+                    canon_commit_hash=None,
+                    is_mock_commit=False,
+                    stages_completed=stages_completed,
+                    error=WorkflowError(
+                        stage=WorkflowStage.DELTA_EXTRACTION,
+                        error_type="extraction_failed",
+                        message="; ".join(delta_result.issues),
+                        retryable=True,
+                        failed_at=datetime.now(),
+                    ),
+                    quality_result=None,
+                    delta_result=delta_result,
+                    execution_time_seconds=execution_time,
+                    total_cost_usd=total_cost,
+                    metadata={
+                        "artifact_id": artifact.artifact_id,
+                        "generation_request_id": generation_result.request_id,
+                        "input_tokens": generation_result.input_tokens,
+                        "output_tokens": generation_result.output_tokens,
+                        "budget_summary": self.model_gateway.get_budget_summary(),
+                    },
+                    completed_at=datetime.now(),
+                )
+
             # Stage 5: Quality validation
-            quality_issues = self._validate_quality(
+            quality_result = self._validate_quality(
                 prose=prose,
-                delta=delta,
+                prose_hash=prose_hash,
+                delta=delta_result.delta,
                 contract=contract,
             )
             stages_completed.append(WorkflowStage.QUALITY_VALIDATION)
 
-            # Stage 6: Canon commit (mock for now)
-            canon_hash = self._commit_to_canon(
+            # FAIL-CLOSED: Quality check must pass to proceed
+            if not quality_result.passed:
+                execution_time = time.time() - start_time
+                return ChapterWorkflowResult(
+                    workflow_id=workflow_id,
+                    chapter_id=contract.chapter_id,
+                    chapter_number=contract.chapter_number,
+                    status=WorkflowStatus.QUALITY_FAILED,
+                    prose=prose,
+                    prose_hash=prose_hash,
+                    canon_commit_hash=None,
+                    is_mock_commit=False,
+                    stages_completed=stages_completed,
+                    error=WorkflowError(
+                        stage=WorkflowStage.QUALITY_VALIDATION,
+                        error_type="quality_failed",
+                        message=f"Quality checks failed: {', '.join(quality_result.blocking_issues)}",
+                        retryable=True,
+                        failed_at=datetime.now(),
+                    ),
+                    quality_result=quality_result,
+                    delta_result=delta_result,
+                    execution_time_seconds=execution_time,
+                    total_cost_usd=total_cost,
+                    metadata={
+                        "artifact_id": artifact.artifact_id,
+                        "generation_request_id": generation_result.request_id,
+                        "input_tokens": generation_result.input_tokens,
+                        "output_tokens": generation_result.output_tokens,
+                        "budget_summary": self.model_gateway.get_budget_summary(),
+                    },
+                    completed_at=datetime.now(),
+                )
+
+            # Stage 6: Canon commit (mock or real based on mode)
+            canon_result = self._commit_to_canon(
                 chapter_id=contract.chapter_id,
                 prose=prose,
-                delta=delta,
+                prose_hash=prose_hash,
+                delta=delta_result.delta,
                 canon_snapshot=canon_snapshot,
             )
             stages_completed.append(WorkflowStage.CANON_COMMIT)
@@ -186,9 +274,13 @@ class ChapterWorkflow:
                 chapter_number=contract.chapter_number,
                 status=WorkflowStatus.SUCCESS,
                 prose=prose,
-                canon_commit_hash=canon_hash,
+                prose_hash=prose_hash,
+                canon_commit_hash=canon_result["commit_hash"],
+                is_mock_commit=canon_result["is_mock"],
                 stages_completed=stages_completed,
                 error=None,
+                quality_result=quality_result,
+                delta_result=delta_result,
                 execution_time_seconds=execution_time,
                 total_cost_usd=total_cost,
                 metadata={
@@ -196,7 +288,6 @@ class ChapterWorkflow:
                     "generation_request_id": generation_result.request_id,
                     "input_tokens": generation_result.input_tokens,
                     "output_tokens": generation_result.output_tokens,
-                    "quality_issues": quality_issues,
                     "budget_summary": self.model_gateway.get_budget_summary(),
                 },
                 completed_at=datetime.now(),
@@ -212,7 +303,9 @@ class ChapterWorkflow:
                 chapter_number=contract.chapter_number,
                 status=WorkflowStatus.FAILED,
                 prose=None,
+                prose_hash=None,
                 canon_commit_hash=None,
+                is_mock_commit=False,
                 stages_completed=stages_completed,
                 error=WorkflowError(
                     stage=last_stage,
@@ -221,6 +314,8 @@ class ChapterWorkflow:
                     retryable=False,
                     failed_at=datetime.now(),
                 ),
+                quality_result=None,
+                delta_result=None,
                 execution_time_seconds=execution_time,
                 total_cost_usd=total_cost,
                 metadata={"budget_summary": self.model_gateway.get_budget_summary()},
@@ -230,97 +325,171 @@ class ChapterWorkflow:
     def _extract_narrative_delta(
         self,
         prose: str,
+        prose_hash: str,
         contract: ChapterContract,
-    ) -> NarrativeDelta:
+        series_vision: SeriesVision,
+    ) -> DeltaExtractionResult:
         """Extract NarrativeDelta from generated prose.
 
-        For V2-020 MVP: create minimal delta with empty operations.
-        RequiredTransition != Operation, so we return empty operations for now.
-        Future: use LLM to extract actual SetFactOperation from prose.
+        V2-020 MVP: Reports extraction not implemented when contract requires transitions.
+        Future V2-021: Use LLM to extract actual SetFactOperation from prose.
 
         Args:
             prose: Generated prose
+            prose_hash: SHA-256 hash of prose
             contract: Chapter contract
+            series_vision: Series vision (for project_id)
 
         Returns:
-            Extracted narrative delta
+            Extraction result with success based on contract requirements
         """
         from ..domain.delta import DeltaId
         from ..domain.identity import ProjectId
 
+        issues = []
+        success = True
+
+        # FAIL-CLOSED: If contract requires transitions, extraction must implement them
+        if contract.required_transitions:
+            issues.append(
+                f"Extraction not implemented: {len(contract.required_transitions)} "
+                "required transitions cannot be verified from prose"
+            )
+            success = False
+
+        # Create delta with empty operations
         delta_uuid = str(uuid.uuid4())
+        project_id = ProjectId(series_vision.series_id)
 
-        # V2-020 MVP: empty operations
-        # Future: convert transitions to proper Operation instances
-        operations: tuple[Operation, ...] = ()
-
-        return NarrativeDelta(
+        delta = NarrativeDelta(
             delta_id=DeltaId(delta_uuid),
-            project_id=ProjectId("default-project"),
-            operations=operations,
+            project_id=project_id,
+            operations=(),  # Empty - extraction not implemented
             source_chapter=contract.chapter_id,
             created_at=datetime.now(),
-            authority="chapter_workflow_v2020",
-            provenance=(("extraction_method", "contract_passthrough"),),
+            authority="chapter_workflow_v2020_mvp",
+            provenance=(
+                ("extraction_method", "not_implemented_mvp"),
+                ("prose_hash", prose_hash),
+            ),
+        )
+
+        return DeltaExtractionResult(
+            success=success,  # Success if no transitions required
+            delta=delta,
+            prose_hash=prose_hash,
+            extraction_method="not_implemented_mvp",
+            issues=issues,
         )
 
     def _validate_quality(
         self,
         prose: str,
-        delta: NarrativeDelta,
+        prose_hash: str,
+        delta: NarrativeDelta | None,
         contract: ChapterContract,
-    ) -> list[str]:
-        """Validate chapter quality.
+    ) -> QualityCheckResult:
+        """Validate chapter quality with fail-closed gates.
 
-        For V2-020 MVP: basic checks.
-        Future: comprehensive quality gates.
+        FAIL-CLOSED: Any blocking issue prevents canon commit.
 
         Args:
             prose: Generated prose
-            delta: Narrative delta
+            prose_hash: SHA-256 of prose
+            delta: Narrative delta (may be None if extraction failed)
             contract: Chapter contract
 
         Returns:
-            List of quality issues (empty if all pass)
+            Quality check result with passed=True only if all checks pass
         """
-        issues = []
+        blocking_issues = []
+        warnings = []
+        checks_run = []
 
-        # Check 1: Prose not empty
+        # Check 1: Prose minimum length (BLOCKING)
+        checks_run.append("prose_minimum_length")
         if not prose or len(prose.strip()) < 100:
-            issues.append("Prose too short or empty")
+            blocking_issues.append("Prose too short (< 100 chars)")
 
-        # Check 2: Delta operations match contract
-        if len(delta.operations) != len(contract.required_transitions):
-            issues.append("Delta operations count mismatch")
+        # Check 2: No error markers in prose (BLOCKING)
+        checks_run.append("no_error_markers")
+        error_markers = ["[ERROR]", "[FAILED]", "[MOCK CHAPTER PROSE]"]
+        for marker in error_markers:
+            if marker in prose:
+                blocking_issues.append(f"Error marker found in prose: {marker}")
 
-        # Check 3: No obvious errors in prose
-        if "[ERROR]" in prose or "[FAILED]" in prose:
-            issues.append("Error markers in prose")
+        # Check 3: Delta operations present if contract requires transitions (BLOCKING)
+        checks_run.append("delta_operations_present")
+        if delta and contract.required_transitions:
+            if len(delta.operations) == 0:
+                blocking_issues.append(
+                    f"Contract requires {len(contract.required_transitions)} transitions "
+                    "but delta has 0 operations (extraction failed or not implemented)"
+                )
+            elif len(delta.operations) != len(contract.required_transitions):
+                warnings.append(
+                    f"Delta operations count ({len(delta.operations)}) "
+                    f"!= contract transitions ({len(contract.required_transitions)})"
+                )
 
-        return issues
+        # Check 4: Prose hash bound to delta (WARNING)
+        checks_run.append("prose_hash_binding")
+        if delta:
+            provenance_dict = dict(delta.provenance)
+            if provenance_dict.get("prose_hash") != prose_hash:
+                warnings.append("Delta not bound to current prose hash")
+
+        # FAIL-CLOSED: passed only if NO blocking issues
+        passed = len(blocking_issues) == 0
+
+        return QualityCheckResult(
+            passed=passed,
+            blocking_issues=blocking_issues,
+            warnings=warnings,
+            checks_run=checks_run,
+        )
 
     def _commit_to_canon(
         self,
         chapter_id: str,
         prose: str,
-        delta: NarrativeDelta,
+        prose_hash: str,
+        delta: NarrativeDelta | None,
         canon_snapshot: dict,
-    ) -> str:
+    ) -> dict[str, Any]:
         """Commit chapter to canonical state.
 
-        For V2-020 MVP: return mock hash.
-        Future: actual canon repository commit.
+        V2-020 MVP: Mock mode only.
+        Future: Real canon commit via CanonRepository.
 
         Args:
             chapter_id: Chapter ID
             prose: Generated prose
+            prose_hash: SHA-256 of prose
             delta: Narrative delta
             canon_snapshot: Current canon state
 
         Returns:
-            Canon commit hash
+            Dict with commit_hash and is_mock flag
         """
-        import hashlib
+        if self.mock_mode:
+            # Mock mode: generate mock hash with MOCK prefix
+            content = f"{chapter_id}:{prose_hash}:{delta.delta_id if delta else 'no-delta'}"
+            mock_hash = "MOCK-" + hashlib.sha256(content.encode()).hexdigest()[:16]
 
-        content = f"{chapter_id}:{prose[:100]}:{delta.delta_id}"
-        return hashlib.sha256(content.encode()).hexdigest()[:16]
+            return {
+                "commit_hash": mock_hash,
+                "is_mock": True,
+            }
+        else:
+            # Real mode: Use CanonRepository (not implemented in V2-020)
+            # Future: Real canon commit with:
+            # - Permit verification
+            # - Parent validation
+            # - Transaction atomicity
+            # - Idempotency check
+            # - CommitReceipt generation
+            raise NotImplementedError(
+                "Real canon commit not implemented in V2-020. "
+                "Use mock_mode=True or implement real canon integration."
+            )

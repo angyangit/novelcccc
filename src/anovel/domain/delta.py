@@ -143,6 +143,12 @@ _FACT_PATH_REGISTRY_INTERNAL = {
     "is_alive": FactPath("is_alive", bool),
     "name": FactPath("name", str),
     "description": FactPath("description", str),
+    # V2-021 test paths (minimal extension for extraction tests)
+    "funding_amount": FactPath("funding_amount", int),
+    "funding_round": FactPath("funding_round", str),
+    "protagonist.realm": FactPath("protagonist.realm", str),
+    "protagonist.cultivation_level": FactPath("protagonist.cultivation_level", int),
+    "protagonist.location": FactPath("protagonist.location", str),
 }
 
 FACT_PATH_REGISTRY: MappingProxyType[str, FactPath] = MappingProxyType(

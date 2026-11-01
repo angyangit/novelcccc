@@ -1,10 +1,10 @@
-"""Core Chapter Workflow orchestration for V2-020/V2-021."""
+"""Core Chapter Workflow orchestration for V2-020/V2-021/V2-022."""
 
 import hashlib
 import time
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ..context.compiler import ContextCompiler
 from ..context.models import ContextCompilationError
@@ -14,7 +14,7 @@ from ..domain.delta import NarrativeDelta
 from ..gateway.gateway import ModelGateway
 from ..gateway.models import GenerationError
 from ..planning.models import SeriesVision
-from .extractor import NarrativeDeltaExtractor
+from .extractor import NarrativeDeltaExtractionResult, NarrativeDeltaExtractor
 from .models import (
     ChapterWorkflowResult,
     DeltaExtractionResult,
@@ -23,6 +23,9 @@ from .models import (
     WorkflowStage,
     WorkflowStatus,
 )
+
+if TYPE_CHECKING:
+    from ..quality.q0 import Q0Validator
 
 
 class ChapterWorkflow:
@@ -33,7 +36,9 @@ class ChapterWorkflow:
         contract_compiler: ContractCompiler,
         context_compiler: ContextCompiler,
         model_gateway: ModelGateway,
-        extractor: NarrativeDeltaExtractor | None = None,  # V2-021: injectable extractor
+        extractor: NarrativeDeltaExtractor
+        | None = None,  # V2-021: injectable extractor
+        q0_validator: "Q0Validator | None" = None,  # V2-022: Q0 deterministic validator
         mock_mode: bool = True,  # True = mock canon commits, False = real commits
     ):
         """Initialize workflow with required components.
@@ -43,12 +48,19 @@ class ChapterWorkflow:
             context_compiler: Context compiler (V2-018)
             model_gateway: Model gateway (V2-019)
             extractor: Narrative delta extractor (V2-021), None = use legacy stub
+            q0_validator: Q0 deterministic validator (V2-022), None = create default
             mock_mode: If True, use mock canon commits (NOT production)
         """
         self.contract_compiler = contract_compiler
         self.context_compiler = context_compiler
         self.model_gateway = model_gateway
         self.extractor = extractor  # V2-021: new injected extractor
+        # V2-022: Q0 validator (lazy import to avoid circular dependency)
+        if q0_validator is None:
+            from ..quality.q0 import Q0Validator
+
+            q0_validator = Q0Validator()
+        self.q0_validator = q0_validator
         self.mock_mode = mock_mode
 
     def execute_chapter(
@@ -184,6 +196,9 @@ class ChapterWorkflow:
             )
             stages_completed.append(WorkflowStage.DELTA_EXTRACTION)
 
+            # Store full extraction result for Q0 validation (V2-022)
+            full_extraction_result = getattr(delta_result, "_full_result", None)
+
             # Check extraction success
             if not delta_result.success:
                 execution_time = time.time() - start_time
@@ -224,6 +239,7 @@ class ChapterWorkflow:
                 prose_hash=prose_hash,
                 delta=delta_result.delta,
                 contract=contract,
+                extraction_result=full_extraction_result,  # V2-022: Pass to Q0
             )
             stages_completed.append(WorkflowStage.QUALITY_VALIDATION)
 
@@ -300,7 +316,11 @@ class ChapterWorkflow:
 
         except Exception as e:
             execution_time = time.time() - start_time
-            last_stage = stages_completed[-1] if stages_completed else WorkflowStage.CONTRACT_COMPILE
+            last_stage = (
+                stages_completed[-1]
+                if stages_completed
+                else WorkflowStage.CONTRACT_COMPILE
+            )
 
             return ChapterWorkflowResult(
                 workflow_id=workflow_id,
@@ -360,18 +380,19 @@ class ChapterWorkflow:
             )
 
             # Convert V2-021 result to V2-020 DeltaExtractionResult
-            return DeltaExtractionResult(
+            delta_result = DeltaExtractionResult(
                 success=(extraction_result.status == "success"),
                 delta=extraction_result.delta,
                 prose_hash=extraction_result.prose_hash,
                 extraction_method=extraction_result.extraction_method,
                 issues=extraction_result.issues,
             )
+            # Attach full result for Q0 validation (V2-022)
+            delta_result._full_result = extraction_result  # type: ignore
+            return delta_result
 
         # Legacy V2-020 stub (for backward compatibility)
-        return self._legacy_extraction_stub(
-            prose, prose_hash, contract, series_vision
-        )
+        return self._legacy_extraction_stub(prose, prose_hash, contract, series_vision)
 
     def _legacy_extraction_stub(
         self,
@@ -426,6 +447,7 @@ class ChapterWorkflow:
         prose_hash: str,
         delta: NarrativeDelta | None,
         contract: ChapterContract,
+        extraction_result: NarrativeDeltaExtractionResult | None = None,
     ) -> QualityCheckResult:
         """Validate chapter quality with fail-closed gates.
 
@@ -436,6 +458,7 @@ class ChapterWorkflow:
             prose_hash: SHA-256 of prose
             delta: Narrative delta (may be None if extraction failed)
             contract: Chapter contract
+            extraction_result: Full extraction result for Q0 validation (V2-022)
 
         Returns:
             Quality check result with passed=True only if all checks pass
@@ -443,6 +466,15 @@ class ChapterWorkflow:
         blocking_issues = []
         warnings = []
         checks_run = []
+
+        # Q0 VALIDATION (V2-022): Deterministic checks FIRST
+        if extraction_result:
+            checks_run.append("q0_validation")
+            q0_result = self.q0_validator.validate(
+                extraction_result, contract, prose, prose_hash
+            )
+            if not q0_result.passed:
+                blocking_issues.extend(q0_result.blocking_issues)
 
         # Check 1: Prose minimum length (BLOCKING)
         checks_run.append("prose_minimum_length")
@@ -512,7 +544,9 @@ class ChapterWorkflow:
         """
         if self.mock_mode:
             # Mock mode: generate mock hash with MOCK prefix
-            content = f"{chapter_id}:{prose_hash}:{delta.delta_id if delta else 'no-delta'}"
+            content = (
+                f"{chapter_id}:{prose_hash}:{delta.delta_id if delta else 'no-delta'}"
+            )
             mock_hash = "MOCK-" + hashlib.sha256(content.encode()).hexdigest()[:16]
 
             return {

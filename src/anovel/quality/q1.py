@@ -215,20 +215,25 @@ class Q1CanonValidator:
     ) -> Q1CheckResult:
         """Q1-03: Verify dead characters cannot perform actions.
 
+        Owner要求：
+        - UNKNOWN、ERROR不能获得生产级硬门禁PASS
+        - 人物复活必须符合世界规则、正文证据及授权约束，不能仅依靠单个布尔变化
+
         Checks if the subject entity is marked as not alive (is_alive=False)
-        in Canon. If so, new fact changes should not be allowed unless
-        explicitly part of a resurrection or similar authorized event.
+        in Canon. If so, new fact changes should not be allowed.
+        Resurrection requires explicit authorization in world rules, not just
+        setting is_alive=True.
         """
         # Get is_alive fact path
         try:
             is_alive_path = get_fact_path("is_alive")
         except ValueError:
-            # is_alive not in registry - cannot check
+            # Owner要求: UNKNOWN不能获得PASS
             return Q1CheckResult(
                 check_name="life_state_consistency",
-                status=Q1CheckStatus.UNKNOWN,
-                message="is_alive not in FactPath registry, cannot verify life state",
-                severity="warning",
+                status=Q1CheckStatus.ERROR,
+                message="is_alive not in FactPath registry, cannot verify life state - BLOCKING",
+                severity="error",
             )
 
         for i, op in enumerate(delta.operations):
@@ -242,12 +247,18 @@ class Q1CanonValidator:
 
             if is_alive_exists and is_alive_value is False:
                 # Subject is dead in Canon
-                # Allow resurrection if this operation explicitly sets is_alive=True
+                # Owner要求: 人物复活必须符合世界规则、正文证据及授权约束
+                # 不能仅依靠单个布尔变化 - 必须拒绝所有操作包括复活
+                # 复活需要通过世界规则授权机制（未实现前阻断）
                 if op.path.path == "is_alive" and op.value is True:
-                    # This is a resurrection operation - allow
-                    continue
+                    return Q1CheckResult(
+                        check_name="life_state_consistency",
+                        status=Q1CheckStatus.FAIL,
+                        message=f"Operation {i} attempts resurrection for {op.subject}, but resurrection requires world rules authorization (not implemented)",
+                        severity="error",
+                    )
 
-                # Otherwise, dead characters cannot have new facts set
+                # Dead characters cannot have new facts set
                 return Q1CheckResult(
                     check_name="life_state_consistency",
                     status=Q1CheckStatus.FAIL,

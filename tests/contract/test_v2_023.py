@@ -11,12 +11,10 @@ import pytest
 from anovel.contracts.models import ChapterContract
 from anovel.domain.delta import (
     CanonState,
-    CommitId,
     DeltaId,
     EvidenceRef,
     ExpectAbsent,
     ExpectValue,
-    FactValue,
     NarrativeDelta,
     OperationType,
     SetFactOperation,
@@ -24,7 +22,7 @@ from anovel.domain.delta import (
 )
 from anovel.domain.identity import EntityId, ProjectId
 from anovel.planning.models import GenrePackBinding
-from anovel.quality.q1 import Q1CanonValidator, Q1CheckStatus
+from anovel.quality.q1 import Q1CanonValidator
 
 
 @pytest.fixture
@@ -133,7 +131,10 @@ def test_at_v2_023_02_precondition_mismatch_rejected():
 
     # Must fail on precondition mismatch
     assert result.passed is False
-    assert any("expects absent" in issue.lower() or "precondition" in issue.lower() for issue in result.blocking_issues)
+    assert any(
+        "expects absent" in issue.lower() or "precondition" in issue.lower()
+        for issue in result.blocking_issues
+    )
 
 
 def test_at_v2_023_03_correct_precondition_passes():
@@ -263,8 +264,12 @@ def test_at_v2_023_04_dead_character_cannot_act():
     assert any("not alive" in issue.lower() for issue in result.blocking_issues)
 
 
-def test_at_v2_023_05_resurrection_allowed():
-    """AT-V2-023-05: Explicit resurrection (is_alive: False → True) is allowed."""
+def test_at_v2_023_05_resurrection_blocked_without_authorization():
+    """AT-V2-023-05: Resurrection (is_alive: False → True) requires world rules authorization.
+
+    Owner要求 (2026-11-01): 人物复活必须符合世界规则、正文证据及授权约束，
+    不能仅依靠单个布尔变化。在世界规则授权机制实现前，必须阻断。
+    """
     validator = Q1CanonValidator()
 
     project_id = ProjectId("test-q1-project")
@@ -279,14 +284,14 @@ def test_at_v2_023_05_resurrection_allowed():
         commit_history=(),
     )
 
-    # Explicit resurrection operation
+    # Attempt resurrection operation without world rules authorization
     operation = SetFactOperation(
         operation_type=OperationType.SET_FACT,
         operation_version="1.0.0",
         subject=entity,
         scope=project_id,
         path=is_alive_path,
-        value=True,  # Resurrection
+        value=True,  # Attempted resurrection
         precondition=ExpectValue(expected_value=False),
         evidence=EvidenceRef(
             source_type="TEXT",
@@ -320,9 +325,12 @@ def test_at_v2_023_05_resurrection_allowed():
 
     result = validator.validate(delta, canon_with_dead, contract)
 
-    # Must pass - explicit resurrection allowed
-    assert result.passed is True
-    assert len(result.blocking_issues) == 0
+    # Must fail - resurrection requires world rules authorization (not implemented)
+    assert result.passed is False
+    assert any(
+        "resurrection" in issue.lower() and "authorization" in issue.lower()
+        for issue in result.blocking_issues
+    )
 
 
 def test_at_v2_023_06_alive_character_can_act():

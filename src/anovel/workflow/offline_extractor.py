@@ -183,11 +183,20 @@ class OfflineExtractor:
             ),
         )
 
+        # Owner要求: 不能固定声称100% coverage
+        # Offline extractor只验证显式标记的required_transitions
+        # 无法保证覆盖全部正文语义
+        if required_count > 0:
+            coverage_percentage = (found_count / required_count) * 100.0
+        else:
+            # 无required transitions时，无法计算有意义的coverage
+            coverage_percentage = 0.0
+
         diagnostics = ExtractionDiagnostic(
-            coverage_percentage=100.0,  # Offline assumes full coverage
+            coverage_percentage=coverage_percentage,
             required_transitions_found=found_count,
             required_transitions_missing=required_count - found_count,
-            unexpected_changes_found=0,
+            unexpected_changes_found=0,  # Offline不检测unexpected changes
             conflicting_evidence_count=0,
             uncertain_extractions=[],
             issues=issues.copy(),

@@ -1,0 +1,42 @@
+{
+  "experiment_id": "readiness-20261101-145827",
+  "dry_run": true,
+  "use_mock": true,
+  "chapters_generated": 3,
+  "status": "completed",
+  "chapters": [
+    {
+      "chapter_number": 1,
+      "status": "success",
+      "prose_preview": "[MOCK CHAPTER PROSE]\n\nGenerated from prompt with 16 chars.",
+      "input_tokens": 4,
+      "output_tokens": 1000,
+      "model": "mock-model-v1",
+      "dry_run": true,
+      "canon_committed": false,
+      "generated_at": "2026-11-01T14:58:27.563046"
+    },
+    {
+      "chapter_number": 2,
+      "status": "success",
+      "prose_preview": "[MOCK CHAPTER PROSE]\n\nGenerated from prompt with 16 chars.",
+      "input_tokens": 4,
+      "output_tokens": 1000,
+      "model": "mock-model-v1",
+      "dry_run": true,
+      "canon_committed": false,
+      "generated_at": "2026-11-01T14:58:27.563474"
+    },
+    {
+      "chapter_number": 3,
+      "status": "success",
+      "prose_preview": "[MOCK CHAPTER PROSE]\n\nGenerated from prompt with 16 chars.",
+      "input_tokens": 4,
+      "output_tokens": 1000,
+      "model": "mock-model-v1",
+      "dry_run": true,
+      "canon_committed": false,
+      "generated_at": "2026-11-01T14:58:27.563989"
+    }
+  ]
+}

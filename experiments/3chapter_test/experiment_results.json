@@ -1,0 +1,9 @@
+{
+  "experiment_id": "exp-20261101-145753",
+  "series_id": "test-3chapter-urban",
+  "dry_run": true,
+  "use_mock_provider": true,
+  "chapters": [],
+  "status": "error",
+  "error": "ChapterWorkflow.execute_chapter() got an unexpected keyword argument 'chapter_number'"
+}

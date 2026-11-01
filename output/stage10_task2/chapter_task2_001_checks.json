@@ -1,0 +1,119 @@
+[
+  {
+    "check_name": "Q0-required_artifacts",
+    "status": "pass",
+    "message": "All required artifacts present",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q0-prose_hash_match",
+    "status": "pass",
+    "message": "Prose hash verified",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q0-delta_evidence_hash",
+    "status": "pass",
+    "message": "Delta evidence hash verified",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q0-operations_evidence",
+    "status": "pass",
+    "message": "All 2 operations have valid evidence matching prose_hash",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q0-evidence_locations_verified",
+    "status": "pass",
+    "message": "All evidence locations verified against actual prose",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q0-operation_evidence_correspondence",
+    "status": "pass",
+    "message": "All 2 operations have corresponding evidence with correct indices and fact_paths",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q1-project_isolation",
+    "status": "pass",
+    "message": "Project isolation verified",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q1-state_preconditions",
+    "status": "pass",
+    "message": "All preconditions match Canon state",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q1-life_state_consistency",
+    "status": "pass",
+    "message": "Life state consistency verified",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q2-genre_pack_version",
+    "status": "pass",
+    "message": "GenrePack contemporary_realistic v1.0 verified",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q3-required_transitions",
+    "status": "fail",
+    "message": "Missing required transitions: protagonist.activity",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "Q3-no_contract_value_copying",
+    "status": "pass",
+    "message": "Operations validated against contract (Q0 ensures prose extraction)",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "basic-prose_length",
+    "status": "pass",
+    "message": "Prose length 1483 chars",
+    "severity": "error",
+    "metadata": {
+      "actual_length": 1483
+    }
+  },
+  {
+    "check_name": "basic-no_error_markers",
+    "status": "pass",
+    "message": "No error markers found",
+    "severity": "error",
+    "metadata": null
+  },
+  {
+    "check_name": "basic-delta_operations",
+    "status": "pass",
+    "message": "Operations match required: 2",
+    "severity": "error",
+    "metadata": {
+      "operations": 2,
+      "required": 2
+    }
+  },
+  {
+    "check_name": "basic-prose_hash_binding",
+    "status": "pass",
+    "message": "Delta bound to current prose",
+    "severity": "warning",
+    "metadata": null
+  }
+]

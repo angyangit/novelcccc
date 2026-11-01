@@ -1,0 +1,194 @@
+================================================================================
+Stage 10 Phase 3 Task 2: Real Model Unified Workflow Verification
+================================================================================
+
+Provider Configuration:
+  Base URL: https://cc-vibe.com
+  API Key: sk-c...168f
+  Model ID: claude-fable-5-1
+
+Budget Status:
+  Total budget cap: $5.00
+  Previous spending (Stage 9 + Phase 1-2): $1.12
+  Available: $3.88
+  Task 2 recommended max: $0.75
+
+✓ Budget-protected gateway initialized
+
+Test Configuration:
+  Series: 图书馆奇遇记
+  Chapter: 1 (chapter_task2_001)
+  Required transitions: 2
+  Canon parent: genesis
+
+Canon State:
+  Project ID: library_adventure
+  Facts count: 0
+  Parent: genesis (genesis)
+
+================================================================================
+Executing Real Model Workflow
+================================================================================
+
+================================================================================
+Workflow Execution Complete
+================================================================================
+
+Status: quality_failed
+Workflow ID: aa288c91-9060-46ec-ac13-e74f661c8d6f
+Execution time: 52.67s
+Cost: $0.2963
+
+✓ Prose saved: output/stage10_task2/chapter_task2_001.txt
+  Length: 1483 chars
+  Hash: 7738bbdd414f0664...
+
+Stages completed: 5
+  ✓ contract_compile
+  ✓ context_compile
+  ✓ generation
+  ✓ delta_extraction
+  ✓ quality_validation
+
+================================================================================
+Quality Validation Results
+================================================================================
+
+Overall passed: False
+Blocking issues: 1
+Warnings: 0
+Checks run: 8
+
+Validator Results:
+  Q0 (Deterministic): True
+  Q1 (Canon Consistency): True
+  Q2 (Genre Rules): True
+  Q3 (Required Transitions): False
+
+Check Details (16 checks):
+  ✓ Q0-required_artifacts: pass
+     All required artifacts present
+  ✓ Q0-prose_hash_match: pass
+     Prose hash verified
+  ✓ Q0-delta_evidence_hash: pass
+     Delta evidence hash verified
+  ✓ Q0-operations_evidence: pass
+     All 2 operations have valid evidence matching prose_hash
+  ✓ Q0-evidence_locations_verified: pass
+     All evidence locations verified against actual prose
+  ✓ Q0-operation_evidence_correspondence: pass
+     All 2 operations have corresponding evidence with correct indices and fact_paths
+  ✓ Q1-project_isolation: pass
+     Project isolation verified
+  ✓ Q1-state_preconditions: pass
+     All preconditions match Canon state
+  ✓ Q1-life_state_consistency: pass
+     Life state consistency verified
+  ✓ Q2-genre_pack_version: pass
+     GenrePack contemporary_realistic v1.0 verified
+  ✗ Q3-required_transitions: fail
+     Missing required transitions: protagonist.activity
+  ✓ Q3-no_contract_value_copying: pass
+     Operations validated against contract (Q0 ensures prose extraction)
+  ✓ basic-prose_length: pass
+     Prose length 1483 chars
+     Metadata: {'actual_length': 1483}
+  ✓ basic-no_error_markers: pass
+     No error markers found
+  ✓ basic-delta_operations: pass
+     Operations match required: 2
+     Metadata: {'operations': 2, 'required': 2}
+  ✓ basic-prose_hash_binding: pass
+     Delta bound to current prose
+
+✓ Check details saved: output/stage10_task2/chapter_task2_001_checks.json
+
+Blocking Issues:
+  ✗ Q3-01: Missing required transitions: protagonist.activity
+
+================================================================================
+Delta Extraction Results
+================================================================================
+
+Extraction success: True
+Extraction method: llm_structured
+Prose hash: 7738bbdd414f0664...
+Issues count: 9
+
+Operations extracted: 2
+  1. protagonist.location = 市图书馆门前
+     Subject: protagonist
+     Scope: library_adventure
+     Evidence: chapter:12-67
+  2. protagonist.location = 图书馆二楼阅览区靠窗位置
+     Subject: protagonist
+     Scope: library_adventure
+     Evidence: chapter:654-705
+
+Extraction Issues:
+  - Change 1: Evidence text not found in prose: '他深吸一口气，推开了那扇门。门轴发出轻微的吱呀声，一股混合着纸张、墨水和木质家具的气息扑面而来...'
+  - Change 2: Evidence text not found in prose: '李明穿过一排排书架，熟门熟路地走向科学类书籍区。他的目标很明确——时间简史...'
+  - Change 3: Evidence text not found in prose: '书架的标签上写着508-天文物理。李明的手指沿着书脊滑过，宇宙的琴弦、黑洞与时间弯曲、果壳中的宇宙…...'
+  - Change 4: Evidence text not found in prose: '他小心地抽出那本书。书不厚，也就两百多页，封面上的副标题写着从大爆炸到黑洞。李明翻开扉页，看到借书卡...'
+  - Change 5: Evidence found at position 654, not near suggested 780 (fuzzy match used)
+  - Change 6: Evidence text not found in prose: '他调整了一下坐姿，打开了书的第一页。我们生活在一个奇妙的宇宙中……霍金的文字简洁而深邃。李明一开始读...'
+  - Change 7: Evidence text not found in prose: '他的笔记本摊开在旁边，偶尔记下一些要点：光速恒定——每秒30万公里、时间膨胀效应——高速运动时时间变...'
+  - Change 8: Evidence text not found in prose: '不知不觉，窗外的阳光已经从书桌的左侧移到了右侧。李明活动了一下有些僵硬的脖子，才发现自己已经读了将近...'
+  - Change 9: Evidence text not found in prose: '李明盯着那片叶子看了一会儿，然后重新翻开了书。他还有很长的路要走，但至少，他已经开始了...'
+
+================================================================================
+Workflow Error
+================================================================================
+
+Stage: quality_validation
+Error type: quality_failed
+Message: Quality checks failed: Q3-01: Missing required transitions: protagonist.activity
+Retryable: True
+
+================================================================================
+Budget Report
+================================================================================
+
+
+================================================================================
+Budget Report
+================================================================================
+Total Budget: $5.0000
+Spent: $0.2963
+Pending: $0.0000
+Remaining: $4.7038
+Requests Made: 1
+
+Request Log:
+--------------------------------------------------------------------------------
+1. Model: claude-fable-5-1, Tokens: 2228→1654, Cost: $0.157470
+--------------------------------------------------------------------------------
+
+
+Task 2 cost: $0.2963
+Task 2 max recommended: $0.75
+✓ Within total budget cap: $0.2963 / $5.00
+
+================================================================================
+Task 2 Complete
+================================================================================
+
+Summary for Owner Report:
+1. Remote HEAD: d9ffbb8 (Task 1 pushed)
+2. Provider: https://cc-vibe.com
+3. Model ID: claude-fable-5-1
+4. Task 2 cost: $0.2963
+5. Cumulative spent: $0.2963 / $5.00
+6. Chapter location: output/stage10_task2/chapter_task2_001.txt
+7. Prose length: 1483 chars
+8. Operations extracted: 2
+9. Required transitions: 2
+10. Q0 passed: True
+11. Q1 passed: True
+12. Q2 passed: True
+13. Q3 passed: False
+14. Overall quality passed: False
+15. Canon commit: NONE
+16. Canon commit is mock: False
+17. Workflow status: quality_failed
+================================================================================

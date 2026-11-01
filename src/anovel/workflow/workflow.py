@@ -1,4 +1,4 @@
-"""Core Chapter Workflow orchestration for V2-020."""
+"""Core Chapter Workflow orchestration for V2-020/V2-021."""
 
 import hashlib
 import time
@@ -14,6 +14,7 @@ from ..domain.delta import NarrativeDelta
 from ..gateway.gateway import ModelGateway
 from ..gateway.models import GenerationError
 from ..planning.models import SeriesVision
+from .extractor import NarrativeDeltaExtractor
 from .models import (
     ChapterWorkflowResult,
     DeltaExtractionResult,
@@ -32,6 +33,7 @@ class ChapterWorkflow:
         contract_compiler: ContractCompiler,
         context_compiler: ContextCompiler,
         model_gateway: ModelGateway,
+        extractor: NarrativeDeltaExtractor | None = None,  # V2-021: injectable extractor
         mock_mode: bool = True,  # True = mock canon commits, False = real commits
     ):
         """Initialize workflow with required components.
@@ -40,11 +42,13 @@ class ChapterWorkflow:
             contract_compiler: Contract compiler (V2-017)
             context_compiler: Context compiler (V2-018)
             model_gateway: Model gateway (V2-019)
+            extractor: Narrative delta extractor (V2-021), None = use legacy stub
             mock_mode: If True, use mock canon commits (NOT production)
         """
         self.contract_compiler = contract_compiler
         self.context_compiler = context_compiler
         self.model_gateway = model_gateway
+        self.extractor = extractor  # V2-021: new injected extractor
         self.mock_mode = mock_mode
 
     def execute_chapter(
@@ -176,6 +180,7 @@ class ChapterWorkflow:
                 prose_hash=prose_hash,
                 contract=contract,
                 series_vision=series_vision,
+                canon_parent=canon_snapshot.get("commit_hash", "unknown"),
             )
             stages_completed.append(WorkflowStage.DELTA_EXTRACTION)
 
@@ -328,21 +333,54 @@ class ChapterWorkflow:
         prose_hash: str,
         contract: ChapterContract,
         series_vision: SeriesVision,
+        canon_parent: str,
     ) -> DeltaExtractionResult:
         """Extract NarrativeDelta from generated prose.
 
-        V2-020 MVP: Reports extraction not implemented when contract requires transitions.
-        Future V2-021: Use LLM to extract actual SetFactOperation from prose.
+        V2-021: Uses injected extractor if available, otherwise legacy stub.
 
         Args:
             prose: Generated prose
             prose_hash: SHA-256 hash of prose
             contract: Chapter contract
             series_vision: Series vision (for project_id)
+            canon_parent: Canon parent hash
 
         Returns:
             Extraction result with success based on contract requirements
         """
+        # V2-021: Use injected extractor if available
+        if self.extractor is not None:
+            extraction_result = self.extractor.extract(
+                prose=prose,
+                prose_hash=prose_hash,
+                contract=contract,
+                series_vision=series_vision,
+                canon_parent=canon_parent,
+            )
+
+            # Convert V2-021 result to V2-020 DeltaExtractionResult
+            return DeltaExtractionResult(
+                success=(extraction_result.status == "success"),
+                delta=extraction_result.delta,
+                prose_hash=extraction_result.prose_hash,
+                extraction_method=extraction_result.extraction_method,
+                issues=extraction_result.issues,
+            )
+
+        # Legacy V2-020 stub (for backward compatibility)
+        return self._legacy_extraction_stub(
+            prose, prose_hash, contract, series_vision
+        )
+
+    def _legacy_extraction_stub(
+        self,
+        prose: str,
+        prose_hash: str,
+        contract: ChapterContract,
+        series_vision: SeriesVision,
+    ) -> DeltaExtractionResult:
+        """Legacy extraction stub from V2-020."""
         from ..domain.delta import DeltaId
         from ..domain.identity import ProjectId
 
@@ -367,9 +405,9 @@ class ChapterWorkflow:
             operations=(),  # Empty - extraction not implemented
             source_chapter=contract.chapter_id,
             created_at=datetime.now(),
-            authority="chapter_workflow_v2020_mvp",
+            authority="chapter_workflow_v2020_legacy",
             provenance=(
-                ("extraction_method", "not_implemented_mvp"),
+                ("extraction_method", "not_implemented_legacy"),
                 ("prose_hash", prose_hash),
             ),
         )

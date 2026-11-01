@@ -1,0 +1,31 @@
+{
+  "extraction": {
+    "status": "success",
+    "operations_count": 6,
+    "coverage": 100.0,
+    "required_found": 2,
+    "required_missing": 0,
+    "issues_count": 8
+  },
+  "quality": {
+    "passed": true,
+    "q0_passed": true,
+    "q1_passed": true,
+    "q2_passed": true,
+    "q3_passed": true,
+    "blocking_issues": [],
+    "warnings": [
+      "Delta operations count (6) != contract transitions (2)"
+    ],
+    "checks_run": [
+      "q0_validation",
+      "q1_canon_validation",
+      "q2_genre_validation",
+      "q3_transition_validation",
+      "prose_minimum_length",
+      "no_error_markers",
+      "delta_operations_present",
+      "prose_hash_binding"
+    ]
+  }
+}

@@ -27,6 +27,27 @@ class WorkflowStage(StrEnum):
     CANON_COMMIT = "canon_commit"
 
 
+class CheckStatus(StrEnum):
+    """Individual quality check status."""
+
+    PASS = "pass"
+    FAIL = "fail"
+    UNKNOWN = "unknown"
+    ERROR = "error"
+    NOT_RUN = "not_run"
+
+
+@dataclass
+class CheckDetail:
+    """Detailed check execution result."""
+
+    check_name: str
+    status: CheckStatus
+    message: str
+    severity: str = "error"  # "error" | "warning"
+    metadata: dict[str, Any] | None = None
+
+
 @dataclass
 class WorkflowError:
     """Workflow execution error."""
@@ -41,12 +62,17 @@ class WorkflowError:
 
 @dataclass
 class QualityCheckResult:
-    """Quality validation result."""
+    """Quality validation result with detailed check tracking."""
 
     passed: bool
     blocking_issues: list[str]  # Issues that block canon commit
     warnings: list[str]  # Non-blocking issues
     checks_run: list[str]  # Names of checks executed
+    check_details: list[CheckDetail] | None = None  # Detailed results per check
+    q0_passed: bool | None = None  # Q0 deterministic validation
+    q1_passed: bool | None = None  # Q1 Canon consistency
+    q2_passed: bool | None = None  # Q2 Genre rules
+    q3_passed: bool | None = None  # Q3 Required transitions
 
 
 @dataclass

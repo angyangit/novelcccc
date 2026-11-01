@@ -65,24 +65,28 @@ class ChapterWorkflow:
         # V2-022: Q0 validator (lazy import to avoid circular dependency)
         if q0_validator is None:
             from ..quality.q0 import Q0Validator
+
             q0_validator = Q0Validator()
         self.q0_validator = q0_validator
 
         # V2-023: Q1 Canon validator
         if q1_validator is None:
             from ..quality.q1 import Q1CanonValidator
+
             q1_validator = Q1CanonValidator()
         self.q1_validator = q1_validator
 
         # V2-024: Q2 Genre validator
         if q2_validator is None:
             from ..quality.q2 import Q2GenreValidator
+
             q2_validator = Q2GenreValidator()
         self.q2_validator = q2_validator
 
         # V2-025: Q3 Transition validator
         if q3_validator is None:
             from ..quality.q3 import Q3TransitionValidator
+
             q3_validator = Q3TransitionValidator()
         self.q3_validator = q3_validator
 
@@ -491,54 +495,173 @@ class ChapterWorkflow:
         Returns:
             Quality check result with passed=True only if all checks pass
         """
+        from .models import CheckDetail, CheckStatus
+
         blocking_issues = []
         warnings = []
         checks_run = []
+        check_details = []
+        q0_passed = None
+        q1_passed = None
+        q2_passed = None
+        q3_passed = None
 
         # Q0 VALIDATION (V2-022): Deterministic checks FIRST
         if extraction_result:
             checks_run.append("q0_validation")
-            q0_result = self.q0_validator.validate(
-                extraction_result, contract, prose, prose_hash
+            try:
+                q0_result = self.q0_validator.validate(
+                    extraction_result, contract, prose, prose_hash
+                )
+                q0_passed = q0_result.passed
+
+                # Record detailed check results
+                for check in q0_result.checks:
+                    check_details.append(
+                        CheckDetail(
+                            check_name=f"Q0-{check.check_name}",
+                            status=CheckStatus.PASS
+                            if check.status == "pass"
+                            else CheckStatus.FAIL
+                            if check.status == "fail"
+                            else CheckStatus.UNKNOWN,
+                            message=check.message,
+                            severity="error",  # Q0 checks are always blocking
+                        )
+                    )
+
+                if not q0_result.passed:
+                    blocking_issues.extend(q0_result.blocking_issues)
+            except Exception as e:
+                q0_passed = False
+                blocking_issues.append(f"Q0 validation error: {e}")
+                check_details.append(
+                    CheckDetail(
+                        check_name="Q0-execution",
+                        status=CheckStatus.ERROR,
+                        message=str(e),
+                        severity="error",
+                    )
+                )
+        else:
+            check_details.append(
+                CheckDetail(
+                    check_name="Q0-validation",
+                    status=CheckStatus.NOT_RUN,
+                    message="No extraction result available",
+                    severity="error",
+                )
             )
-            if not q0_result.passed:
-                blocking_issues.extend(q0_result.blocking_issues)
-            warnings.extend(q0_result.warnings)
+            blocking_issues.append("Q0 validation not run: no extraction result")
 
         # Q1 VALIDATION (V2-023): Canon consistency checks
         if delta and canon_snapshot:
             checks_run.append("q1_canon_validation")
             try:
                 from ..domain.delta import CanonState
-                # Convert canon_snapshot dict to CanonState if needed
+                from ..domain.identity import ProjectId
+
+                # Convert canon_snapshot to proper CanonState
                 if isinstance(canon_snapshot, dict):
-                    # For Stage 9, create minimal CanonState from snapshot
-                    from ..domain.identity import ProjectId
+                    # Extract project_id from canon_snapshot or delta
+                    if "project_id" in canon_snapshot:
+                        project_id = ProjectId(canon_snapshot["project_id"])
+                    elif delta and delta.operations:
+                        # Extract from first operation's subject
+                        project_id = delta.operations[0].subject.project_id
+                    else:
+                        # Fallback: use generic identifier
+                        project_id = ProjectId("unknown")
+
+                    # Create CanonState with proper structure
                     canon_state = CanonState(
-                        project_id=ProjectId(contract.chapter_id.split("_")[0]),
-                        facts={},
-                        version=canon_snapshot.get("version", "0"),
+                        project_id=project_id,
+                        facts=canon_snapshot.get("facts", ()),
+                        tombstones=canon_snapshot.get("tombstones", frozenset()),
+                        commit_history=canon_snapshot.get("commit_history", ()),
                     )
                 else:
                     canon_state = canon_snapshot
 
                 q1_result = self.q1_validator.validate(delta, canon_state, contract)
+                q1_passed = q1_result.passed
+
+                # Record Q1 check details
+                for check in q1_result.checks:
+                    check_details.append(
+                        CheckDetail(
+                            check_name=f"Q1-{check.check_name}",
+                            status=CheckStatus.PASS
+                            if check.status == "pass"
+                            else CheckStatus.FAIL
+                            if check.status == "fail"
+                            else CheckStatus.UNKNOWN,
+                            message=check.message,
+                            severity=check.severity,
+                        )
+                    )
+
                 if not q1_result.passed:
                     blocking_issues.extend(q1_result.blocking_issues)
                 warnings.extend(q1_result.warnings)
             except Exception as e:
-                warnings.append(f"Q1 validation error: {e}")
+                q1_passed = False
+                blocking_issues.append(f"Q1 validation error: {e}")
+                check_details.append(
+                    CheckDetail(
+                        check_name="Q1-execution",
+                        status=CheckStatus.ERROR,
+                        message=str(e),
+                        severity="error",
+                    )
+                )
+        elif delta:
+            check_details.append(
+                CheckDetail(
+                    check_name="Q1-validation",
+                    status=CheckStatus.NOT_RUN,
+                    message="No canon snapshot available",
+                    severity="error",
+                )
+            )
+            blocking_issues.append("Q1 validation not run: no canon snapshot")
 
         # Q2 VALIDATION (V2-024): Genre consistency checks
         if delta:
             checks_run.append("q2_genre_validation")
             try:
                 q2_result = self.q2_validator.validate(delta, contract)
+                q2_passed = q2_result.passed
+
+                # Record Q2 check details
+                for check in q2_result.checks:
+                    check_details.append(
+                        CheckDetail(
+                            check_name=f"Q2-{check.check_name}",
+                            status=CheckStatus.PASS
+                            if check.status == "pass"
+                            else CheckStatus.FAIL
+                            if check.status == "fail"
+                            else CheckStatus.UNKNOWN,
+                            message=check.message,
+                            severity=check.severity,
+                        )
+                    )
+
                 if not q2_result.passed:
                     blocking_issues.extend(q2_result.blocking_issues)
                 warnings.extend(q2_result.warnings)
             except Exception as e:
+                q2_passed = False
                 warnings.append(f"Q2 validation error: {e}")
+                check_details.append(
+                    CheckDetail(
+                        check_name="Q2-execution",
+                        status=CheckStatus.ERROR,
+                        message=str(e),
+                        severity="warning",  # Q2 not fully implemented yet
+                    )
+                )
 
         # Q3 VALIDATION (V2-025): Transition checks
         if delta and canon_snapshot:
@@ -546,54 +669,202 @@ class ChapterWorkflow:
             try:
                 from ..domain.delta import CanonState
                 from ..domain.identity import ProjectId
+
                 if isinstance(canon_snapshot, dict):
+                    # Extract project_id from canon_snapshot or delta
+                    if "project_id" in canon_snapshot:
+                        project_id = ProjectId(canon_snapshot["project_id"])
+                    elif delta and delta.operations:
+                        # Extract from first operation's subject
+                        project_id = delta.operations[0].subject.project_id
+                    else:
+                        # Fallback: use generic identifier
+                        project_id = ProjectId("unknown")
+
                     canon_state = CanonState(
-                        project_id=ProjectId(contract.chapter_id.split("_")[0]),
-                        facts={},
-                        version=canon_snapshot.get("version", "0"),
+                        project_id=project_id,
+                        facts=canon_snapshot.get("facts", ()),
+                        tombstones=canon_snapshot.get("tombstones", frozenset()),
+                        commit_history=canon_snapshot.get("commit_history", ()),
                     )
                 else:
                     canon_state = canon_snapshot
 
                 q3_result = self.q3_validator.validate(delta, canon_state, contract)
+                q3_passed = q3_result.passed
+
+                # Record Q3 check details
+                for check in q3_result.checks:
+                    check_details.append(
+                        CheckDetail(
+                            check_name=f"Q3-{check.check_name}",
+                            status=CheckStatus.PASS
+                            if check.status == "pass"
+                            else CheckStatus.FAIL
+                            if check.status == "fail"
+                            else CheckStatus.UNKNOWN,
+                            message=check.message,
+                            severity=check.severity,
+                        )
+                    )
+
                 if not q3_result.passed:
                     blocking_issues.extend(q3_result.blocking_issues)
                 warnings.extend(q3_result.warnings)
             except Exception as e:
-                warnings.append(f"Q3 validation error: {e}")
+                q3_passed = False
+                blocking_issues.append(f"Q3 validation error: {e}")
+                check_details.append(
+                    CheckDetail(
+                        check_name="Q3-execution",
+                        status=CheckStatus.ERROR,
+                        message=str(e),
+                        severity="error",
+                    )
+                )
+        elif delta:
+            check_details.append(
+                CheckDetail(
+                    check_name="Q3-validation",
+                    status=CheckStatus.NOT_RUN,
+                    message="No canon snapshot available",
+                    severity="error",
+                )
+            )
+            blocking_issues.append("Q3 validation not run: no canon snapshot")
 
         # Check 1: Prose minimum length (BLOCKING)
         checks_run.append("prose_minimum_length")
-        if not prose or len(prose.strip()) < 100:
+        prose_length = len(prose.strip()) if prose else 0
+        if prose_length < 100:
             blocking_issues.append("Prose too short (< 100 chars)")
+            check_details.append(
+                CheckDetail(
+                    check_name="basic-prose_length",
+                    status=CheckStatus.FAIL,
+                    message=f"Prose length {prose_length} < 100 chars",
+                    severity="error",
+                    metadata={"actual_length": prose_length, "min_required": 100},
+                )
+            )
+        else:
+            check_details.append(
+                CheckDetail(
+                    check_name="basic-prose_length",
+                    status=CheckStatus.PASS,
+                    message=f"Prose length {prose_length} chars",
+                    severity="error",
+                    metadata={"actual_length": prose_length},
+                )
+            )
 
         # Check 2: No error markers in prose (BLOCKING)
         checks_run.append("no_error_markers")
         error_markers = ["[ERROR]", "[FAILED]", "[MOCK CHAPTER PROSE]"]
-        for marker in error_markers:
-            if marker in prose:
+        found_markers = [m for m in error_markers if m in prose]
+        if found_markers:
+            for marker in found_markers:
                 blocking_issues.append(f"Error marker found in prose: {marker}")
+            check_details.append(
+                CheckDetail(
+                    check_name="basic-no_error_markers",
+                    status=CheckStatus.FAIL,
+                    message=f"Found error markers: {', '.join(found_markers)}",
+                    severity="error",
+                    metadata={"markers_found": found_markers},
+                )
+            )
+        else:
+            check_details.append(
+                CheckDetail(
+                    check_name="basic-no_error_markers",
+                    status=CheckStatus.PASS,
+                    message="No error markers found",
+                    severity="error",
+                )
+            )
 
         # Check 3: Delta operations present if contract requires transitions (BLOCKING)
         checks_run.append("delta_operations_present")
         if delta and contract.required_transitions:
-            if len(delta.operations) == 0:
+            op_count = len(delta.operations)
+            required_count = len(contract.required_transitions)
+            if op_count == 0:
                 blocking_issues.append(
-                    f"Contract requires {len(contract.required_transitions)} transitions "
+                    f"Contract requires {required_count} transitions "
                     "but delta has 0 operations (extraction failed or not implemented)"
                 )
-            elif len(delta.operations) != len(contract.required_transitions):
-                warnings.append(
-                    f"Delta operations count ({len(delta.operations)}) "
-                    f"!= contract transitions ({len(contract.required_transitions)})"
+                check_details.append(
+                    CheckDetail(
+                        check_name="basic-delta_operations",
+                        status=CheckStatus.FAIL,
+                        message=f"No operations extracted (required: {required_count})",
+                        severity="error",
+                        metadata={"operations": 0, "required": required_count},
+                    )
                 )
+            elif op_count != required_count:
+                warnings.append(
+                    f"Delta operations count ({op_count}) "
+                    f"!= contract transitions ({required_count})"
+                )
+                check_details.append(
+                    CheckDetail(
+                        check_name="basic-delta_operations",
+                        status=CheckStatus.PASS,
+                        message=f"Operations extracted: {op_count} (required: {required_count})",
+                        severity="warning",
+                        metadata={"operations": op_count, "required": required_count},
+                    )
+                )
+            else:
+                check_details.append(
+                    CheckDetail(
+                        check_name="basic-delta_operations",
+                        status=CheckStatus.PASS,
+                        message=f"Operations match required: {op_count}",
+                        severity="error",
+                        metadata={"operations": op_count, "required": required_count},
+                    )
+                )
+        elif contract.required_transitions:
+            check_details.append(
+                CheckDetail(
+                    check_name="basic-delta_operations",
+                    status=CheckStatus.NOT_RUN,
+                    message="No delta available for validation",
+                    severity="error",
+                )
+            )
 
         # Check 4: Prose hash bound to delta (WARNING)
         checks_run.append("prose_hash_binding")
         if delta:
             provenance_dict = dict(delta.provenance)
-            if provenance_dict.get("prose_hash") != prose_hash:
+            delta_prose_hash = provenance_dict.get("prose_hash")
+            if delta_prose_hash != prose_hash:
                 warnings.append("Delta not bound to current prose hash")
+                check_details.append(
+                    CheckDetail(
+                        check_name="basic-prose_hash_binding",
+                        status=CheckStatus.FAIL,
+                        message=f"Hash mismatch: delta={delta_prose_hash[:16]}... vs current={prose_hash[:16]}...",
+                        severity="warning",
+                        metadata={
+                            "delta_hash": delta_prose_hash,
+                            "current_hash": prose_hash,
+                        },
+                    )
+                )
+            else:
+                check_details.append(
+                    CheckDetail(
+                        check_name="basic-prose_hash_binding",
+                        status=CheckStatus.PASS,
+                        message="Delta bound to current prose",
+                        severity="warning",
+                    )
+                )
 
         # FAIL-CLOSED: passed only if NO blocking issues
         passed = len(blocking_issues) == 0
@@ -603,6 +874,11 @@ class ChapterWorkflow:
             blocking_issues=blocking_issues,
             warnings=warnings,
             checks_run=checks_run,
+            check_details=check_details,
+            q0_passed=q0_passed,
+            q1_passed=q1_passed,
+            q2_passed=q2_passed,
+            q3_passed=q3_passed,
         )
 
     def _commit_to_canon(

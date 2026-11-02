@@ -1,0 +1,1 @@
+"""ANovel contracts package."""

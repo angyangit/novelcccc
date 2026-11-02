@@ -1217,7 +1217,7 @@ tasks:
   - 不绕过前置阶段门禁
   - 不实现完整多入口 Genesis 或作者富文本工作台
   - 不把固定套路升级为所有小说的硬规则
-  status: OPEN
+  status: CLOSED
   execution_packet_ref: validation/execution/V2-017/prepare/execution-packet-reconciled.yaml
   owner_role: planning-maintainer
   readiness: PLANNED
@@ -1226,10 +1226,19 @@ tasks:
   - ADR-004
   - ADR-008
   evidence:
-    code: []
-    tests: []
-    ci: []
-    acceptance: []
+    code:
+    - 'PR #16: 4703abd1 (merged 2026-11-02)'
+    - 'src/anovel/contracts/compiler.py'
+    - 'src/anovel/contracts/models.py'
+    - 'src/anovel/planning/models.py'
+    tests:
+    - 'tests/contract/test_v2_017_acceptance.py: 14/14 passed'
+    ci:
+    - 'GitHub Actions run 41454724549: all 6 checks passed'
+    acceptance:
+    - 'ADR-008 accepted via PR #15 (94dbe467, merged 2026-11-02)'
+    - 'Story fixtures approved: Urban Business + Fantasy Cultivation'
+    - 'Beat outcome vs Required Transition semantic fix: 46544d4'
   related_findings:
   - AR-04
   - AR-08

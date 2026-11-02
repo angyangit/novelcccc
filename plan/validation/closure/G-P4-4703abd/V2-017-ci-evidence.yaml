@@ -1,0 +1,26 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-017-ci-4703abd
+evidence_type: CI_RUN
+subject_id: V2-017
+producer: GitHub Actions Run 41454724549
+pipeline_id: '41454724549'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/41454724549
+job_id: '41454724549'
+revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+status: PASS
+executed_at: '2026-11-02T13:42:21Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-HEAD-4703abd
+command: 'GitHub Actions workflow run with 6 jobs: ARCH_FITNESS, SCHEMA_CONTRACT, STATIC, SECRET_DEPENDENCY, POSTGRES_ENV, UNIT'
+exit_code: 0
+check_ids:
+  - CI-ARCH-FITNESS
+  - CI-SCHEMA-CONTRACT
+  - CI-STATIC
+  - CI-SECRET-DEPENDENCY
+  - CI-POSTGRES-ENV
+  - CI-UNIT
+artifacts:
+  - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt
+    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+input_evidence_refs: []

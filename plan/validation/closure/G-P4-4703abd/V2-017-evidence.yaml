@@ -1,0 +1,77 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-017-CLOSURE-4703abd
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-017
+revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+status: PASS
+producer: G-P4 phase gate certification
+executed_at: '2026-11-02T13:42:21Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-41454724549
+
+check_ids:
+  - V2-017
+  - AT-V2-017
+  - AT-V2-017-01
+  - AT-V2-017-02
+  - AT-V2-017-03
+  - AT-V2-017-04
+  - AT-V2-017-05
+  - AT-V2-017-06
+  - AT-V2-017-07
+  - AT-V2-017-08
+
+decision: ACCEPTED
+rationale: |
+  V2-017 Contract Compiler acceptance verified:
+
+  1. Contract compilation from SeriesVision to ChapterContract without P10 dependencies
+  2. RequiredTransition uses same NarrativeDelta semantics as Canon operations
+  3. Planning conflicts return diagnostics without modifying Canon
+  4. Dual story fixtures Owner-approved: urban_business_startup_v1.yaml and fantasy_eastern_cultivation_v1.yaml
+  5. Continuity contracts bind to previous chapter hash/evidence and current chapter start point
+  6. Scenes consume character goals/knowledge with expected cost; quiet chapters supported without forced combat
+  7. Planning inputs versioned with supersession; frozen and adjustable future plans separated
+  8. Canon/Pack/plan revisions trigger scoped invalidation and replan proposals
+  9. All 14 acceptance tests pass
+  10. CI verification: 6/6 gates SUCCESS in GitHub Actions run 41454724549
+  11. Beat outcome semantic fix (46544d4): distinguishes cumulative beat outcomes from chapter-specific transitions
+  12. Closure commits merged to main via PR #15 (94dbe467) and PR #16 (4703abd1)
+
+  ADR-008 (Contract overlay binding semantics) accepted via PR #15.
+
+finding_dispositions:
+  - finding_id: SUP-01
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 delivers dual story fixtures (Urban Business + Fantasy Cultivation) Owner-approved for testing.
+      Fixtures demonstrate contract compilation with different genre mechanics.
+  - finding_id: SUP-02
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 implements FrozenInputs binding (canon_parent_hash, genre_pack_hash, plan_version) for contract compilation.
+      Version tracking and supersession semantics prevent silent compilation of stale inputs.
+  - finding_id: SUP-04
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 acceptance tests verify quiet chapter support and knowledge boundary enforcement.
+      Chapters with internal conflict or relationship development compile without forced combat fields.
+
+artifacts:
+  - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-acceptance-summary.txt
+    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+
+input_evidence_refs:
+  - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+  - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+  - validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml

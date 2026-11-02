@@ -1,0 +1,27 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-017-test-4703abd
+evidence_type: TEST_RESULT
+subject_id: V2-017
+revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+status: PASS
+producer: GitHub Actions Run 41454724549
+executed_at: '2026-11-02T13:42:21Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-41454724549
+command: uv run pytest tests/contract/test_v2_017_acceptance.py -v --tb=short
+exit_code: 0
+check_ids:
+  - AT-V2-017
+  - AT-V2-017-01
+  - AT-V2-017-02
+  - AT-V2-017-03
+  - AT-V2-017-04
+  - AT-V2-017-05
+  - AT-V2-017-06
+  - AT-V2-017-07
+  - AT-V2-017-08
+artifacts:
+  - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-test-results.txt
+    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+input_evidence_refs:
+  - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml

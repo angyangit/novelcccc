@@ -1227,18 +1227,21 @@ tasks:
   - ADR-008
   evidence:
     code:
-    - 'PR #16: 4703abd1 (merged 2026-11-02)'
-    - 'src/anovel/contracts/compiler.py'
-    - 'src/anovel/contracts/models.py'
-    - 'src/anovel/planning/models.py'
+    - ref: validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+      revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+      status: PASS
     tests:
-    - 'tests/contract/test_v2_017_acceptance.py: 14/14 passed'
+    - ref: validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+      revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+      status: PASS
     ci:
-    - 'GitHub Actions run 41454724549: all 6 checks passed'
+    - ref: validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml
+      revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+      status: PASS
     acceptance:
-    - 'ADR-008 accepted via PR #15 (94dbe467, merged 2026-11-02)'
-    - 'Story fixtures approved: Urban Business + Fantasy Cultivation'
-    - 'Beat outcome vs Required Transition semantic fix: 46544d4'
+    - ref: validation/closure/G-P4-4703abd/V2-017-evidence.yaml
+      revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+      status: PASS
   related_findings:
   - AR-04
   - AR-08

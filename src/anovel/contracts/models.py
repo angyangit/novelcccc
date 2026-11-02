@@ -93,6 +93,8 @@ class ChapterContract:
     protected_facts: list[ProtectedFact] = field(default_factory=list)
     knowledge_boundaries: list[KnowledgeBoundary] = field(default_factory=list)
     continuity_constraints: ContinuityConstraint | None = None
+    beat_outcome_constraints: list[str] = field(default_factory=list)
+    """Beat-level outcomes (not chapter-specific transitions). For informational/validation context."""
 
     # Validation metadata
     fixture_ref: str | None = None  # Story fixture this compiled from

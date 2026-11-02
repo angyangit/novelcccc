@@ -204,6 +204,7 @@ class ContractCompiler:
             protected_facts=protected_facts,
             knowledge_boundaries=knowledge_boundaries,
             continuity_constraints=continuity,
+            beat_outcome_constraints=chapter_plan.beat_outcome_constraints,
             fixture_ref=series_vision.series_id,
             human_review_ref=series_vision.human_review_ref,
         )

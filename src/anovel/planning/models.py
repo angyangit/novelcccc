@@ -90,6 +90,8 @@ class ChapterPlan:
     character_focus: list[str]
     scene_type: SceneType
     content_description: str | None = None
+    beat_outcome_constraints: list[str] = field(default_factory=list)
+    """Beat-level outcomes that must be true by end of beat (not chapter-specific)."""
 
 
 @dataclass(frozen=True)

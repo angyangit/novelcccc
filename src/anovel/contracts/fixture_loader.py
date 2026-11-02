@@ -233,19 +233,14 @@ def parse_arc_plans(fixture_data: dict) -> list[ArcPlan]:
 
     Extracts actual chapter ranges from key_beats instead of using list indices.
 
-    Phase 3 limitation: Current fixture format only provides Beat-level state_changes,
-    not chapter-specific assignments. To prevent resource over-consumption (e.g., cash
-    dropping 3x instead of 1x), state_changes are assigned only to the last chapter
-    of each beat range as a TEMPORARY PLACEHOLDER.
+    Beat-level state_changes represent cumulative outcomes that must be true by
+    the END of the beat range, not chapter-specific scheduled transitions. These
+    are assigned to beat_outcome_constraints for all chapters in the beat.
 
-    This does NOT imply all changes happen in the last chapter - it's an artifact
-    of the current fixture format lacking chapter-level allocation. Beat-level
-    state_changes represent cumulative outcomes across the beat, not actions
-    definitively occurring in the final chapter.
-
-    Future fixture versions should support explicit chapter-level state change
-    allocation or mark beat-level changes as "unallocated planning goals" rather
-    than executable chapter requirements.
+    Current fixture format limitation: Does not provide chapter-level state change
+    allocation. ChapterPlan.required_state_changes remains empty until fixtures
+    provide explicit chapter-specific transitions or until Writer/Context allocates
+    beat outcomes to specific chapters based on narrative flow.
     """
     arcs: list[ArcPlan] = []
     arc_plan = fixture_data.get("first_arc_plan", {})
@@ -274,22 +269,19 @@ def parse_arc_plans(fixture_data: dict) -> list[ArcPlan]:
         end_chapter = int(match.group(2)) if match.group(2) else start_chapter
 
         # Create chapter plans for the range
-        # TEMPORARY: Assign state_changes only to last chapter to prevent duplication.
-        # This is a limitation of the current fixture format which doesn't support
-        # chapter-level allocation. The last-chapter assignment is a placeholder to
-        # avoid resource over-consumption, NOT a claim that changes occur there.
+        # Beat-level state_changes represent cumulative outcomes across the entire beat,
+        # not chapter-specific scheduled transitions. Assign to beat_outcome_constraints
+        # for all chapters in the beat to indicate "must be true by beat end", not
+        # "must happen in this specific chapter".
         for chapter_num in range(start_chapter, end_chapter + 1):
-            is_last_in_beat = chapter_num == end_chapter
-
             chapter = ChapterPlan(
                 chapter_id=f"chapter_{chapter_num:02d}",
                 chapter_number=chapter_num,
                 goals=[content],
-                # Beat-level state_changes assigned to last chapter as temporary placeholder
-                # to prevent duplication. Does NOT imply temporal semantics.
-                required_state_changes=state_changes if is_last_in_beat else [],
+                required_state_changes=[],  # Chapter-specific transitions (not provided in current fixture format)
                 character_focus=[],  # Would need deeper parsing
                 scene_type=SceneType.DIALOGUE,  # Default, would need smarter detection
+                beat_outcome_constraints=state_changes,  # Beat-level outcomes apply to all chapters in beat
             )
             chapters.append(chapter)
 

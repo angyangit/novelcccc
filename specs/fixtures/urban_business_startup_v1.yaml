@@ -144,7 +144,7 @@ conflict_engine:
 
 choice_costs:
   - choice: "接受王总融资方案"
-    immediate_gain: "获得500万资金，18个月运营保障"
+    immediate_gain: "获得500万资金（当前成本下静态续航约27.5个月，但扩张将增加消耗；对赌协议要求18个月内营收达3000万）"
     immediate_cost: "股权稀释至49%，失去绝对控制权"
     delayed_consequences:
       - "王总进入董事会，重大决策需其同意"

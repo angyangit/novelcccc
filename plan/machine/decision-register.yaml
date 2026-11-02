@@ -84,17 +84,15 @@ decisions:
   verification_refs: []
 - id: ADR-008
   title: 候选 overlay 与 Contract 编译绑定
-  status: REQUIRED
+  status: ACCEPTED
   owner_role: planning-maintainer
   related_tasks:
   - V2-017
   - V2-020
   decision_due_task: V2-017
   timing: before_interface_implementation
-  decision_record: null
+  decision_record: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
   verification_refs: []
-  required_refinements:
-  - 补充规划版本、冻结边界、supersession、失效与受控重规划；按 V2-017 packet 分职责
 - id: ADR-009
   title: Context 必需项溢出与选择解释
   status: REQUIRED

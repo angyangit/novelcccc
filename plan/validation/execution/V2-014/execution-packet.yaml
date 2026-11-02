@@ -50,7 +50,7 @@ inputs:
   ref: validation/execution/V2-014/snapshots/test-catalog-5d67c9a.yaml
   sha256: 51ee21a4424471f450a2c6cdf5db13b7f3f607211b99d5791665864677519b1e
 - source_ref: machine/decision-register.yaml
-  ref: machine/decision-register.yaml
+  ref: validation/execution/V2-014/snapshots/decision-register-78ffbf1.yaml
   sha256: f274a70bd061d726240723d268065823d49919641e672d5cf015a2fdda9b7cd2
 - source_ref: decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md
   ref: decisions/ADR-007_GENRE_EXTENSION_NAMESPACE_AND_STATE_TRANSITIONS.md

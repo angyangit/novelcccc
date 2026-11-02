@@ -1,0 +1,195 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-017
+plan_version: 1.3.1
+repository_revision: ecf49779049a848b8e31bb9bdd6110eb286c55a5
+worktree_dirty: false
+plan_manifest_sha256: 1de99b2c5c2b58aa594d694fb00e45e44645724083f90aba03400d0cfdc6e2eb
+
+environment:
+  fingerprint: prepare-phase-darwin-24.1.0-reconciled
+  runtime_versions:
+    python: 3.9.6
+  ci_context: prepare-only
+  database_image: postgres:17-alpine
+
+implementer: claude-opus-4.7
+verifier: owner
+owner_role: planning-maintainer
+
+scope: |
+  V2-017 Contract Compiler PREPARE phase - RECONCILED after ADR-008 acceptance.
+
+  RECONCILIATION CONTEXT: Original PREPARE completed at 99b5981 with ADR-008 pending.
+  ADR-008 formally accepted 2026-10-28 at 3a07441 with Invalidation Scope Rules amendment.
+  This reconciled packet updates decision context while preserving original PREPARE work.
+
+  Original PREPARE deliverables remain valid:
+  - Minimal architecture design (5 modules)
+  - 8 AT scenarios mapped to test strategies
+  - Story fixture analysis
+  - Implementation scope definition
+
+  Context changes since original PREPARE:
+  - ADR-008 status: REQUIRED → ACCEPTED (decision_record added)
+  - ADR-008 Decision 4 amended with 5 Invalidation Scope Rules
+  - Plan manifest changed due to decision-register update
+
+  Does NOT implement business code, tests, or integrate with Canon/Model systems.
+  Outputs design decisions, interface contracts, test strategy, and readiness assessment.
+
+action: PREPARE
+
+inputs:
+- source_ref: machine/implementation-backlog.yaml
+  ref: machine/implementation-backlog.yaml
+  sha256: 8ad217a83e5453257480fc4938740a3910940ead882230c1bdb4b86d3f15f027
+- source_ref: machine/test-catalog.yaml
+  ref: machine/test-catalog.yaml
+  sha256: 925acc02e7367b8e409dc3704eca43a1a99a6a6b470668a07e5741b67e27d478
+- source_ref: machine/decision-register.yaml
+  ref: machine/decision-register.yaml
+  sha256: c95c407b260496c95ee285ac518b983b87938d5122d2cb18835469629fd97915
+- source_ref: machine/ai-execution-policy.yaml
+  ref: machine/ai-execution-policy.yaml
+  sha256: feeeaed2bea5436f93509a617459744e30f31c6640d11f309b0f2afa939f1171
+- source_ref: task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
+  ref: task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
+  sha256: f0aa985aff4c34f1589bed8184c34ff932b470e05f557646c72e5e25a00d820d
+- source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
+- source_ref: 04_GENRE_AND_STORY_FIXTURES.md
+  ref: 04_GENRE_AND_STORY_FIXTURES.md
+  sha256: 9263d85a9dfb0f1645253b1df22c4473210dc4ac9cf8ece0d56ae56cf394cae0
+- source_ref: 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  ref: 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  sha256: b1f8d4cfae960fce8223e93cebbf30189742bf0945f8cc79fe7b550eedbc8281
+- source_ref: AI_EXECUTION_PROTOCOL.md
+  ref: AI_EXECUTION_PROTOCOL.md
+  sha256: c581c7fe0496d3b3962bdcc2913e1f5d8a4052d6f3ba5e51796eb6ebf7e88670
+- source_ref: decisions/ADR-008_CONTRACT_OVERLAY_BINDING_PLANNING_VERSIONING.md
+  ref: decisions/ADR-008_CONTRACT_OVERLAY_BINDING_PLANNING_VERSIONING.md
+  sha256: d420155d5491822d844bf8dccd1074f1a7209465b4306167c76315157df26f18
+- source_ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
+  ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
+  sha256: 9fe97a37104250ebef01d6b0eab871dca22f14b911481d7aad101f3cd9ae77a6
+
+expected_outputs:
+- validation/execution/V2-017/prepare/prepare-review.md
+- validation/execution/V2-017/prepare/execution-packet.yaml
+- validation/execution/V2-017/prepare/adr-008-recommendation.md
+- src/anovel/contracts/compiler.py
+- specs/fixtures/stories
+- tests/contract/test_v2_017.py
+- src/anovel/planning/models.py
+- src/anovel/planning/versions.py
+- src/anovel/planning/replanning.py
+- src/anovel/contracts/models.py
+
+allowed_paths:
+- validation/execution/V2-017/prepare/
+- machine/implementation-backlog.yaml
+- src/anovel/contracts/
+- src/anovel/planning/
+- specs/fixtures/
+- tests/contract/
+
+required_decisions:
+- ADR-004
+- ADR-008
+
+claims:
+- id: CLAIM-001
+  kind: FACT
+  statement: V2-017 minimal architecture designed with 5 modules (planning models/versions/replanning, contracts models/compiler)
+  sources:
+  - ref: validation/execution/V2-017/prepare/prepare-review.md
+    sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
+  blocks_actions: []
+  verification_plan: Design review and interface contract validation
+- id: CLAIM-002
+  kind: FACT
+  statement: All 8 AT-V2-017 scenarios mapped to concrete test strategies with positive/negative cases
+  sources:
+  - ref: validation/execution/V2-017/prepare/prepare-review.md
+    sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
+  blocks_actions: []
+  verification_plan: Test mapping completeness review
+- id: CLAIM-003
+  kind: FACT
+  statement: ADR-008 formally accepted 2026-10-28 with Invalidation Scope Rules amendment
+  sources:
+  - ref: machine/decision-register.yaml
+    sha256: c95c407b260496c95ee285ac518b983b87938d5122d2cb18835469629fd97915
+  - ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
+    sha256: 9fe97a37104250ebef01d6b0eab871dca22f14b911481d7aad101f3cd9ae77a6
+  blocks_actions: []
+  verification_plan: Confirmed by decision-register ADR-008.status=ACCEPTED and acceptance evidence
+- id: CLAIM-004
+  kind: ASSUMPTION
+  statement: Story fixtures will receive human review before IMPLEMENT phase, populating human_review_ref
+  sources:
+  - ref: validation/execution/V2-017/prepare/prepare-review.md
+    sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
+  blocks_actions: []
+  verification_plan: Owner fixture review process required before IMPLEMENT
+
+estimate:
+  range: actual-completed
+  unit: session
+  assumptions:
+  - PREPARE phase completes design, does not implement code
+  - V2-015/016 extensions provide necessary state types
+  - ADR-008 formal acceptance completed (reconciled)
+  confidence: actual-result
+
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 1
+  maximum_runtime: 7200
+
+stop_conditions:
+- PREPARE review document complete
+- Execution packet created
+- ADR-008 recommendation drafted
+- Story fixture blockers identified
+- Implementation scope defined
+
+review_notes:
+- PREPARE phase delivers design, not implementation
+- Both story fixtures remain DRAFT (human_review_ref null) - blocker for production
+- ADR-008 accepted with 5 Invalidation Scope Rules (Decision 4 amendment)
+- All V2-015/016 dependencies satisfied
+- NarrativeDelta operations reused (no parallel state language)
+- Contract Compiler read-only, never writes Canon
+- RECONCILIATION NOTE - Original PREPARE at 99b5981, reconciled at ecf4977 after ADR-008 acceptance
+- Reconciliation preserves original PREPARE work, updates decision context only
+- Trigger was ADR-008 acceptance at 3a07441 changing decision-register.yaml SHA-256
+
+handoff:
+  current_step: PREPARE-RECONCILED
+  completed_steps:
+  - Read normative specifications and task packets
+  - Analyzed existing implementations (Delta, Canon, GenrePack, Extensions)
+  - Evaluated both story fixtures for compilation readiness
+  - Designed minimal 5-module architecture
+  - Mapped 8 AT scenarios to test strategies
+  - Drafted ADR-008 recommendation
+  - Identified implementation scope and risks
+  - Created PREPARE review document
+  - Reconciled execution context after ADR-008 acceptance
+  pending_items:
+  - Story fixture human review (both remain DRAFT)
+  - Owner approval to proceed to IMPLEMENT
+  next_action: PREPARE
+  last_check:
+    status: PASS
+    artifacts:
+    - ref: validation/execution/V2-017/prepare/prepare-review.md
+      sha256: a5f84a9c0c2b7eb29ea2e6d38e39717d50554f907af526400a121c3a2305e88c
+    - ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
+      sha256: 9fe97a37104250ebef01d6b0eab871dca22f14b911481d7aad101f3cd9ae77a6
+    missing_artifact_reason: null

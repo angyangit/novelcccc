@@ -1218,7 +1218,7 @@ tasks:
   - 不实现完整多入口 Genesis 或作者富文本工作台
   - 不把固定套路升级为所有小说的硬规则
   status: OPEN
-  execution_packet_ref: validation/execution/V2-017/prepare/execution-packet.yaml
+  execution_packet_ref: validation/execution/V2-017/prepare/execution-packet-reconciled.yaml
   owner_role: planning-maintainer
   readiness: PLANNED
   start_gate: G-P3

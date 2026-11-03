@@ -175,7 +175,6 @@ external_practice_results:
   - practice_id: EXT-002
     adoption_mode: ADD_TRACEABILITY
     source_version_note: Practice PLANNED; V2-017 implements explicit version binding for contract inputs
-    status: APPLIED
     verification_refs:
       - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
     conclusion: V2-017 applies explicit version binding pattern (FrozenInputs) for contract compilation inputs via canon_parent, genre_pack_binding, plan_version fields
@@ -183,7 +182,6 @@ external_practice_results:
   - practice_id: EXT-005
     adoption_mode: ADD_TRACEABILITY
     source_version_note: Practice PLANNED; V2-017 uses fixture-driven testing for contract compilation
-    status: APPLIED
     verification_refs:
       - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
     conclusion: V2-017 test suite verifies contract compilation with dual Owner-approved story fixtures (Urban Business + Fantasy Cultivation)

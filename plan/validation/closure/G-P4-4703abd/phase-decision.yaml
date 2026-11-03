@@ -39,9 +39,9 @@ rationale: |
      required_state_changes enforce mandatory chapter-specific transitions, knowledge_boundaries define what
      characters may know. Quiet chapters (relationship/internal conflict) supported without forced combat fields.
 
-  Task V2-017 CLOSED with complete evidence. GitHub Actions run 41454724549: 6/6 gates SUCCESS (ARCH_FITNESS,
-  SCHEMA_CONTRACT, STATIC, SECRET_DEPENDENCY, POSTGRES_ENV, UNIT). V2-017: 14 contract tests pass.
-  Total tests passing with no regressions.
+  Task V2-017 CLOSED with complete evidence. GitHub Actions run 41455282604 (main branch push @ 4703abd1):
+  7/7 gates SUCCESS (ARCH_FITNESS, CANON_CAS_IDEMPOTENCY, SCHEMA_CONTRACT, STATIC, SECRET_DEPENDENCY,
+  POSTGRES_ENV, UNIT). V2-017: 14 contract tests pass. Total tests passing with no regressions.
 
   Beat outcome semantic fix (46544d4): Distinguishes cumulative beat outcomes from chapter-specific scheduled transitions.
 

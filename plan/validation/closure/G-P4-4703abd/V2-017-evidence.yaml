@@ -6,8 +6,8 @@ subject_id: V2-017
 revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
 status: PASS
 producer: G-P4 phase gate certification
-executed_at: '2026-11-02T13:42:21Z'
-environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-41454724549
+executed_at: '2026-11-02T13:42:24Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-main-4703abd
 
 check_ids:
   - V2-017
@@ -163,13 +163,17 @@ finding_dispositions:
       V2-017 acceptance tests verify quiet chapter support and knowledge boundary enforcement.
       Chapters with internal conflict or relationship development compile without forced combat fields.
   - finding_id: PR-01
-    responsibility: NONE
-    disposition: NOT_APPLICABLE
-    evidence_refs: []
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
     reason: |
-      PR-01 concerns production runtime performance optimization.
-      V2-017 focuses on contract compilation correctness, not runtime performance.
-      No responsibility assigned to this task.
+      PR-01: Planning versions and compilation responsibilities separated per acceptance evidence.
+      V2-017 implements PlanVersion with freeze_horizon and supersession tracking (src/anovel/planning/versions.py).
+      Planning conflicts return diagnostics via ReplanProposal without modifying Canon (src/anovel/planning/replanning.py).
+      Contract Compiler binds to frozen inputs (canon_parent, genre_pack_hash, plan_version) preventing silent stale input reuse.
+      No secondary Canon write path created; compiler imports only domain.delta.OperationType, not Canon repository.
 
 external_practice_results:
   - practice_id: EXT-002

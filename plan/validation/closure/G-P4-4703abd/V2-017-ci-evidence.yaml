@@ -15,6 +15,7 @@ command: 'GitHub Actions workflow: push to main branch, 6 checks SUCCESS'
 exit_code: 0
 check_ids:
   - ARCH_FITNESS
+  - CANON_CAS_IDEMPOTENCY
   - SCHEMA_CONTRACT
   - STATIC
   - SECRET_DEPENDENCY

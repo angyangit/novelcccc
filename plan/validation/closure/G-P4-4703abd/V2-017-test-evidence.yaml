@@ -5,10 +5,10 @@ evidence_type: TEST_RESULT
 subject_id: V2-017
 revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
 status: PASS
-producer: GitHub Actions Run 41454724549
-executed_at: '2026-11-02T13:42:21Z'
-environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-41454724549
-command: uv run pytest tests/contract/test_v2_017_acceptance.py -v --tb=short
+producer: GitHub Actions Run 41455282604 UNIT job
+executed_at: '2026-11-02T13:42:24Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-main-4703abd
+command: uv run pytest tests/architecture/ tests/contract/ -v --tb=short --junitxml=dist/ci/unit/junit.xml
 exit_code: 0
 check_ids:
   - AT-V2-017

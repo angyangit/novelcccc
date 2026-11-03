@@ -193,7 +193,9 @@ class EvidenceReader:
                 if hasattr(self, "historical_provenance"):
                     # Check if this evidence belongs to a historical closure with known artifact provenance
                     for closure_id, provenance in self.historical_provenance.items():
-                        if closure_id in ref:  # e.g., "G-P0-38b0c57" in path
+                        # Optional evidence_refs narrows the pin to listed records only.
+                        scope = provenance.get("evidence_refs")
+                        if (ref in scope) if scope is not None else (closure_id in ref):
                             artifact_revision = provenance.get("artifact_revision")
                             break
 

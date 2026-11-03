@@ -1,0 +1,164 @@
+record_type: task_execution_packet
+schema_version: '1.0'
+task_id: V2-017
+plan_version: 1.3.1
+repository_revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+worktree_dirty: false
+plan_manifest_sha256: b94c0572830a4ebb1d9d4efdd8aec77ac5c4e1daebfb05e641e5e7e4c9c97538
+
+environment:
+  fingerprint: implement-phase-reconciled
+  runtime_versions:
+    python: 3.9.6
+  ci_context: post-merge-reconciliation
+  database_image: postgres:17-alpine
+
+implementer: claude-opus-5-5
+verifier: owner
+owner_role: planning-maintainer
+
+scope: |
+  V2-017 Contract Compiler IMPLEMENT phase - Production code implementation (RECONCILED).
+
+  ORIGINAL CONTEXT: Building on PREPARE phase deliverables.
+  ADR-008 accepted 2026-10-28. Story Fixtures approved 2026-10-30.
+
+  IMPLEMENT DELIVERABLES (COMPLETED):
+  - Contract Compiler production code (compiler.py, models.py)
+  - Planning system components (versions.py, replanning.py)
+  - 8 acceptance tests (AT-V2-017-01 through AT-V2-017-08)
+  - Test execution and CI verification
+  - Implementation documentation
+
+  RECONCILIATION: Execution packet created post-implementation to document
+  historical implementation context with frozen input snapshots.
+
+action: IMPLEMENT
+
+inputs:
+- source_ref: machine/implementation-backlog.yaml
+  ref: validation/execution/V2-017/implement/snapshots/snapshot_implementation-backlog_ffb03ac.yaml
+  sha256: 8ad217a83e5453257480fc4938740a3910940ead882230c1bdb4b86d3f15f027
+
+- source_ref: machine/decision-register.yaml
+  ref: validation/execution/V2-017/implement/snapshots/snapshot_decision-register_404efc6.yaml
+  sha256: c95c407b260496c95ee285ac518b983b87938d5122d2cb18835469629fd97915
+
+- source_ref: machine/test-catalog.yaml
+  ref: validation/execution/V2-017/implement/snapshots/snapshot_test-catalog_d4a787a.yaml
+  sha256: 925acc02e7367b8e409dc3704eca43a1a99a6a6b470668a07e5741b67e27d478
+
+- source_ref: validation/decisions/adr-008-acceptance-3a07441/adr-008-acceptance.yaml
+  ref: validation/execution/V2-017/implement/snapshots/snapshot_adr-008-acceptance_9d8dd08.yaml
+  sha256: 9fe97a37104250ebef01d6b0eab871dca22f14b911481d7aad101f3cd9ae77a6
+
+- source_ref: specs/fixtures/urban_business_startup_v1.yaml
+  ref: validation/execution/V2-017/implement/snapshots/snapshot_urban_business_startup_v1_8c46c7c.yaml
+  sha256: f0dd832f6a34661dc47d72ec2565fec7e84673cec503ce6ebb5e595be4481d9b
+
+- source_ref: specs/fixtures/fantasy_eastern_cultivation_v1.yaml
+  ref: validation/execution/V2-017/implement/snapshots/snapshot_fantasy_eastern_cultivation_v1_8c46c7c.yaml
+  sha256: 6145f8eaa72ff6641f627a0ac9ca757124be9f63ea33de985053327b3df698eb
+
+- source_ref: task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
+  ref: task-packets/V2-017_PLANNING_CONTRACT_PACKET.md
+  sha256: f0aa985aff4c34f1589bed8184c34ff932b470e05f557646c72e5e25a00d820d
+
+- source_ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  ref: 03_DOMAIN_CANON_AND_ARTIFACT_CONTRACTS.md
+  sha256: 5e7dcb3c3cc6a8220171a7b48b9fed718c075611f79ec81e2ef58899ea4e2f75
+
+- source_ref: 04_GENRE_AND_STORY_FIXTURES.md
+  ref: 04_GENRE_AND_STORY_FIXTURES.md
+  sha256: 9263d85a9dfb0f1645253b1df22c4473210dc4ac9cf8ece0d56ae56cf394cae0
+
+- source_ref: 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  ref: 05_PRODUCTION_CONTEXT_QUALITY_REPAIR.md
+  sha256: b1f8d4cfae960fce8223e93cebbf30189742bf0945f8cc79fe7b550eedbc8281
+
+expected_outputs:
+- src/anovel/contracts/compiler.py
+- src/anovel/contracts/models.py
+- src/anovel/planning/models.py
+- src/anovel/planning/versions.py
+- src/anovel/planning/replanning.py
+- tests/contract/test_v2_017_acceptance.py
+- validation/execution/V2-017/implement/test-results.md
+- validation/execution/V2-017/implement/implementation-summary.md
+
+allowed_paths:
+- src/anovel/contracts/
+- src/anovel/planning/
+- tests/contract/
+- validation/execution/V2-017/implement/
+- specs/fixtures/
+- machine/implementation-backlog.yaml
+
+required_decisions:
+- ADR-004
+- ADR-008
+
+claims:
+- id: CLAIM-V2-017-IMPL-001
+  kind: FACT
+  statement: "Implementation completed and merged to main via PR #16 @ 4703abd1"
+  sources:
+  - ref: validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    sha256: 90e9ed034ce204ef3b5b6d0c88723e8d6bfea697c772fc6ef99b92b650f9b8e4
+  - ref: validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    sha256: 2236bb779129eb36757ee27faad52397d9be995efcd6f167a38fe86da1298df9
+  blocks_actions: []
+  verification_plan: "Verified via G-P4 closure evidence"
+
+- id: CLAIM-V2-017-IMPL-002
+  kind: UNKNOWN
+  statement: "Original fixture approval record and PREPARE reconciliation packet referenced but not snapshot-verified"
+  sources: []
+  blocks_actions: []
+  verification_plan: "Follow-up verification if needed: specs/fixtures/reviews/owner_approval_2026_10_30.yaml and validation/execution/V2-017/prepare/execution-packet-reconciled.yaml were implementation inputs but original sha256 unavailable"
+
+estimate:
+  range: actual-completed
+  unit: session
+  assumptions:
+  - Implementation builds on PREPARE phase design
+  - ADR-008 acceptance completed before implementation
+  - Story fixtures approved by owner before implementation
+  confidence: actual-result
+
+budget:
+  paid_calls_allowed: false
+  model_cost_cap: null
+  infrastructure_cap: null
+  maximum_attempts: 1
+  maximum_runtime: 14400
+
+stop_conditions:
+- Implementation already completed
+- Reconciliation documents historical context only
+
+review_notes:
+- RECONCILIATION NOTE - This execution packet was created after implementation completion to document the historical implementation context with proper frozen input snapshots
+- Implementation was authorized by owner standing authorization dated 2026-10-30 conditional on all entry conditions being satisfied
+- Key commits - ffb03ac PREPARE reconciliation after ADR-008 acceptance, 8c46c7c Fixture approval and IMPLEMENT packet creation, 4703abd1 Contract Compiler implementation PR #16 merged to main
+- Missing original hashes for specs/fixtures/reviews/owner_approval_2026_10_30.yaml and validation/execution/V2-017/prepare/execution-packet-reconciled.yaml - these were implementation inputs but original sha256 values are not available in the historical record
+- CLAIM-V2-017-IMPL-002 documents missing input snapshots as UNKNOWN
+
+handoff:
+  current_step: IMPLEMENT-RECONCILED
+  completed_steps:
+  - Contract Compiler implementation (compiler.py, models.py)
+  - Planning system components (versions.py, replanning.py, models.py)
+  - 8 acceptance tests (AT-V2-017-01 through AT-V2-017-08)
+  - Test execution and CI verification
+  - Implementation merged to main via PR #16
+  pending_items: []
+  next_action: CERTIFY
+  last_check:
+    status: PASS
+    artifacts:
+    - ref: validation/closure/G-P4-4703abd/V2-017-evidence.yaml
+      sha256: 7bb78835193f63761fda9c0a6eb4fdd9c1efb2cc809adbc8cfbbd8e24c1e54df
+    - ref: validation/closure/G-P4-4703abd/phase-decision.yaml
+      sha256: 7ddf04cdb05d96a8d2958c6795ffd6a9276584f63dc25461f268c4f85bc8d5d0
+    missing_artifact_reason: null

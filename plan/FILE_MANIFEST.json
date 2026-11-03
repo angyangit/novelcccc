@@ -1396,8 +1396,8 @@
   },
   {
     "path": "generated/PHASE_TASK_REGISTRY.md",
-    "bytes": 6230,
-    "sha256": "50ec5f026cc99e31693d27db07701beb5bc7cd0a367bc042ba66332c64d63b69"
+    "bytes": 6232,
+    "sha256": "a1b55e5d34a55201b79ef5b48b019e4fe567c1790727519d0b2ef03334513c39"
   },
   {
     "path": "machine/ai-execution-policy.yaml",
@@ -1436,13 +1436,13 @@
   },
   {
     "path": "machine/implementation-backlog.yaml",
-    "bytes": 100390,
-    "sha256": "8ad217a83e5453257480fc4938740a3910940ead882230c1bdb4b86d3f15f027"
+    "bytes": 100962,
+    "sha256": "ee80f83bd4d8fa27182c4713153caacdeec83be1a6d270699ac143972801ec16"
   },
   {
     "path": "machine/legacy-evidence-compatibility.yaml",
-    "bytes": 10495,
-    "sha256": "f999bbf8857c4bf78dc4178627b516b249289d0b8f1147a90bb9bcb1bff81ca0"
+    "bytes": 11275,
+    "sha256": "84baa9f353ce1bcf596fbb07392a74d37e9070b014e5d4e8571ec53ccd2f0589"
   },
   {
     "path": "machine/milestones.yaml",
@@ -1451,8 +1451,8 @@
   },
   {
     "path": "machine/phase-gates.yaml",
-    "bytes": 5848,
-    "sha256": "617af16b72fc7d93df749e550713670b1fd12930ece7e4561003e9be62e6e02a"
+    "bytes": 5897,
+    "sha256": "48211ea611a1e211d0d0932bb8e9758c7cb1963f42b19dc5eed5d3f4c9cff745"
   },
   {
     "path": "machine/remediation-register.yaml",
@@ -1471,8 +1471,8 @@
   },
   {
     "path": "machine/test-catalog.yaml",
-    "bytes": 40473,
-    "sha256": "925acc02e7367b8e409dc3704eca43a1a99a6a6b470668a07e5741b67e27d478"
+    "bytes": 40533,
+    "sha256": "ceca842fe7b9e960db0e7ea86070fff9b1f4617af234c7f2ce51ccc2b9f5beb2"
   },
   {
     "path": "review/00_REVIEW_TRIAGE_POLICY.md",
@@ -1526,8 +1526,8 @@
   },
   {
     "path": "scripts/governance_checks.py",
-    "bytes": 21191,
-    "sha256": "212754ebdc4c5905de12898c7a7097024dca7efb7458eadb19a4a1adc3eca7af"
+    "bytes": 21355,
+    "sha256": "296e5684ea4c8d84fdc8074c128722992fa692149c6b26cdd3c0053440c14c0e"
   },
   {
     "path": "scripts/probe_governance_legacy.py",

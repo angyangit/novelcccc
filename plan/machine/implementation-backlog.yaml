@@ -1220,7 +1220,7 @@ tasks:
   status: CLOSED
   execution_packet_ref: validation/execution/V2-017/prepare/execution-packet-reconciled.yaml
   owner_role: planning-maintainer
-  readiness: PLANNED
+  readiness: READY_TO_START
   start_gate: G-P3
   required_decisions:
   - ADR-004

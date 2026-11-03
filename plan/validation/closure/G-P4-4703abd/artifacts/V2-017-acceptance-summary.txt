@@ -1,1 +1,26 @@
-V2-017 acceptance summary placeholder
+V2-017 Contract Compiler Acceptance Summary
+
+Task: V2-017 Contract Compiler
+Status: CLOSED
+Revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+
+Acceptance Criteria Met:
+✓ Contract compilation from SeriesVision without P10 dependencies
+✓ RequiredTransition uses NarrativeDelta semantics
+✓ Planning conflicts return diagnostics without Canon modification
+✓ Dual story fixtures Owner-approved and verified
+✓ Continuity contracts bind to previous chapter hash/evidence
+✓ Quiet chapters supported without forced combat fields
+✓ Planning inputs versioned with supersession semantics
+✓ Canon/Pack/plan revisions trigger scoped invalidation
+
+Evidence:
+- Code: src/anovel/contracts/compiler.py, models.py
+- Tests: 14/14 acceptance tests passed
+- CI: GitHub Actions run 41454724549 (6/6 SUCCESS)
+- Decisions: ADR-008 accepted via PR #15
+
+Finding Dispositions:
+- SUP-01: RESOLVED (dual story fixtures)
+- SUP-02: RESOLVED (FrozenInputs binding)
+- SUP-04: RESOLVED (quiet chapter support)

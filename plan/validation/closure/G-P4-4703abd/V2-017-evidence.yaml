@@ -41,6 +41,102 @@ rationale: |
   ADR-008 (Contract overlay binding semantics) accepted via PR #15.
 
 finding_dispositions:
+  - finding_id: AR-04
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 establishes contract compilation foundation for genre-aware planning.
+      Partial: Contract binds to genre_pack_hash, enabling genre-specific constraints.
+    remaining_work: Full multi-genre coherence validation across 30 GenrePacks.
+    next_task: V2-034
+    owner_role: genre-maintainer
+    due_gate: G-P8
+  - finding_id: AR-08
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 implements FrozenInputs for contracts, establishing version binding pattern.
+      Partial: Planning contract versioning implemented.
+    remaining_work: Extend versioning pattern to all compilation artifacts.
+    next_task: V2-018
+    owner_role: context-maintainer
+    due_gate: G-P5
+  - finding_id: AR-10
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 establishes invalidation framework for planning revisions.
+      Partial: Contract invalidation on Canon/Pack/plan changes implemented.
+    remaining_work: Extend to context and production artifact invalidation.
+    next_task: V2-018
+    owner_role: context-maintainer
+    due_gate: G-P5
+  - finding_id: AR-11
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 acceptance tests verify contract compilation mechanics.
+      Partial: Contract-level verification implemented.
+    remaining_work: Full E2E chapter generation verification.
+    next_task: V2-020
+    owner_role: workflow-maintainer
+    due_gate: G-P6
+  - finding_id: CA-10
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 binds contracts to canon_parent hash, establishing Canon dependency tracking.
+      Partial: Contract-to-Canon binding implemented.
+    remaining_work: Full Canon projection and snapshot rebuild verification.
+    next_task: V2-012
+    owner_role: canon-maintainer
+    due_gate: G-P2
+  - finding_id: CA-14
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 implements beat_outcome_constraints vs required_state_changes semantic distinction.
+      Partial: Planning contract semantics clarified.
+    remaining_work: Extend distinction to execution and quality verification.
+    next_task: V2-025
+    owner_role: quality-maintainer
+    due_gate: G-P7
+  - finding_id: CA-24
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 establishes frozen input pattern for contract compilation.
+      Partial: Planning input freezing implemented.
+    remaining_work: Extend to all compilation stages with explicit version contracts.
+    next_task: V2-018
+    owner_role: context-maintainer
+    due_gate: G-P5
+  - finding_id: RR-07
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 implements replan proposal generation on invalidation.
+      Partial: Contract invalidation triggers replan proposal creation.
+    remaining_work: Full replan approval workflow and multi-chapter coherence verification.
+    next_task: V2-034
+    owner_role: planning-maintainer
+    due_gate: G-P8
   - finding_id: SUP-01
     responsibility: FULL
     disposition: RESOLVED
@@ -56,7 +152,7 @@ finding_dispositions:
     evidence_refs:
       - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
     reason: |
-      V2-017 implements FrozenInputs binding (canon_parent_hash, genre_pack_hash, plan_version) for contract compilation.
+      V2-017 implements FrozenInputs binding (canon_parent, genre_pack_binding, plan_version) for contract compilation.
       Version tracking and supersession semantics prevent silent compilation of stale inputs.
   - finding_id: SUP-04
     responsibility: FULL
@@ -66,10 +162,18 @@ finding_dispositions:
     reason: |
       V2-017 acceptance tests verify quiet chapter support and knowledge boundary enforcement.
       Chapters with internal conflict or relationship development compile without forced combat fields.
+  - finding_id: PR-01
+    responsibility: NONE
+    disposition: NOT_APPLICABLE
+    evidence_refs: []
+    reason: |
+      PR-01 concerns production runtime performance optimization.
+      V2-017 focuses on contract compilation correctness, not runtime performance.
+      No responsibility assigned to this task.
 
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-acceptance-summary.txt
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    sha256: "bde2e7ef5a7b5d97a80ca4806ac599969b344e0d10f9ead896b59eb82f792b8d"
 
 input_evidence_refs:
   - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml

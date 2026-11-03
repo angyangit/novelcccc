@@ -22,5 +22,6 @@ check_ids:
   - CI-UNIT
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt
+    sha256: "6f8dd20dffeca39d67d523b09c855b39066c7cd55b3b6684894a2bd27c40949f"
     sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 input_evidence_refs: []

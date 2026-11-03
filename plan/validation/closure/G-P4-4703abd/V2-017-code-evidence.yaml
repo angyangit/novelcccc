@@ -10,7 +10,7 @@ executed_at: '2026-11-02T13:42:21Z'
 environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-CI-Run-41454724549
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-code-artifacts.txt
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    sha256: "8189140fca17a895f4f6b64eef3817d223907ef8878dd657a204bbdf5a21b7a1"
 input_evidence_refs: []
 check_ids:
   - CODE-V2-017-COMPILER

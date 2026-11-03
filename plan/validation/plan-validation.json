@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-10-31T02:39:38.252559+00:00",
+  "generated_at_utc": "2026-11-03T01:39:00.149975+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "PASS",
+  "status": "FAIL",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,8 +11,8 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "e9cd66bd5798dc0404a24af87932732f4dfeafd4",
-  "validated_worktree_dirty": true,
+  "validated_repository_revision": "788e9faea61b1c5550db55aaf842762a20ef170a",
+  "validated_worktree_dirty": false,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
   "manifest_sha256": "1de99b2c5c2b58aa594d694fb00e45e44645724083f90aba03400d0cfdc6e2eb",
@@ -34,8 +34,8 @@
       "P12": 3
     },
     "statuses": {
-      "CLOSED": 17,
-      "OPEN": 44
+      "CLOSED": 18,
+      "OPEN": 43
     },
     "suites": 61,
     "scenarios": 261,
@@ -50,10 +50,35 @@
     }
   },
   "errors": [
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
+    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-test-results.txt",
+    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt",
+    "EVIDENCE_RECORD validation/closure/G-P4-4703abd/V2-017-evidence.yaml: [] should be non-empty",
+    "EVIDENCE_COVERAGE V2-017 acceptance: missing checks",
+    "EVIDENCE_ARTIFACT validation/closure/G-P3-68c8d00/phase-decision.yaml: missing/changed machine/phase-gates.yaml",
+    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/phase-decision.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/phase-gates-snapshot.txt",
+    "EVIDENCE_COVERAGE P4 CI: missing checks",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
+    "EXEC_INPUT V2-017: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-017: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_ACTION V2-017: preparation is not an implementation record",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
   ],
-  "fatal_errors": [],
+  "fatal_errors": [
+    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
+    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-test-results.txt",
+    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt",
+    "EVIDENCE_RECORD validation/closure/G-P4-4703abd/V2-017-evidence.yaml: [] should be non-empty",
+    "EVIDENCE_COVERAGE V2-017 acceptance: missing checks",
+    "EVIDENCE_ARTIFACT validation/closure/G-P3-68c8d00/phase-decision.yaml: missing/changed machine/phase-gates.yaml",
+    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/phase-decision.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/phase-gates-snapshot.txt",
+    "EVIDENCE_COVERAGE P4 CI: missing checks",
+    "EXEC_INPUT V2-017: missing/changed artifact machine/implementation-backlog.yaml",
+    "EXEC_INPUT V2-017: missing/changed artifact machine/test-catalog.yaml",
+    "EXEC_ACTION V2-017: preparation is not an implementation record",
+    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+  ],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

@@ -14,12 +14,12 @@ environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-1
 command: 'GitHub Actions workflow run with 6 jobs: ARCH_FITNESS, SCHEMA_CONTRACT, STATIC, SECRET_DEPENDENCY, POSTGRES_ENV, UNIT'
 exit_code: 0
 check_ids:
-  - CI-ARCH-FITNESS
-  - CI-SCHEMA-CONTRACT
-  - CI-STATIC
-  - CI-SECRET-DEPENDENCY
-  - CI-POSTGRES-ENV
-  - CI-UNIT
+  - ARCH_FITNESS
+  - SCHEMA_CONTRACT
+  - STATIC
+  - SECRET_DEPENDENCY
+  - POSTGRES_ENV
+  - UNIT
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt
     sha256: "6f8dd20dffeca39d67d523b09c855b39066c7cd55b3b6684894a2bd27c40949f"

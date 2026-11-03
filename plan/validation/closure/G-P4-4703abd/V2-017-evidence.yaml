@@ -171,6 +171,24 @@ finding_dispositions:
       V2-017 focuses on contract compilation correctness, not runtime performance.
       No responsibility assigned to this task.
 
+external_practice_results:
+  - practice_id: EXT-002
+    adoption_mode: ADD_TRACEABILITY
+    source_version_note: Practice PLANNED; V2-017 implements explicit version binding for contract inputs
+    status: APPLIED
+    verification_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    conclusion: V2-017 applies explicit version binding pattern (FrozenInputs) for contract compilation inputs via canon_parent, genre_pack_binding, plan_version fields
+    limitations: Version binding currently limited to planning contracts; context and execution artifacts to follow in P5-P6
+  - practice_id: EXT-005
+    adoption_mode: ADD_TRACEABILITY
+    source_version_note: Practice PLANNED; V2-017 uses fixture-driven testing for contract compilation
+    status: APPLIED
+    verification_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    conclusion: V2-017 test suite verifies contract compilation with dual Owner-approved story fixtures (Urban Business + Fantasy Cultivation)
+    limitations: Fixtures demonstrate contract mechanics but require continued content quality oversight for production use
+
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-acceptance-summary.txt
     sha256: "bde2e7ef5a7b5d97a80ca4806ac599969b344e0d10f9ead896b59eb82f792b8d"

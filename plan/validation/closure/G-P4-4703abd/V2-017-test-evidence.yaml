@@ -23,6 +23,5 @@ check_ids:
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-test-results.txt
     sha256: "433a63eb499f3eb976fe1e9486076ff2db4722c995b69a2d7b9a6d8d016bfb40"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 input_evidence_refs:
   - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml

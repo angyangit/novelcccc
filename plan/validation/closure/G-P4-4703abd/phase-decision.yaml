@@ -14,7 +14,6 @@ environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-1
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/phase-gates-snapshot.txt
     sha256: "9b167e5b66f5034d94d2e942b4d3a116ec4ff0fc96d2db90935cde3e495560ca"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
 
 input_evidence_refs:
   - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml

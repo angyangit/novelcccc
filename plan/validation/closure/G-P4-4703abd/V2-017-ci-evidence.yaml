@@ -3,15 +3,15 @@ schema_version: '1.0'
 evidence_id: V2-017-ci-4703abd
 evidence_type: CI_RUN
 subject_id: V2-017
-producer: GitHub Actions Run 41454724549
-pipeline_id: '41454724549'
-pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/41454724549
-job_id: '41454724549'
+producer: GitHub Actions Run 41455282604
+pipeline_id: '41455282604'
+pipeline_url: https://github.com/angyangit/novelcccc/actions/runs/41455282604
+job_id: '41455282604'
 revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
 status: PASS
-executed_at: '2026-11-02T13:42:21Z'
-environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-HEAD-4703abd
-command: 'GitHub Actions workflow run with 6 jobs: ARCH_FITNESS, SCHEMA_CONTRACT, STATIC, SECRET_DEPENDENCY, POSTGRES_ENV, UNIT'
+executed_at: '2026-11-02T13:42:24Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-main-4703abd
+command: 'GitHub Actions workflow: push to main branch, 6 checks SUCCESS'
 exit_code: 0
 check_ids:
   - ARCH_FITNESS
@@ -22,6 +22,5 @@ check_ids:
   - UNIT
 artifacts:
   - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt
-    sha256: "6f8dd20dffeca39d67d523b09c855b39066c7cd55b3b6684894a2bd27c40949f"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    sha256: "2fd1837e3d6ee72b0d4d901ee1c1170be4eb3392c491ee62fb9ded43e63b4cfe"
 input_evidence_refs: []

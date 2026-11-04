@@ -160,7 +160,7 @@ class ContextCompiler:
 
         ADR-009: Previous chapter actual ending has high priority, not displaced by retrieval.
         """
-        items = []
+        items: list[ContextItem] = []
 
         if contract.continuity_constraints is None:
             return items

@@ -335,7 +335,8 @@ jobs:
             echo "WARNING: Supplementary check found potential secrets"
             exit 1
           fi
-          if grep -r "api[_-]key.*=" plan/ src/ scripts/ --include="*.py" --include="*.yaml" 2>/dev/null | grep -v "^#" | grep -v "example"; then
+          # Check for api_key assignments but exclude legitimate library calls and env reads
+          if grep -r "api[_-]key.*=" plan/ src/ scripts/ --include="*.py" --include="*.yaml" 2>/dev/null | grep -v "^#" | grep -v "example" | grep -v "api_key=key" | grep -v "getenv"; then
             echo "WARNING: Supplementary check found potential API keys"
             exit 1
           fi

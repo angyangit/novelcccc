@@ -10,6 +10,7 @@ from typing import Any
 
 from .anthropic_provider import AnthropicProvider
 from .budget import BudgetManager
+from .config import load_model_settings
 from .models import (
     CostStatus,
     ModelRequest,
@@ -39,6 +40,7 @@ class ModelGateway:
         self.budget_manager = BudgetManager(budget_limit_usd)
         self.max_retries = max_retries
         self.template_version = "v1.0"
+        self.configured_model_id: str | None = None
 
         # Initialize providers
         self.anthropic_provider = (
@@ -54,6 +56,22 @@ class ModelGateway:
 
         # Simple in-memory cache (production would use persistent cache)
         self._cache: dict[str, ModelResponse] = {}
+
+    @classmethod
+    def from_project_env(
+        cls, budget_limit_usd: float = 5.0, max_retries: int = 1
+    ) -> "ModelGateway":
+        """Build a real model gateway from the one existing root .env only."""
+        settings = load_model_settings()
+        gateway = cls(
+            anthropic_key=settings.auth_token,
+            budget_limit_usd=budget_limit_usd,
+            max_retries=max_retries,
+            anthropic_base_url=settings.base_url,
+            effort_level=settings.effort_level,
+        )
+        gateway.configured_model_id = settings.model_id
+        return gateway
 
     def _compute_input_hash(self, request: ModelRequest) -> str:
         """Compute hash of semantic input for cache lookup."""
@@ -86,6 +104,9 @@ class ModelGateway:
         Raises:
             RuntimeError: If no provider available or budget exhausted
         """
+        if self.configured_model_id is not None and model_id != self.configured_model_id:
+            raise ValueError("Model ID must match CC_VIBE_ANTHROPIC_MODEL in root .env")
+
         # Create logical request
         request_id = str(uuid.uuid4())
         request = ModelRequest(

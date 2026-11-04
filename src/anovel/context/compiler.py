@@ -1,6 +1,6 @@
 """Context Compiler for V2-018.
 
-Assembles ContextArtifact from ChapterContract, Canon snapshot, GenrePack,
+Assembles ContextArtifact from ChapterContract, Canon state, GenrePack,
 character knowledge, and optional retrieval content per ADR-009.
 
 Key principles (ADR-009):
@@ -10,6 +10,10 @@ Key principles (ADR-009):
 - Full provenance tracking for auditability
 - Model-specific tokenizer (not cl100k_base as universal default)
 - Output reserve for Writer response + system overhead
+
+Architecture: Context Compiler is an application-layer service that does NOT
+directly access Canon internals. Canon state is provided as input by the
+workflow orchestrator (V2-020).
 """
 
 import hashlib
@@ -18,10 +22,8 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy.orm import Session
-
-from ..canon.projection import CanonProjectionService
 from ..contracts.models import ChapterContract, KnowledgeBoundary
+from ..domain.delta import CanonState
 from ..domain.identity import ProjectId
 from ..genre.registry import GenrePackRegistry
 from .models import (
@@ -41,27 +43,23 @@ class ContextCompiler:
 
     def __init__(
         self,
-        canon_projection: CanonProjectionService,
         genre_registry: GenrePackRegistry,
         token_counter: TokenCounter,
     ):
         """Initialize with required services.
 
         Args:
-            canon_projection: Service for Canon snapshot reconstruction
             genre_registry: GenrePack registry for hard policies
             token_counter: Model-specific tokenizer for budget accounting
         """
-        self.canon_projection = canon_projection
         self.genre_registry = genre_registry
         self.token_counter = token_counter
 
     def compile_context(
         self,
-        session: Session,
         chapter_contract: ChapterContract,
+        canon_state: CanonState,
         project_id: ProjectId,
-        branch_name: str,
         previous_chapter_end: dict[str, Any] | None = None,
         optional_retrieval: list[dict[str, Any]] | None = None,
         token_budget: int = 32000,
@@ -70,10 +68,9 @@ class ContextCompiler:
         """Compile ContextArtifact from frozen inputs.
 
         Args:
-            session: Database session for Canon access
             chapter_contract: Compiled contract from V2-017
+            canon_state: Pre-loaded Canon state at contract.canon_parent commit
             project_id: Project scope for isolation
-            branch_name: Branch name for Canon projection
             previous_chapter_end: Actual end state from chapter N-1 (None for chapter 1)
             optional_retrieval: Retrieved summaries (can be trimmed)
             token_budget: Maximum total tokens
@@ -87,18 +84,13 @@ class ContextCompiler:
         - Mandatory overflow → FAIL_FAST with explicit error
         - Optional selection → ADAPTIVE by causal dependency, chapter needs, temporal relevance
         - Knowledge isolation → STRICT scope and visibility enforcement
+
+        Note: Canon state must be pre-loaded by workflow orchestrator (V2-020).
+        Context Compiler does not access Canon services directly (architecture boundary).
         """
         mandatory_items: list[ContextItem] = []
 
-        # 1. Load Canon snapshot from frozen parent
-        canon_snapshot = self.canon_projection.reconstruct_state_at_commit(
-            session=session,
-            project_id=str(project_id),
-            branch_name=branch_name,
-            target_commit_id=chapter_contract.canon_parent,
-        )
-
-        # 2. Assemble mandatory items (ADR-009: never trimmed)
+        # 1. Assemble mandatory items (ADR-009: never trimmed)
         # Chapter 1: no previous chapter (ADR-009 requirement)
         if chapter_contract.continuity_constraints is not None:
             mandatory_items.extend(
@@ -111,7 +103,7 @@ class ContextCompiler:
 
         mandatory_items.extend(
             self._assemble_character_knowledge(
-                chapter_contract, canon_snapshot, project_id
+                chapter_contract, canon_state, project_id
             )
         )
 

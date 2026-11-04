@@ -140,7 +140,9 @@ class ChapterWorkflow:
         )
 
         if hasattr(context_result, "error_type"):
-            raise RuntimeError(f"Context compilation failed: {context_result.error_type}")
+            raise RuntimeError(
+                f"Context compilation failed: {context_result.error_type}"
+            )
 
         context_artifact = context_result
 

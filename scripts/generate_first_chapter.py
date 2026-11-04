@@ -6,7 +6,6 @@ Generates actual Chinese novel chapters for:
 2. Eastern fantasy cultivation
 """
 
-import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -20,25 +19,6 @@ from anovel.domain.identity import ProjectId
 from anovel.gateway import ModelGateway
 from anovel.planning.models import GenrePackBinding
 from anovel.workflow import ChapterWorkflow
-
-
-def load_local_env(path: Path | None = None) -> None:
-    """Load simple KEY=VALUE entries from the ignored local .env (no shell execution)."""
-    env_path = path or Path(__file__).resolve().parents[1] / ".env"
-    if not env_path.is_file():
-        return
-    for number, raw_line in enumerate(env_path.read_text(encoding="utf-8").splitlines(), 1):
-        line = raw_line.strip()
-        if not line or line.startswith("#"):
-            continue
-        name, separator, value = line.partition("=")
-        name = name.strip()
-        if not separator or not name.isidentifier():
-            raise ValueError(f"Invalid .env assignment at line {number}")
-        value = value.strip()
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
-            value = value[1:-1]
-        os.environ.setdefault(name, value)
 
 
 class SimpleTokenCounter(TokenCounter):
@@ -188,41 +168,13 @@ def main():
     token_counter = SimpleTokenCounter()
     context_compiler = ContextCompiler(mock_genre, token_counter)
 
-    # Local .env is git-ignored. Explicit shell environment always takes priority.
-    load_local_env()
-    anthropic_key = os.getenv("CC_VIBE_ANTHROPIC_AUTH_TOKEN") or os.getenv("ANTHROPIC_API_KEY")
-    base_url = os.getenv("CC_VIBE_ANTHROPIC_BASE_URL") or None
-    model_id = os.getenv("CC_VIBE_ANTHROPIC_MODEL") or "claude-sonnet-4"
-    effort_level = os.getenv("CC_VIBE_ANTHROPIC_EFFORTLEVEL") or None
-    if base_url and not base_url.startswith("https://"):
-        raise ValueError("CC_VIBE_ANTHROPIC_BASE_URL must use HTTPS")
-    if effort_level and effort_level not in ("low", "medium", "high", "xhigh", "max"):
-        raise ValueError("Invalid CC_VIBE_ANTHROPIC_EFFORTLEVEL")
-    if anthropic_key == "sk-":
-        raise ValueError("CC_VIBE_ANTHROPIC_AUTH_TOKEN is a placeholder, not a usable token")
-    use_real_model = bool(anthropic_key)
-
-    if use_real_model:
-        print(f"\n✓ Model credential configured - target model: {model_id}\n")
-        model_gateway = ModelGateway(
-            anthropic_key=anthropic_key,
-            anthropic_base_url=base_url,
-            effort_level=effort_level,
-            budget_limit_usd=5.0,
-            max_retries=1,
-        )
-    else:
-        print("\n⚠ No ANTHROPIC_API_KEY - using mock provider (no real content)\n")
-        # Create mock gateway for testing
-        mock_gateway = Mock()
-        mock_response = Mock()
-        mock_response.result_status = Mock(value="success")
-        mock_response.response_text = (
-            "# 第一章 起点\n\n（这是Mock模式，未生成真实内容）"
-        )
-        mock_response.total_cost_usd = 0.0
-        mock_gateway.generate = Mock(return_value=mock_response)
-        model_gateway = mock_gateway
+    # One source of truth: existing project-root .env. No env var fallback.
+    model_gateway = ModelGateway.from_project_env(
+        budget_limit_usd=5.0, max_retries=1
+    )
+    model_id = model_gateway.configured_model_id
+    assert model_id is not None
+    print(f"\n✓ Model selected from project-root .env: {model_id}\n")
 
     # Create workflow
     output_dir = Path("output/drafts")
@@ -247,7 +199,7 @@ def main():
             canon_state=mock_canon_state,
             project_id=ProjectId("urban-business-001"),
             model_id=model_id,
-            max_tokens=8000 if use_real_model else 100,
+            max_tokens=8000,
         )
 
         print(f"\n✅ Generation SUCCESS")
@@ -270,7 +222,7 @@ def main():
             canon_state=mock_canon_state,
             project_id=ProjectId("fantasy-cultivation-001"),
             model_id=model_id,
-            max_tokens=8000 if use_real_model else 100,
+            max_tokens=8000,
         )
 
         print(f"\n✅ Generation SUCCESS")
@@ -286,10 +238,7 @@ def main():
     print("First Chapter Generation Complete")
     print("=" * 80)
 
-    if use_real_model:
-        print("\n请查看 output/drafts/ 目录中的生成章节，进行人工阅读质量评价。")
-    else:
-        print("\n提示：在项目根目录 .env 配置 CC_VIBE_ANTHROPIC_AUTH_TOKEN 后可生成真实小说内容。")
+    print("\n请查看 output/drafts/ 目录中的真实生成章节，进行人工阅读质量评价。")
 
 
 if __name__ == "__main__":

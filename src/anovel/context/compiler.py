@@ -20,7 +20,7 @@ import hashlib
 import json
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from ..contracts.models import ChapterContract, KnowledgeBoundary
 from ..domain.delta import CanonState
@@ -331,7 +331,7 @@ class ContextCompiler:
 
         # Load GenrePack to get hard policies
         try:
-            genre_pack = self.genre_registry.get_pack(
+            _ = self.genre_registry.get_pack(
                 contract.genre_pack_binding.pack_id,
                 contract.genre_pack_binding.version,
             )

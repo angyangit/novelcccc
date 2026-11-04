@@ -1,0 +1,49 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_type: PHASE_DECISION
+evidence_id: PHASE-P4-G-P4-4703abd
+status: PASS
+decision: VERIFIED
+subject_id: P4
+revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+
+producer: G-P4 Planning & Contracts phase gate certification
+executed_at: '2026-11-02T13:42:21Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-PostgreSQL-17.11-HEAD-4703abd
+
+artifacts:
+  - ref: validation/closure/G-P4-4703abd/artifacts/phase-gates-snapshot.txt
+    sha256: "9b167e5b66f5034d94d2e942b4d3a116ec4ff0fc96d2db90935cde3e495560ca"
+
+input_evidence_refs:
+  - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+  - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+  - validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml
+  - validation/closure/G-P4-4703abd/V2-017-evidence.yaml
+
+ci_evidence_refs:
+  - validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml
+
+rationale: |
+  G-P4 Planning & Contracts phase gate certification. All 3 exit criteria satisfied with executable evidence:
+
+  1. 双Story Fixture审定: Urban business startup (specs/fixtures/urban_business_startup_v1.yaml) and
+     Fantasy eastern cultivation (specs/fixtures/fantasy_eastern_cultivation_v1.yaml) delivered and Owner-approved.
+     ADR-008 accepted via PR #15 (94dbe467).
+
+  2. 类型化Contract与Canon/Genre绑定: ChapterContract implements FrozenInputs with canon_parent_hash,
+     genre_pack_hash, and plan_version binding. Contract compiler (src/anovel/contracts/compiler.py) enforces
+     frozen input verification and version-aware invalidation.
+
+  3. 章内候选协议和可读性自由边界: beat_outcome_constraints provide informational cumulative goals across chapters,
+     required_state_changes enforce mandatory chapter-specific transitions, knowledge_boundaries define what
+     characters may know. Quiet chapters (relationship/internal conflict) supported without forced combat fields.
+
+  Task V2-017 CLOSED with complete evidence. GitHub Actions run 41455282604 (main branch push @ 4703abd1):
+  7/7 gates SUCCESS (ARCH_FITNESS, CANON_CAS_IDEMPOTENCY, SCHEMA_CONTRACT, STATIC, SECRET_DEPENDENCY,
+  POSTGRES_ENV, UNIT). V2-017: 14 contract tests pass. Total tests passing with no regressions.
+
+  Beat outcome semantic fix (46544d4): Distinguishes cumulative beat outcomes from chapter-specific scheduled transitions.
+
+  Known limitation: Story fixtures demonstrate contract mechanics but require continued content quality oversight
+  (does NOT block G-P4 certification).

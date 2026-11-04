@@ -401,3 +401,47 @@ class TestHistoricalProvenanceRegression:
         # Grandfathered task: production code suppresses errors
         assert result is None, "Grandfathered task should return None"
         # Production compatibility mechanism validates this
+
+    def test_HP_07_scoped_provenance_pins_listed_record_only(self):
+        """HP-07: evidence_refs scope pins only listed records; siblings use current bytes."""
+        g_p3_dir = "validation/closure/G-P3-68c8d00"
+        provenance = {
+            "G-P3-68c8d00": {
+                "subject_revision": "68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1",
+                "artifact_revision": "140b2dc253cfaa9538351be96ae8e007c8cb96c2",
+                "evidence_refs": [f"{g_p3_dir}/phase-decision.yaml"],
+            }
+        }
+
+        pinned_errors = []
+        EvidenceReader(
+            self.plan, self.schema, pinned_errors, compat={}, historical_provenance=provenance
+        ).read(f"{g_p3_dir}/phase-decision.yaml", {"PHASE_DECISION"}, "G-P3", None)
+        assert not [e for e in pinned_errors if "EVIDENCE_ARTIFACT" in e], pinned_errors
+
+        unpinned_errors = []
+        EvidenceReader(
+            self.plan, self.schema, unpinned_errors, compat={}, historical_provenance={}
+        ).read(f"{g_p3_dir}/phase-decision.yaml", {"PHASE_DECISION"}, "G-P3", None)
+        assert [e for e in unpinned_errors if "EVIDENCE_ARTIFACT" in e], \
+            "phase-decision must fail without the pin (live phase-gates.yaml changed)"
+
+        sibling_errors = []
+        EvidenceReader(
+            self.plan, self.schema, sibling_errors, compat={}, historical_provenance=provenance
+        ).read(f"{g_p3_dir}/V2-015-code-evidence.yaml", {"CODE"}, "V2-015", None)
+        assert not [e for e in sibling_errors if "EVIDENCE_ARTIFACT" in e], \
+            f"sibling must still verify against current bytes: {sibling_errors}"
+
+        tampered = self.test_evidence_dir / "G-P3-68c8d00"
+        tampered.mkdir(parents=True)
+        record = yaml.safe_load((self.plan / g_p3_dir / "phase-decision.yaml").read_text())
+        record["artifacts"][0]["sha256"] = "0" * 64
+        (tampered / "phase-decision.yaml").write_text(yaml.dump(record))
+        tampered_ref = "test-hp-evidence/G-P3-68c8d00/phase-decision.yaml"
+        scoped = {"X": dict(provenance["G-P3-68c8d00"], evidence_refs=[tampered_ref])}
+        tampered_errors = []
+        EvidenceReader(
+            self.plan, self.schema, tampered_errors, compat={}, historical_provenance=scoped
+        ).read(tampered_ref, {"PHASE_DECISION"}, "G-P3", None)
+        assert any("mismatch" in e for e in tampered_errors), tampered_errors

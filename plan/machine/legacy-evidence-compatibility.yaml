@@ -28,6 +28,19 @@ historical_closure_artifact_provenance:
       - phase-gates.yaml: 2dae46ac9b682be8cb3c273e78907a559645527c49f7e29c5dcdb05572f099e9
       - remediation-register.yaml: 7c552a7103bef8e06c8603b7be8bc6656ed408d858f3396b1624c024c76165e9
       - milestones.yaml: f4f0bcd42ed08b9b0fe40fc8c08b91103105e5b86997d25c482fea2f0fff3a96
+  G-P3-68c8d00:
+    subject_revision: 68c8d00ae5a74ee31ddb8d18ab23ab6921c185d1
+    artifact_revision: 140b2dc253cfaa9538351be96ae8e007c8cb96c2
+    evidence_refs:
+      - validation/closure/G-P3-68c8d00/phase-decision.yaml
+    note: |
+      The G-P3 phase decision pinned the live file machine/phase-gates.yaml
+      (617af16b72fc7d93df749e550713670b1fd12930ece7e4561003e9be62e6e02a). Those bytes
+      exist exactly at the certification commit 140b2dc; G-P4 certification later
+      changed the live file. The G-P3 record is unchanged; its recorded hash is
+      verified against the immutable blob at 140b2dc. Scope is limited to
+      phase-decision.yaml because the other G-P3 records cite artifacts/ files added
+      after 140b2dc and remain verified against current bytes.
 
 compatibility_entries:
   V2-005:

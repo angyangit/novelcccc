@@ -1,0 +1,34 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: ADR-009-20261103-owner-approved
+evidence_type: ADR_DECISION
+subject_id: ADR-009
+revision: 336ecd9d7b01abbdded5bb1c518797200bb93f81
+status: PASS
+producer: ANovelOS Owner - explicit acceptance of ADR-009 with mandatory amendments
+executed_at: '2026-11-03T15:00:00.000Z'
+environment_fingerprint: V2-018 Context Compiler decision governance; Owner-approved budget policy
+artifacts:
+- ref: decisions/ADR-009_CONTEXT_COMPILATION_BUDGET_POLICY.md
+  sha256: d8c931608632fdac738e4174493619c11216fad0ec967ced99b645fb7aa1e230
+input_evidence_refs: []
+decision: ACCEPTED
+rationale: |
+  The ANovelOS Owner explicitly accepted ADR-009 Context Compilation and Budget Policy with five mandatory amendments.
+
+  Core decisions approved:
+  1. Mandatory Context Definition - ContinuityConstraint, ChapterContract constraints, character knowledge boundaries, GenrePack hard policies, Canon required facts (never trimmed)
+  2. Optional Context Definition - retrieval summaries, background extensions, style references (budget-trimmable)
+  3. Mandatory Overflow Strategy - FAIL_FAST with explicit ContextCompilationError (no silent truncation, no auto budget increase, no mandatory summarization)
+  4. Optional Budget Allocation - ADAPTIVE selection by causal dependency, chapter needs, temporal relevance, information importance (not fixed priority ordering)
+  5. Knowledge Isolation - STRICT scope and visibility enforcement (reviewer materials never enter Writer context, future chapter facts excluded, scope isolation by project_id)
+  6. Explainability and Auditability - deterministic offline compilation with full provenance tracking (source hash, visibility, mandatory flag, inclusion reason, token counting method)
+
+  Owner amendments integrated:
+  1. Chapter 1 continuity handling - explicit "no previous chapter" for first chapter, continuity constraint priority preservation
+  2. Dynamic optional priority - adaptive evaluation based on actual ChapterContract content, not fixed ordering rules
+  3. Model-specific tokenizer - target model compatible tokenizer required, cl100k_base not universal default
+  4. Explicit budget failure - error when mandatory content cannot be reliably proven within budget
+  5. Output reserve accounting - reserve tokens for Writer output, system messages, and protocol overhead
+
+  Acceptance establishes V2-018 IMPLEMENT architectural contract. V2-018 IMPLEMENT conditionally authorized pending PR #17 merge and G-P4 VERIFIED.

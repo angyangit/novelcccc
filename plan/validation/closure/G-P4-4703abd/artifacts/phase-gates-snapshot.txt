@@ -1,0 +1,29 @@
+G-P4 Phase Gates Snapshot
+
+Phase: P4 - Planning & Contracts
+Status: VERIFIED
+Exit Gate: G-P4
+Revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+
+Tasks Completed:
+- V2-017: Contract Compiler (CLOSED)
+
+Exit Criteria Verified:
+✓ 双Story Fixture审定
+  - Urban business startup (specs/fixtures/urban_business_startup_v1.yaml)
+  - Fantasy eastern cultivation (specs/fixtures/fantasy_eastern_cultivation_v1.yaml)
+  - ADR-008 accepted (contract overlay binding semantics)
+
+✓ 类型化Contract与Canon/Genre绑定
+  - FrozenInputs: canon_parent, genre_pack_binding, plan_version
+  - Contract compiler enforces frozen input verification
+  - Version-aware invalidation implemented
+
+✓ 章内候选协议和可读性自由边界
+  - beat_outcome_constraints: cumulative goals (informational)
+  - required_state_changes: mandatory chapter transitions
+  - knowledge_boundaries: character knowledge limits
+  - Quiet chapter support verified
+
+Evidence: validation/closure/G-P4-4703abd/phase-decision.yaml
+Next Phase: P5 (Context & Model Gateway)

@@ -1,0 +1,20 @@
+V2-017 Contract Compiler Test Results
+
+Test Suite: tests/contract/test_v2_017_acceptance.py
+Revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+Executed: GitHub Actions CI Run 41454724549
+
+Results: 14 passed, 0 failed, 0 skipped
+Duration: 0.12s
+
+Test Coverage:
+✓ AT-V2-017-01: Initial chapter compilation (Urban + Fantasy)
+✓ AT-V2-017-02: Required Transition semantics
+✓ AT-V2-017-03: Conflict detection diagnostics
+✓ AT-V2-017-04: Continuity binding to previous chapter
+✓ AT-V2-017-05: Knowledge boundaries
+✓ AT-V2-017-06: Version expiry diagnostics
+✓ AT-V2-017-07: Invalidation scoping
+✓ AT-V2-017-08: Quiet chapter support
+
+All acceptance criteria verified in main branch CI.

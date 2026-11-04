@@ -1,0 +1,201 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-017-CLOSURE-4703abd
+evidence_type: ACCEPTANCE_RECORD
+subject_id: V2-017
+revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+status: PASS
+producer: G-P4 phase gate certification
+executed_at: '2026-11-02T13:42:24Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-main-4703abd
+
+check_ids:
+  - V2-017
+  - AT-V2-017
+  - AT-V2-017-01
+  - AT-V2-017-02
+  - AT-V2-017-03
+  - AT-V2-017-04
+  - AT-V2-017-05
+  - AT-V2-017-06
+  - AT-V2-017-07
+  - AT-V2-017-08
+
+decision: ACCEPTED
+rationale: |
+  V2-017 Contract Compiler acceptance verified:
+
+  1. Contract compilation from SeriesVision to ChapterContract without P10 dependencies
+  2. RequiredTransition uses same NarrativeDelta semantics as Canon operations
+  3. Planning conflicts return diagnostics without modifying Canon
+  4. Dual story fixtures Owner-approved: urban_business_startup_v1.yaml and fantasy_eastern_cultivation_v1.yaml
+  5. Continuity contracts bind to previous chapter hash/evidence and current chapter start point
+  6. Scenes consume character goals/knowledge with expected cost; quiet chapters supported without forced combat
+  7. Planning inputs versioned with supersession; frozen and adjustable future plans separated
+  8. Canon/Pack/plan revisions trigger scoped invalidation and replan proposals
+  9. All 14 acceptance tests pass
+  10. CI verification: 6/6 gates SUCCESS in GitHub Actions run 41454724549
+  11. Beat outcome semantic fix (46544d4): distinguishes cumulative beat outcomes from chapter-specific transitions
+  12. Closure commits merged to main via PR #15 (94dbe467) and PR #16 (4703abd1)
+
+  ADR-008 (Contract overlay binding semantics) accepted via PR #15.
+
+finding_dispositions:
+  - finding_id: AR-04
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 establishes contract compilation foundation for genre-aware planning.
+      Partial: Contract binds to genre_pack_hash, enabling genre-specific constraints.
+    remaining_work: Full multi-genre coherence validation across 30 GenrePacks.
+    next_task: V2-034
+    owner_role: genre-maintainer
+    due_gate: G-P8
+  - finding_id: AR-08
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 implements FrozenInputs for contracts, establishing version binding pattern.
+      Partial: Planning contract versioning implemented.
+    remaining_work: Extend versioning pattern to all compilation artifacts.
+    next_task: V2-018
+    owner_role: context-maintainer
+    due_gate: G-P5
+  - finding_id: AR-10
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 establishes invalidation framework for planning revisions.
+      Partial: Contract invalidation on Canon/Pack/plan changes implemented.
+    remaining_work: Extend to context and production artifact invalidation.
+    next_task: V2-018
+    owner_role: context-maintainer
+    due_gate: G-P5
+  - finding_id: AR-11
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 acceptance tests verify contract compilation mechanics.
+      Partial: Contract-level verification implemented.
+    remaining_work: Full E2E chapter generation verification.
+    next_task: V2-020
+    owner_role: workflow-maintainer
+    due_gate: G-P6
+  - finding_id: CA-10
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 binds contracts to canon_parent hash, establishing Canon dependency tracking.
+      Partial: Contract-to-Canon binding implemented.
+    remaining_work: Full Canon projection and snapshot rebuild verification.
+    next_task: V2-012
+    owner_role: canon-maintainer
+    due_gate: G-P2
+  - finding_id: CA-14
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 implements beat_outcome_constraints vs required_state_changes semantic distinction.
+      Partial: Planning contract semantics clarified.
+    remaining_work: Extend distinction to execution and quality verification.
+    next_task: V2-025
+    owner_role: quality-maintainer
+    due_gate: G-P7
+  - finding_id: CA-24
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 establishes frozen input pattern for contract compilation.
+      Partial: Planning input freezing implemented.
+    remaining_work: Extend to all compilation stages with explicit version contracts.
+    next_task: V2-018
+    owner_role: context-maintainer
+    due_gate: G-P5
+  - finding_id: RR-07
+    responsibility: PARTIAL
+    disposition: PARTIALLY_RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 implements replan proposal generation on invalidation.
+      Partial: Contract invalidation triggers replan proposal creation.
+    remaining_work: Full replan approval workflow and multi-chapter coherence verification.
+    next_task: V2-034
+    owner_role: planning-maintainer
+    due_gate: G-P8
+  - finding_id: SUP-01
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 delivers dual story fixtures (Urban Business + Fantasy Cultivation) Owner-approved for testing.
+      Fixtures demonstrate contract compilation with different genre mechanics.
+  - finding_id: SUP-02
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    reason: |
+      V2-017 implements FrozenInputs binding (canon_parent, genre_pack_binding, plan_version) for contract compilation.
+      Version tracking and supersession semantics prevent silent compilation of stale inputs.
+  - finding_id: SUP-04
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      V2-017 acceptance tests verify quiet chapter support and knowledge boundary enforcement.
+      Chapters with internal conflict or relationship development compile without forced combat fields.
+  - finding_id: PR-01
+    responsibility: FULL
+    disposition: RESOLVED
+    evidence_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    reason: |
+      PR-01: Planning versions and compilation responsibilities separated per acceptance evidence.
+      V2-017 implements PlanVersion with freeze_horizon and supersession tracking (src/anovel/planning/versions.py).
+      Planning conflicts return diagnostics via ReplanProposal without modifying Canon (src/anovel/planning/replanning.py).
+      Contract Compiler binds to frozen inputs (canon_parent, genre_pack_hash, plan_version) preventing silent stale input reuse.
+      No secondary Canon write path created; compiler imports only domain.delta.OperationType, not Canon repository.
+
+external_practice_results:
+  - practice_id: EXT-002
+    adoption_mode: ADD_TRACEABILITY
+    source_version_note: Practice PLANNED; V2-017 implements explicit version binding for contract inputs
+    verification_refs:
+      - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+    conclusion: V2-017 applies explicit version binding pattern (FrozenInputs) for contract compilation inputs via canon_parent, genre_pack_binding, plan_version fields
+    limitations: Version binding currently limited to planning contracts; context and execution artifacts to follow in P5-P6
+  - practice_id: EXT-005
+    adoption_mode: ADD_TRACEABILITY
+    source_version_note: Practice PLANNED; V2-017 uses fixture-driven testing for contract compilation
+    verification_refs:
+      - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+    conclusion: V2-017 test suite verifies contract compilation with dual Owner-approved story fixtures (Urban Business + Fantasy Cultivation)
+    limitations: Fixtures demonstrate contract mechanics but require continued content quality oversight for production use
+
+artifacts:
+  - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-acceptance-summary.txt
+    sha256: "bde2e7ef5a7b5d97a80ca4806ac599969b344e0d10f9ead896b59eb82f792b8d"
+
+input_evidence_refs:
+  - validation/closure/G-P4-4703abd/V2-017-code-evidence.yaml
+  - validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml
+  - validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml

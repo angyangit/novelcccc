@@ -101,14 +101,15 @@ phases:
   name: Planning & Contracts
   entry_gate: G-P3
   exit_gate: G-P4
-  status: NOT_VERIFIED
+  status: VERIFIED
   tasks:
   - V2-017
   exit_criteria:
   - 双 Story Fixture 审定
   - 类型化 Contract 与 Canon/Genre 绑定
   - 章内候选协议和可读性自由边界
-  evidence_refs: []
+  evidence_refs:
+  - validation/closure/G-P4-4703abd/phase-decision.yaml
   task_refinement: PLANNED
 - id: P5
   name: Context & Model Gateway

@@ -1,0 +1,32 @@
+record_type: plan_execution_evidence
+schema_version: '1.0'
+evidence_id: V2-017-code-4703abd
+evidence_type: CODE
+subject_id: V2-017
+revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+status: PASS
+producer: GitHub Actions Run 41455282604 + G-P4 phase gate certification
+executed_at: '2026-11-02T13:42:24Z'
+environment_fingerprint: GitHub-Actions-ubuntu-22.04-Python-3.12.14-main-4703abd
+artifacts:
+  - ref: validation/closure/G-P4-4703abd/artifacts/V2-017-code-artifacts.txt
+    sha256: "8189140fca17a895f4f6b64eef3817d223907ef8878dd657a204bbdf5a21b7a1"
+input_evidence_refs: []
+check_ids:
+  - CODE-V2-017-COMPILER
+  - CODE-V2-017-MODELS
+  - CODE-V2-017-PLANNING
+  - CODE-V2-017-FIXTURES
+decision: VERIFIED
+rationale: |
+  V2-017 implementation artifacts exist and verified at revision 4703abd1. Code merged to main via:
+  - PR #15: 94dbe467 (ADR-008 decision and dual-fixture Owner review)
+  - PR #16: 4703abd1 (Contract Compiler implementation)
+  Beat outcome semantic fix in commit 46544d4 distinguishes cumulative beat outcomes from chapter-specific transitions.
+
+  Key artifacts:
+  - src/anovel/contracts/compiler.py: Contract compiler implementation
+  - src/anovel/contracts/models.py: ChapterContract and FrozenInputs models
+  - src/anovel/planning/models.py: ChapterPlan with beat_outcome_constraints
+  - specs/fixtures/urban_business_startup_v1.yaml: Urban business story fixture
+  - specs/fixtures/fantasy_eastern_cultivation_v1.yaml: Fantasy cultivation story fixture

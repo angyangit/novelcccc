@@ -1,0 +1,19 @@
+V2-017 Contract Compiler Code Artifacts
+
+Revision: 4703abd1e12d623fb0dbb81c1bb9ca9ae33e44a0
+Merged via: PR #15 (94dbe467) + PR #16 (4703abd1)
+
+Core Implementation:
+- src/anovel/contracts/compiler.py: Contract compilation logic
+- src/anovel/contracts/models.py: ChapterContract, FrozenInputs models
+- src/anovel/planning/models.py: ChapterPlan with beat_outcome_constraints
+
+Story Fixtures:
+- specs/fixtures/urban_business_startup_v1.yaml
+- specs/fixtures/fantasy_eastern_cultivation_v1.yaml
+
+Key Features:
+- Frozen input verification (canon_parent, genre_pack_binding, plan_version)
+- Beat outcome vs required transitions semantic separation (commit 46544d4)
+- Version-aware invalidation and replan proposals
+- Quiet chapter support without forced combat fields

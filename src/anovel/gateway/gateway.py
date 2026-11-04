@@ -104,7 +104,10 @@ class ModelGateway:
         Raises:
             RuntimeError: If no provider available or budget exhausted
         """
-        if self.configured_model_id is not None and model_id != self.configured_model_id:
+        if (
+            self.configured_model_id is not None
+            and model_id != self.configured_model_id
+        ):
             raise ValueError("Model ID must match CC_VIBE_ANTHROPIC_MODEL in root .env")
 
         # Create logical request

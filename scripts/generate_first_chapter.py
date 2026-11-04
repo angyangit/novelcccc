@@ -176,7 +176,7 @@ def main():
 
     if use_real_model:
         print("\n✓ ANTHROPIC_API_KEY found - will generate with real Claude model\n")
-        model_gateway = ModelGateway(anthropic_key=api_key, budget_limit_usd=5.0)
+        model_gateway = ModelGateway(anthropic_key=api_key, budget_limit_usd=5.0)  # type: ignore[call-arg]
     else:
         print("\n⚠ No ANTHROPIC_API_KEY - using mock provider (no real content)\n")
         # Create mock gateway for testing

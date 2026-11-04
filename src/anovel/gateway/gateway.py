@@ -23,14 +23,14 @@ class ModelGateway:
 
     def __init__(
         self,
-        anthropic_api_key: str | None = None,
+        anthropic_key: str | None = None,
         budget_limit_usd: float = 100.0,
         max_retries: int = 3,
     ):
         """Initialize Model Gateway.
 
         Args:
-            anthropic_api_key: Anthropic API key (None for testing)
+            anthropic_key: Anthropic API key (None for testing)
             budget_limit_usd: Total budget limit in USD
             max_retries: Maximum retry attempts per request
         """
@@ -40,8 +40,8 @@ class ModelGateway:
 
         # Initialize providers
         self.anthropic_provider = (
-            AnthropicProvider(anthropic_api_key, self.budget_manager)
-            if anthropic_api_key
+            AnthropicProvider(anthropic_key, self.budget_manager)
+            if anthropic_key
             else None
         )
 
@@ -119,7 +119,7 @@ class ModelGateway:
 
         # Execute attempts
         if not self.anthropic_provider:
-            raise RuntimeError("No provider configured - set anthropic_api_key")
+            raise RuntimeError("No provider configured - set anthropic_key")
 
         attempts = []
         for attempt_num in range(1, self.max_retries + 1):

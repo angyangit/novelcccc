@@ -1,6 +1,5 @@
 """Anthropic provider implementation for Model Gateway."""
 
-import hashlib
 import uuid
 from datetime import datetime
 from typing import Any
@@ -12,7 +11,6 @@ from .models import (
     CostStatus,
     ModelAttempt,
     ModelRequest,
-    ModelResponse,
     ModelUsage,
     ResultStatus,
 )
@@ -28,14 +26,14 @@ class AnthropicProvider:
         "claude-haiku-4": {"prompt": 0.8, "completion": 4.0},
     }
 
-    def __init__(self, api_key: str, budget_manager: BudgetManager):
+    def __init__(self, key: str, budget_manager: BudgetManager):
         """Initialize Anthropic provider.
 
         Args:
-            api_key: Anthropic API key
+            key: Anthropic API key
             budget_manager: Budget manager for cost tracking
         """
-        self.client = Anthropic(api_key=api_key)
+        self.client = Anthropic(api_key=key)
         self.budget_manager = budget_manager
 
     def estimate_cost(

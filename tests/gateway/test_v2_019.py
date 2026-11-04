@@ -50,7 +50,7 @@ class TestATv201902UnknownNoRetry:
         mock_client.messages.create.side_effect = Exception("Request timeout")
 
         gateway = ModelGateway(
-            anthropic_api_key="test-key", budget_limit_usd=100.0, max_retries=3
+            anthropic_key="test-key", budget_limit_usd=100.0, max_retries=3
         )
 
         response = gateway.generate(
@@ -79,7 +79,7 @@ class TestATv201903RequestAttemptSeparation:
         mock_response.content = [Mock(type="text", text="Response text")]
         mock_client.messages.create.return_value = mock_response
 
-        gateway = ModelGateway(anthropic_api_key="test-key", budget_limit_usd=100.0)
+        gateway = ModelGateway(anthropic_key="test-key", budget_limit_usd=100.0)
 
         response = gateway.generate(
             model_id="claude-sonnet-4", prompt="Test", max_tokens=50
@@ -116,7 +116,7 @@ class TestATv201904CacheHit:
         mock_response.content = [Mock(type="text", text="Cached response")]
         mock_client.messages.create.return_value = mock_response
 
-        gateway = ModelGateway(anthropic_api_key="test-key", budget_limit_usd=100.0)
+        gateway = ModelGateway(anthropic_key="test-key", budget_limit_usd=100.0)
 
         # First call - should hit provider
         response1 = gateway.generate(

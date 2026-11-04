@@ -21,12 +21,19 @@ class AnthropicProvider:
 
     # Pricing per million tokens (as of 2024-11)
     PRICING = {
+        "claude-fable-5-1": {"prompt": 10.0, "completion": 50.0},
         "claude-opus-4": {"prompt": 15.0, "completion": 75.0},
         "claude-sonnet-4": {"prompt": 3.0, "completion": 15.0},
         "claude-haiku-4": {"prompt": 0.8, "completion": 4.0},
     }
 
-    def __init__(self, key: str, budget_manager: BudgetManager):
+    def __init__(
+        self,
+        key: str,
+        budget_manager: BudgetManager,
+        base_url: str | None = None,
+        effort_level: str | None = None,
+    ):
         """Initialize Anthropic provider.
 
         Args:
@@ -34,8 +41,10 @@ class AnthropicProvider:
             budget_manager: Budget manager for cost tracking
         """
         # Initialize client (api_key param name triggers CI grep, hence type ignore)
-        self.client = Anthropic(api_key=key)  # type: ignore[call-arg]
+        # Auth tokens use Authorization: Bearer; retries are owned by the gateway.
+        self.client = Anthropic(auth_token=key, base_url=base_url, max_retries=0)
         self.budget_manager = budget_manager
+        self.effort_level = effort_level
 
     def estimate_cost(
         self, model_id: str, max_tokens: int, prompt_length: int
@@ -100,12 +109,16 @@ class AnthropicProvider:
             kwargs: dict[str, Any] = {
                 "model": request.model_id,
                 "max_tokens": request.max_tokens,
-                "temperature": request.temperature,
                 "messages": messages,
             }
 
             if request.system_prompt:
                 kwargs["system"] = request.system_prompt
+            if self.effort_level:
+                # SDK v0.125 accepts extra_body; Fable 5.1 forbids temperature.
+                kwargs["extra_body"] = {"output_config": {"effort": self.effort_level}}
+            elif not request.model_id.startswith("claude-fable-5"):
+                kwargs["temperature"] = request.temperature
 
             response = self.client.messages.create(**kwargs)
 

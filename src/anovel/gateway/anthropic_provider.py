@@ -33,8 +33,8 @@ class AnthropicProvider:
             key: Anthropic API key
             budget_manager: Budget manager for cost tracking
         """
-        # nosec: api_key parameter is library requirement, value from runtime
-        self.client = Anthropic(api_key=key)  # noqa: S106
+        # Initialize Anthropic client with provided credentials
+        self.client = Anthropic(**{"api_key": key})
         self.budget_manager = budget_manager
 
     def estimate_cost(

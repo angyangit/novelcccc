@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlsplit
 
-
 ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
 _REQUIRED = (
     "CC_VIBE_ANTHROPIC_BASE_URL",

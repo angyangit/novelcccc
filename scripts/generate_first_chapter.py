@@ -6,6 +6,7 @@ Generates actual Chinese novel chapters for:
 2. Eastern fantasy cultivation
 """
 
+import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -19,6 +20,25 @@ from anovel.domain.identity import ProjectId
 from anovel.gateway import ModelGateway
 from anovel.planning.models import GenrePackBinding
 from anovel.workflow import ChapterWorkflow
+
+
+def load_local_env(path: Path | None = None) -> None:
+    """Load simple KEY=VALUE entries from the ignored local .env (no shell execution)."""
+    env_path = path or Path(__file__).resolve().parents[1] / ".env"
+    if not env_path.is_file():
+        return
+    for number, raw_line in enumerate(env_path.read_text(encoding="utf-8").splitlines(), 1):
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        name, separator, value = line.partition("=")
+        name = name.strip()
+        if not separator or not name.isidentifier():
+            raise ValueError(f"Invalid .env assignment at line {number}")
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+            value = value[1:-1]
+        os.environ.setdefault(name, value)
 
 
 class SimpleTokenCounter(TokenCounter):
@@ -168,15 +188,29 @@ def main():
     token_counter = SimpleTokenCounter()
     context_compiler = ContextCompiler(mock_genre, token_counter)
 
-    # Check for real API key in environment
-    import os
-
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-    use_real_model = anthropic_key is not None
+    # Local .env is git-ignored. Explicit shell environment always takes priority.
+    load_local_env()
+    anthropic_key = os.getenv("CC_VIBE_ANTHROPIC_AUTH_TOKEN") or os.getenv("ANTHROPIC_API_KEY")
+    base_url = os.getenv("CC_VIBE_ANTHROPIC_BASE_URL") or None
+    model_id = os.getenv("CC_VIBE_ANTHROPIC_MODEL") or "claude-sonnet-4"
+    effort_level = os.getenv("CC_VIBE_ANTHROPIC_EFFORTLEVEL") or None
+    if base_url and not base_url.startswith("https://"):
+        raise ValueError("CC_VIBE_ANTHROPIC_BASE_URL must use HTTPS")
+    if effort_level and effort_level not in ("low", "medium", "high", "xhigh", "max"):
+        raise ValueError("Invalid CC_VIBE_ANTHROPIC_EFFORTLEVEL")
+    if anthropic_key == "sk-":
+        raise ValueError("CC_VIBE_ANTHROPIC_AUTH_TOKEN is a placeholder, not a usable token")
+    use_real_model = bool(anthropic_key)
 
     if use_real_model:
-        print("\n✓ ANTHROPIC_API_KEY found - will generate with real Claude model\n")
-        model_gateway = ModelGateway(anthropic_key=anthropic_key, budget_limit_usd=5.0)  # type: ignore[call-arg]
+        print(f"\n✓ Model credential configured - target model: {model_id}\n")
+        model_gateway = ModelGateway(
+            anthropic_key=anthropic_key,
+            anthropic_base_url=base_url,
+            effort_level=effort_level,
+            budget_limit_usd=5.0,
+            max_retries=1,
+        )
     else:
         print("\n⚠ No ANTHROPIC_API_KEY - using mock provider (no real content)\n")
         # Create mock gateway for testing
@@ -212,8 +246,8 @@ def main():
             chapter_contract=urban_contract,
             canon_state=mock_canon_state,
             project_id=ProjectId("urban-business-001"),
-            model_id="claude-sonnet-4",
-            max_tokens=4000 if use_real_model else 100,
+            model_id=model_id,
+            max_tokens=8000 if use_real_model else 100,
         )
 
         print(f"\n✅ Generation SUCCESS")
@@ -235,8 +269,8 @@ def main():
             chapter_contract=fantasy_contract,
             canon_state=mock_canon_state,
             project_id=ProjectId("fantasy-cultivation-001"),
-            model_id="claude-sonnet-4",
-            max_tokens=4000 if use_real_model else 100,
+            model_id=model_id,
+            max_tokens=8000 if use_real_model else 100,
         )
 
         print(f"\n✅ Generation SUCCESS")
@@ -255,7 +289,7 @@ def main():
     if use_real_model:
         print("\n请查看 output/drafts/ 目录中的生成章节，进行人工阅读质量评价。")
     else:
-        print("\n提示：设置 ANTHROPIC_API_KEY 环境变量后可生成真实小说内容。")
+        print("\n提示：在项目根目录 .env 配置 CC_VIBE_ANTHROPIC_AUTH_TOKEN 后可生成真实小说内容。")
 
 
 if __name__ == "__main__":

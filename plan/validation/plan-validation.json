@@ -1,7 +1,7 @@
 {
-  "generated_at_utc": "2026-11-03T02:39:05.690697+00:00",
+  "generated_at_utc": "2026-11-04T00:57:39.798314+00:00",
   "scope": "planning structure, IDs, graph, ownership, evidence fields, snapshots, links, external practice traceability and generated views",
-  "status": "FAIL",
+  "status": "PASS",
   "not_certified": [
     "P0 engineering exit",
     "runtime",
@@ -11,11 +11,11 @@
     "reader/market result"
   ],
   "source_snapshot_baseline_commit": "5cffff885e9d3de8cf822535758543579bcdcf5f",
-  "validated_repository_revision": "49f337789480b124759838978e79c3860c3fce86",
+  "validated_repository_revision": "336ecd9d7b01abbdded5bb1c518797200bb93f81",
   "validated_worktree_dirty": true,
   "validation_input_kind": "WORKTREE_SNAPSHOT",
   "input_identity_note": "manifest SHA identifies actual plan bytes; HEAD is checkout context, not proof all inputs were committed",
-  "manifest_sha256": "1de99b2c5c2b58aa594d694fb00e45e44645724083f90aba03400d0cfdc6e2eb",
+  "manifest_sha256": "fd447eb3010b63d58b7f9cdf0557b369ab9ef1fcc8016285c07265b25f4f3876",
   "counts": {
     "tasks": 61,
     "phase_distribution": {
@@ -50,35 +50,10 @@
     }
   },
   "errors": [
-    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
-    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-test-results.txt",
-    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt",
-    "EVIDENCE_RECORD validation/closure/G-P4-4703abd/V2-017-evidence.yaml: [] should be non-empty",
-    "EVIDENCE_COVERAGE V2-017 acceptance: missing checks",
-    "EVIDENCE_ARTIFACT validation/closure/G-P3-68c8d00/phase-decision.yaml: missing/changed machine/phase-gates.yaml",
-    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/phase-decision.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/phase-gates-snapshot.txt",
-    "EVIDENCE_COVERAGE P4 CI: missing checks",
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
-    "EXEC_INPUT V2-017: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-017: missing/changed artifact machine/test-catalog.yaml",
-    "EXEC_ACTION V2-017: preparation is not an implementation record",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
+    "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"
   ],
-  "fatal_errors": [
-    "GENERATED_VIEW: stale or missing generated/PHASE_TASK_REGISTRY.md",
-    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-test-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-test-results.txt",
-    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/V2-017-ci-evidence.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/V2-017-ci-log.txt",
-    "EVIDENCE_RECORD validation/closure/G-P4-4703abd/V2-017-evidence.yaml: [] should be non-empty",
-    "EVIDENCE_COVERAGE V2-017 acceptance: missing checks",
-    "EVIDENCE_ARTIFACT validation/closure/G-P3-68c8d00/phase-decision.yaml: missing/changed machine/phase-gates.yaml",
-    "EVIDENCE_ARTIFACT validation/closure/G-P4-4703abd/phase-decision.yaml: missing/changed validation/closure/G-P4-4703abd/artifacts/phase-gates-snapshot.txt",
-    "EVIDENCE_COVERAGE P4 CI: missing checks",
-    "EXEC_INPUT V2-017: missing/changed artifact machine/implementation-backlog.yaml",
-    "EXEC_INPUT V2-017: missing/changed artifact machine/test-catalog.yaml",
-    "EXEC_ACTION V2-017: preparation is not an implementation record",
-    "MANIFEST: missing/stale file manifest; explicit --write-views required for intentional changes"
-  ],
+  "fatal_errors": [],
   "informational_errors": [
     "EXEC_PACKET_ABSENT V2-005: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)",
     "EXEC_PACKET_ABSENT V2-006: no genuine historical execution packet exists (absence record registered, INFORMATIONAL)"

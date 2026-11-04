@@ -101,7 +101,7 @@ decisions:
   - V2-018
   decision_due_task: V2-018
   timing: before_interface_implementation
-  decision_record: decisions/ADR-009_CONTEXT_COMPILATION_BUDGET_POLICY.md
+  decision_record: validation/decisions/adr-009-acceptance-336ecd9/adr-009-decision.yaml
   verification_refs: []
 - id: ADR-010
   title: Provider UNKNOWN 预算与逻辑请求身份

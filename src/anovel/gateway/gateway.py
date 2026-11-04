@@ -26,6 +26,8 @@ class ModelGateway:
         anthropic_key: str | None = None,
         budget_limit_usd: float = 100.0,
         max_retries: int = 3,
+        anthropic_base_url: str | None = None,
+        effort_level: str | None = None,
     ):
         """Initialize Model Gateway.
 
@@ -40,7 +42,12 @@ class ModelGateway:
 
         # Initialize providers
         self.anthropic_provider = (
-            AnthropicProvider(anthropic_key, self.budget_manager)
+            AnthropicProvider(
+                anthropic_key,
+                self.budget_manager,
+                base_url=anthropic_base_url,
+                effort_level=effort_level,
+            )
             if anthropic_key
             else None
         )

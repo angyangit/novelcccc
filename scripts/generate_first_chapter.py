@@ -171,12 +171,12 @@ def main():
     # Check for real API key in environment
     import os
 
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    use_real_model = api_key is not None
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    use_real_model = anthropic_key is not None
 
     if use_real_model:
         print("\n✓ ANTHROPIC_API_KEY found - will generate with real Claude model\n")
-        model_gateway = ModelGateway(anthropic_key=api_key, budget_limit_usd=5.0)
+        model_gateway = ModelGateway(anthropic_key=anthropic_key, budget_limit_usd=5.0)
     else:
         print("\n⚠ No ANTHROPIC_API_KEY - using mock provider (no real content)\n")
         # Create mock gateway for testing

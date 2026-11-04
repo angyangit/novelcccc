@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 
+
 class TokenCounter(ABC):
     """Abstract token counter for different tokenizers per ADR-009.
 
@@ -19,11 +20,13 @@ class TokenCounter(ABC):
         """Count tokens in text."""
         pass
 
+
 class CL100kTokenCounter(TokenCounter):
     """OpenAI cl100k_base tokenizer (GPT-4 family)."""
 
     def __init__(self):
         import tiktoken
+
         self.encoding = tiktoken.get_encoding("cl100k_base")
 
     @property

@@ -97,9 +97,7 @@ class ContextCompiler:
                 self._assemble_continuity(chapter_contract, previous_chapter_end)
             )
 
-        mandatory_items.extend(
-            self._assemble_contract_constraints(chapter_contract)
-        )
+        mandatory_items.extend(self._assemble_contract_constraints(chapter_contract))
 
         mandatory_items.extend(
             self._assemble_character_knowledge(
@@ -107,9 +105,7 @@ class ContextCompiler:
             )
         )
 
-        mandatory_items.extend(
-            self._assemble_genre_policies(chapter_contract)
-        )
+        mandatory_items.extend(self._assemble_genre_policies(chapter_contract))
 
         # 3. Check mandatory overflow (ADR-009 FAIL_FAST)
         mandatory_tokens = sum(item.token_count for item in mandatory_items)
@@ -329,9 +325,7 @@ class ContextCompiler:
             "reader_knows": boundary.reader_knows,
         }
 
-    def _assemble_genre_policies(
-        self, contract: ChapterContract
-    ) -> list[ContextItem]:
+    def _assemble_genre_policies(self, contract: ChapterContract) -> list[ContextItem]:
         """Assemble GenrePack hard policies (mandatory per ADR-009)."""
         items = []
 
@@ -401,7 +395,9 @@ class ContextCompiler:
         remaining = budget
 
         for idx, retrieval_data in enumerate(retrieval):
-            content_json = json.dumps(retrieval_data, ensure_ascii=False, sort_keys=True)
+            content_json = json.dumps(
+                retrieval_data, ensure_ascii=False, sort_keys=True
+            )
             token_count = self.token_counter.count_tokens(content_json)
 
             if token_count <= remaining:
@@ -420,7 +416,10 @@ class ContextCompiler:
                 remaining -= token_count
             else:
                 excluded.append(
-                    (f"retrieval_{idx}", f"Exceeds remaining budget ({token_count} > {remaining})")
+                    (
+                        f"retrieval_{idx}",
+                        f"Exceeds remaining budget ({token_count} > {remaining})",
+                    )
                 )
 
         return selected, excluded

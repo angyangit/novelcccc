@@ -29,24 +29,20 @@ from anovel.contracts.models import (
     ProtectedFact,
     RequiredTransition,
 )
-from anovel.domain.delta import OperationType
+from anovel.domain.delta import CanonState, OperationType
 from anovel.domain.identity import ProjectId
 from anovel.planning.models import GenrePackBinding
 
 
 @pytest.fixture
-def mock_canon_projection():
-    """Mock Canon projection service."""
-    service = Mock()
-    service.reconstruct_state_at_commit = Mock(
-        return_value=Mock(
-            project_id=ProjectId("test-project"),
-            facts=(),
-            tombstones=frozenset(),
-            commit_history=(),
-        )
+def mock_canon_state():
+    """Mock Canon state."""
+    return CanonState(
+        project_id=ProjectId("test-project"),
+        facts=(),
+        tombstones=frozenset(),
+        commit_history=(),
     )
-    return service
 
 
 @pytest.fixture
@@ -67,15 +63,9 @@ def token_counter():
 
 
 @pytest.fixture
-def compiler(mock_canon_projection, mock_genre_registry, token_counter):
+def compiler(mock_genre_registry, token_counter):
     """Context compiler with mocked dependencies."""
-    return ContextCompiler(mock_canon_projection, mock_genre_registry, token_counter)
-
-
-@pytest.fixture
-def mock_session():
-    """Mock database session."""
-    return Mock()
+    return ContextCompiler(mock_genre_registry, token_counter)
 
 
 @pytest.fixture
@@ -103,7 +93,7 @@ class TestATv201801LowRelevanceMandatory:
     """AT-V2-018-01: 低语义相关但必需的旧事实不被裁剪"""
 
     def test_continuity_preserved_regardless_of_relevance(
-        self, compiler, mock_session, token_counter
+        self, compiler, mock_canon_state, token_counter
     ):
         """Previous chapter ending preserved even if low semantic relevance.
 
@@ -135,10 +125,9 @@ class TestATv201801LowRelevanceMandatory:
         previous_end = {"actual_text": "上一章结尾是平淡的生活场景描写"}
 
         result = compiler.compile_context(
-            session=mock_session,
             chapter_contract=contract,
+            canon_state=mock_canon_state,
             project_id=ProjectId("test-project"),
-            branch_name="main",
             previous_chapter_end=previous_end,
             token_budget=10000,
             output_reserve=2000,
@@ -159,7 +148,7 @@ class TestATv201802MandatoryOverflow:
     """AT-V2-018-02: 预算溢出必需项时明确阻断 (ADR-009 FAIL_FAST)"""
 
     def test_mandatory_overflow_returns_explicit_error(
-        self, compiler, mock_session, basic_contract
+        self, compiler, mock_canon_state, basic_contract
     ):
         """Mandatory overflow returns ContextCompilationError, not silent truncation."""
 
@@ -189,10 +178,9 @@ class TestATv201802MandatoryOverflow:
         )
 
         result = compiler.compile_context(
-            session=mock_session,
             chapter_contract=large_contract,
+            canon_state=mock_canon_state,
             project_id=ProjectId("test-project"),
-            branch_name="main",
             token_budget=10000,  # Too small for mandatory items
             output_reserve=2000,
         )
@@ -210,7 +198,7 @@ class TestATv201803KnowledgeIsolation:
     """AT-V2-018-03: 错项目未来知识无泄漏且每项 inclusion 可解释"""
 
     def test_knowledge_boundaries_enforced(
-        self, compiler, mock_session, basic_contract
+        self, compiler, mock_canon_state, basic_contract
     ):
         """Character knowledge boundaries strictly enforced per ADR-009."""
 
@@ -245,10 +233,9 @@ class TestATv201803KnowledgeIsolation:
         )
 
         result = compiler.compile_context(
-            session=mock_session,
             chapter_contract=contract,
+            canon_state=mock_canon_state,
             project_id=ProjectId("test-project"),
-            branch_name="main",
             token_budget=10000,
             output_reserve=2000,
         )
@@ -272,15 +259,14 @@ class TestATv201803KnowledgeIsolation:
             assert writer_only[0].visibility == "writer"
 
     def test_every_item_has_inclusion_reason(
-        self, compiler, mock_session, basic_contract
+        self, compiler, mock_canon_state, basic_contract
     ):
         """Every ContextItem must have explainable inclusion_reason per ADR-009."""
 
         result = compiler.compile_context(
-            session=mock_session,
             chapter_contract=basic_contract,
+            canon_state=mock_canon_state,
             project_id=ProjectId("test-project"),
-            branch_name="main",
             token_budget=10000,
             output_reserve=2000,
         )
@@ -297,7 +283,7 @@ class TestATv201804ContinuityPriority:
     """AT-V2-018-04: 必要的前章实际末段不被可选检索挤出"""
 
     def test_continuity_not_displaced_by_optional_retrieval(
-        self, compiler, mock_session
+        self, compiler, mock_canon_state
     ):
         """Previous chapter ending preserved even with large optional retrieval."""
 
@@ -330,10 +316,9 @@ class TestATv201804ContinuityPriority:
         ]
 
         result = compiler.compile_context(
-            session=mock_session,
             chapter_contract=contract,
+            canon_state=mock_canon_state,
             project_id=ProjectId("test-project"),
-            branch_name="main",
             previous_chapter_end={"actual": "Previous chapter critical ending"},
             optional_retrieval=large_retrieval,
             token_budget=10000,
@@ -354,24 +339,22 @@ class TestATv201805DeterministicOffline:
     """AT-V2-018-05: 冻结输入在不调用生成模型时可编译 ContextArtifact"""
 
     def test_deterministic_compilation_no_llm_calls(
-        self, compiler, mock_session, basic_contract
+        self, compiler, mock_canon_state, basic_contract
     ):
         """Same frozen inputs produce identical results without LLM calls."""
 
         result1 = compiler.compile_context(
-            session=mock_session,
             chapter_contract=basic_contract,
+            canon_state=mock_canon_state,
             project_id=ProjectId("test-project"),
-            branch_name="main",
             token_budget=10000,
             output_reserve=2000,
         )
 
         result2 = compiler.compile_context(
-            session=mock_session,
             chapter_contract=basic_contract,
+            canon_state=mock_canon_state,
             project_id=ProjectId("test-project"),
-            branch_name="main",
             token_budget=10000,
             output_reserve=2000,
         )

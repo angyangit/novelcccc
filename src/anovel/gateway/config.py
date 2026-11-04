@@ -54,11 +54,18 @@ def load_model_settings() -> ModelSettings:
 
     for key in _REQUIRED:
         if not values.get(key):
-            raise ValueError(f"Missing required model setting in project-root .env: {key}")
+            raise ValueError(
+                f"Missing required model setting in project-root .env: {key}"
+            )
 
     base_url = values["CC_VIBE_ANTHROPIC_BASE_URL"]
     parsed = urlsplit(base_url)
-    if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password:
+    if (
+        parsed.scheme != "https"
+        or not parsed.netloc
+        or parsed.username
+        or parsed.password
+    ):
         raise ValueError("CC_VIBE_ANTHROPIC_BASE_URL must be a valid HTTPS URL")
 
     token = values["CC_VIBE_ANTHROPIC_AUTH_TOKEN"]

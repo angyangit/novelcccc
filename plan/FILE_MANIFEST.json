@@ -1385,6 +1385,11 @@
     "sha256": "d420155d5491822d844bf8dccd1074f1a7209465b4306167c76315157df26f18"
   },
   {
+    "path": "decisions/ADR-009_CONTEXT_COMPILATION_BUDGET_POLICY.md",
+    "bytes": 9978,
+    "sha256": "d8c931608632fdac738e4174493619c11216fad0ec967ced99b645fb7aa1e230"
+  },
+  {
     "path": "generated/EXTERNAL_PRACTICE_MAP.md",
     "bytes": 3286,
     "sha256": "c5f816a2050dacad720ff5a5600e0d89d52b19052d09dcd7d9af98299058eb4d"
@@ -1416,8 +1421,8 @@
   },
   {
     "path": "machine/decision-register.yaml",
-    "bytes": 5534,
-    "sha256": "c95c407b260496c95ee285ac518b983b87938d5122d2cb18835469629fd97915"
+    "bytes": 5599,
+    "sha256": "ea1eee27005f21a015e32af2d9326a7ab4b06601f68a526c97303be52f657e0f"
   },
   {
     "path": "machine/external-practice-register.yaml",

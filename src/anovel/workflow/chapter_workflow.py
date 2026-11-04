@@ -114,7 +114,7 @@ class ChapterWorkflow:
         chapter_contract: ChapterContract,
         canon_state: CanonState,
         project_id: ProjectId,
-        model_id: str = "claude-sonnet-4",
+        model_id: str | None = None,
         max_tokens: int = 8000,
     ) -> ChapterDraft:
         """Generate a chapter draft.
@@ -129,6 +129,11 @@ class ChapterWorkflow:
         Returns:
             ChapterDraft with generated content
         """
+        if model_id is None:
+            model_id = self.model_gateway.configured_model_id
+        if not model_id:
+            raise ValueError("Model must be configured in the project-root .env")
+
         # Step 1: Compile context
         print(f"Compiling context for chapter {chapter_contract.chapter_number}...")
         context_result = self.context_compiler.compile_context(
